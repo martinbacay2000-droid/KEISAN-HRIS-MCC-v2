@@ -1,0 +1,742 @@
+﻿@model KEISAN_HRIS_v2.Models.Users.userPayrollDetails
+
+@{
+    // Access flags passed from controller
+    bool canViewSalaries = ViewBag.CanViewSalaries ?? false;  // READWRITE or FULL
+    bool canEditPayroll = ViewBag.CanEditPayroll ?? false;  // EDIT, READWRITE, or FULL
+    bool canSavePayroll = ViewBag.CanSavePayroll ?? false;  // READWRITE or FULL
+    bool canFullAccess = ViewBag.CanFullAccess ?? false;  // FULL only
+
+    // Salary fields are locked (readonly, hidden value) for EDIT-only users
+    bool salaryReadonly = !canViewSalaries;
+}
+
+<form id="payrollDetailsForm">
+    <input type="hidden" id="employeeNo" value="@Model.employeeNo" />
+    <input type="hidden" id="recordId" value="@Model.id" />
+
+    <div class="row">
+        <div class="col-md-3">
+            <label>Salary Type <span class="text-danger">*</span></label>
+            <select id="payrollBasis" name="payrollBasis" class="form-control required-field select2" style="width:100%">
+                <option value="">Select Salary Type</option>
+                <option value="Monthly">Monthly</option>
+                <option value="Daily">Daily</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label>Payroll Type <span class="text-danger">*</span></label>
+            <select id="payrollType" name="payrollType" class="form-control required-field select2" style="width:100%">
+                <option value="">Select Payroll Type</option>
+                <option value="ATM Payroll">ATM Payroll</option>
+                <option value="Cash Payroll">Cash Payroll</option>
+                <option value="Hold">Hold</option>
+            </select>
+        </div>
+        <div class="col-md-3" style="display:none">
+            <label>Payroll Group</label>
+            <select id="payrollGroup" name="payrollGroup" class="form-control select2" style="width:100%">
+            </select>
+        </div>
+        <div class="col-md-3">
+            <div class="form-check custom-checkbox mb-3">
+                <br />
+                <input type="checkbox" class="form-check-input" id="isMinimumWageEarner" name="isMinimumWageEarner">
+                <label class="form-check-label" for="isMinimumWageEarner">Minimum Wage Earner?</label>
+            </div>
+        </div>
+    </div>
+
+    <br />
+    <div class="row">
+        <div class="col-md-3">
+            <label>Bank <span class="text-danger">*</span></label>
+            <select id="bankType" name="bankType" class="form-control required-field select2" style="width:100%">
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label>Bank Code</label>
+            <input type="text" name="bankCode" id="bankCode" maxlength="25" class="form-control" placeholder="Bank Code" />
+        </div>
+        <div class="col-md-3">
+            <label>Account Number</label>
+            <input type="text" name="accountNo" id="accountNo" maxlength="50" class="form-control" placeholder="Account Number" />
+        </div>
+    </div>
+
+    <br>
+    <div class="row">
+        <div class="col-md-3">
+            <label>Effectivity Date <span class="text-danger">*</span></label>
+            <div class="input-hasicon">
+                <input name="effectivityDate" id="effectivityDate" class="form-control bt-datepicker required-field" type="text" readonly>
+                <div class="icon"><i class="far fa-calendar"></i></div>
+            </div>
+        </div>
+
+        <div class="col-md-3" style="display:none">
+            @if (canViewSalaries)
+            {
+                <label>Merit Service Pay</label>
+                <input type="number" name="meritServicePay" id="meritServicePay" maxlength="255"
+                       class="form-control" placeholder="Merit Service Pay" step="0.01" />
+            }
+            else
+            {
+                <input type="hidden" id="meritServicePay" value="0" />
+            }
+        </div>
+
+        <div class="col-md-3" style="display:none">
+            @if (canViewSalaries)
+            {
+                <label>Basic Salary</label>
+                <input type="number" name="basicSalary" id="basicSalary" maxlength="255"
+                       class="form-control" placeholder="Basic Salary" step="0.01" />
+            }
+            else
+            {
+                <input type="hidden" id="basicSalary" value="0" />
+            }
+        </div>
+
+        <div class="col-md-3">
+            <label>
+                Basic Monthly Pay <span class="text-danger">*</span>
+                @if (!canViewSalaries)
+                {
+                    <span class="text-muted">(Hidden)</span>
+                }
+            </label>
+            @if (canViewSalaries)
+            {
+                <input type="number" name="basicMonthlyPay" id="basicMonthlyPay" maxlength="255"
+                       class="form-control required-field" placeholder="Basic Monthly Pay" step="0.01" />
+            }
+            else
+            {
+                <input type="text" id="basicMonthlyPay" class="form-control" value="****" readonly
+                       style="background-color:#f8f9fa;cursor:not-allowed;" />
+                <input type="hidden" name="basicMonthlyPay" value="0" />
+            }
+        </div>
+
+        <div class="col-md-3">
+            <label>
+                Daily Rate <span class="text-danger">*</span>
+                @if (!canViewSalaries)
+                {
+                    <span class="text-muted">(Hidden)</span>
+                }
+            </label>
+            @if (canViewSalaries)
+            {
+                <input type="number" name="dailyRate" id="dailyRate" maxlength="255"
+                       class="form-control required-field" placeholder="Daily Rate" step="0.01" />
+            }
+            else
+            {
+                <input type="text" id="dailyRate" class="form-control" value="****" readonly
+                       style="background-color:#f8f9fa;cursor:not-allowed;" />
+                <input type="hidden" name="dailyRate" value="0" />
+            }
+        </div>
+
+        <div class="col-md-3">
+            <label>
+                Hourly Rate <span class="text-danger">*</span>
+                @if (!canViewSalaries)
+                {
+                    <span class="text-muted">(Hidden)</span>
+                }
+            </label>
+            @if (canViewSalaries)
+            {
+                <input type="number" name="hourlyRate" id="hourlyRate" maxlength="255"
+                       class="form-control required-field" placeholder="Hourly Rate" step="0.01" readonly />
+            }
+            else
+            {
+                <input type="text" id="hourlyRate" class="form-control" value="****" readonly
+                       style="background-color:#f8f9fa;cursor:not-allowed;" />
+                <input type="hidden" name="hourlyRate" value="0" />
+            }
+        </div>
+    </div>
+
+    <br>
+    <div class="row">
+        <div class="col-md-3">
+            <label>SSS No.</label>
+            <input type="text" name="sssNo" id="sssNo" maxlength="50" class="form-control" placeholder="SSS No." />
+        </div>
+        <div class="col-md-3">
+            <label>Philhealth No.</label>
+            <input type="text" name="philhealthNo" id="philhealthNo" maxlength="50" class="form-control" placeholder="Philhealth No." />
+        </div>
+        <div class="col-md-3">
+            <label>HDMF No.</label>
+            <input type="text" name="hdmfNo" id="hdmfNo" maxlength="50" class="form-control" placeholder="HDMF No." />
+        </div>
+        <div class="col-md-3">
+            <label>TIN</label>
+            <input type="text" name="tinNo" id="tinNo" maxlength="50" class="form-control" placeholder="TIN" />
+        </div>
+    </div>
+
+    <br />
+    <div class="row">
+        <div class="col-md-3">
+            <label>Additional HDMF Contribution</label>
+            <input type="text" name="contriPIFadditional" id="contriPIFadditional"
+                   maxlength="255" class="form-control decimal-input"
+                   placeholder="Additional HDMF Contribution" step="0.01" />
+        </div>
+        <div class="col-md-3">
+            <label>MP2 Contribution</label>
+            <input type="text" name="mp2" id="mp2" maxlength="255"
+                   class="form-control decimal-input"
+                   placeholder="MP2 Contribution" step="0.01" />
+        </div>
+        <div class="col-md-3">
+            <div class="form-check custom-checkbox mb-3">
+                <br />
+                <input type="checkbox" class="form-check-input" id="isNoLate" name="isNoLate">
+                <label class="form-check-label" for="isNoLate">No late/undertime deductions?</label>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-check custom-checkbox mb-3">
+                <br />
+                <input type="checkbox" class="form-check-input" id="isNoOTPremium" name="isNoOTPremium">
+                <label class="form-check-label" for="isNoOTPremium">No OT Premium?</label>
+            </div>
+        </div>
+    </div>
+
+    <br />
+    <div class="row" id="payrollDetailsActions">
+        <div class="col-md-12">
+            @* Show Edit button only if user can at least edit non-salary fields *@
+            @if (canEditPayroll)
+            {
+                <button type="button" id="btnCancelPayrollDetails" class="btn btn-danger d-none" style="float:right;margin-left:8px;">Cancel</button>
+                <button type="button" id="btnEditPayrollDetails" class="btn btn-primary" style="float:right;">Edit</button>
+            }
+        </div>
+    </div>
+</form>
+
+<hr />
+<div class="row">
+    <div class="col-md-10">
+        <label class="h5"><b>RATE HISTORY</b></label>
+    </div>
+</div>
+
+<div class="card-body">
+    <div class="table-responsive">
+        <table id="rateHistoryTable" class="display" style="min-width: 900px">
+            <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>Effectivity Date</th>
+                    <th>Basic<br /> Monthly Pay</th>
+                    <th>Daily<br /> Rate</th>
+                    <th>Hourly<br /> Rate</th>
+                    <th>Salary Type</th>
+                    <th>Date Added</th>
+                    <th>Added By</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<style>
+    input[readonly]:not(.bt-datepicker),
+    textarea[readonly],
+    select:disabled {
+        background-color: #f8f9fa !important;
+        border-color: #dee2e6 !important;
+        cursor: not-allowed;
+        opacity: 0.8;
+    }
+
+    .bt-datepicker[readonly] {
+        background-color: #ffffff !important;
+        cursor: pointer !important;
+    }
+
+    .form-control.is-invalid,
+    .form-select.is-invalid {
+        border-color: #dc3545;
+    }
+
+    .invalid-feedback {
+        display: none;
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    .form-control.is-invalid ~ .invalid-feedback,
+    .form-select.is-invalid ~ .invalid-feedback {
+        display: block;
+    }
+
+    .select2-container--disabled .select2-selection {
+        background-color: #f8f9fa !important;
+        border-color: #dee2e6 !important;
+        cursor: not-allowed !important;
+    }
+</style>
+
+<script>
+    $(document).ready(function () {
+
+        // ── Access flags from Razor (passed as JS booleans) ─────────────────────
+        const config = {
+            canViewSalaries : @Json.Serialize(canViewSalaries),   // READWRITE | FULL
+            canEditPayroll  : @Json.Serialize(canEditPayroll),    // EDIT | READWRITE | FULL
+            canSavePayroll  : @Json.Serialize(canSavePayroll),    // READWRITE | FULL
+            canFullAccess   : @Json.Serialize(canFullAccess),     // FULL only
+
+            toastr: {
+                positionClass  : "toast-top-right",
+                timeOut        : 5000,
+                closeButton    : true,
+                progressBar    : true,
+                preventDuplicates: true
+            },
+            endpoints: {
+                updatePayrollDetails : "/PayrollDetails/UpdatePayrollDetails",
+                rateHistory          : "/PayrollDetails/GetRateHistory",
+                removeHistory        : "/PayrollDetails/RemoveHistory",
+                bankTypes            : "/PayrollDetails/GetBankType"
+            }
+        };
+
+        // Also check module-level access (view-layer guard)
+        MODULE = 'FSPayrollDetailsM';
+        access = ROLE_ACCESS?.[MODULE];
+
+        // Hide action buttons if no edit permission at the view layer too
+        if (!config.canEditPayroll) {
+            $('#payrollDetailsActions').hide();
+        }
+
+        toastr.options = config.toastr;
+
+        let isEditMode      = false;
+        let originalFormData = {};
+
+        // ── Initialization ───────────────────────────────────────────────────────
+        initializeDatePickers();
+        initializeSelect2();
+        loadFormData();
+        disableFormInputs();   // Always start in read-only mode
+
+        // ── Rate History DataTable ───────────────────────────────────────────────
+        const rateHistoryTable = $('#rateHistoryTable').DataTable({
+            responsive  : true,
+            processing  : true,
+            serverSide  : false,
+            ajax: {
+                url     : config.endpoints.rateHistory,
+                type    : "GET",
+                data    : { employeeNo: "@Model.employeeNo" },
+                dataSrc : "data",
+                error   : () => showNotification('Error loading rate history.', 'error')
+            },
+            columns: [
+                {
+                    data      : "id",
+                    width     : "10%",
+                    orderable : false,
+                    render    : data => {
+                        // Show delete button only for FULL access
+                        if (!config.canFullAccess || access !== 'FULL') return '';
+                        return `<button class="btn btn-sm btn-danger shadow-sm removeHistory"
+                                    data-id="${data}" title="Delete">
+                                    <i class="fa fa-trash"></i>
+                                </button>`;
+                    }
+                },
+                { data: "effectivityDate", width: "15%" },
+                {
+                    data  : "basicMonthlyPay",
+                    width : "15%",
+                    render: data => config.canViewSalaries ? parseFloat(data).toFixed(2) : '****'
+                },
+                {
+                    data  : "dailyRate",
+                    width : "15%",
+                    render: data => config.canViewSalaries ? parseFloat(data).toFixed(2) : '****'
+                },
+                {
+                    data  : "hourlyRate",
+                    width : "15%",
+                    render: data => config.canViewSalaries ? parseFloat(data).toFixed(2) : '****'
+                },
+                { data: "payrollBasis",  width: "10%" },
+                { data: "dtAdded",       width: "15%" },
+                { data: "addedByUser",   width: "20%" }
+            ],
+            columnDefs: [
+                { targets: 0, visible: false } // Action column hidden until edit mode
+            ],
+            order      : [[1, 'desc']],
+            pageLength : 10,
+            lengthMenu : [[10, 25, 50, -1], [10, 25, 50, "All"]],
+            language: {
+                processing : "Loading...",
+                emptyTable : "No rate history found",
+                zeroRecords: "No matching records found",
+                paginate: {
+                    next    : '<i class="fa fa-angle-double-right"></i>',
+                    previous: '<i class="fa fa-angle-double-left"></i>'
+                }
+            }
+        });
+
+        // ── Event Handlers ───────────────────────────────────────────────────────
+        $('#btnEditPayrollDetails').on('click', function () {
+            if (!isEditMode) {
+                enterEditMode();
+            } else {
+                savePayrollDetails();
+            }
+        });
+
+        $('#btnCancelPayrollDetails').on('click', function () {
+            exitEditMode();
+            loadFormData();
+        });
+
+        $(document).on('click', '.removeHistory', function (e) {
+            e.preventDefault();
+            deleteWithReason({
+                title  : 'Delete Rate History',
+                text   : 'Are you sure you want to delete this rate history record?',
+                url    : config.endpoints.removeHistory,
+                id     : $(this).data('id'),
+                button : $(this),
+                table  : rateHistoryTable
+            });
+        });
+
+        // Salary type change: enable/disable relevant rate fields
+        $('#payrollBasis').on('change', function () {
+            if (!config.canViewSalaries) return; // Salary fields are hidden anyway
+            const payrollBasis = $(this).val();
+            if (payrollBasis === "Daily") {
+                $('#basicMonthlyPay').prop('disabled', true).css('background', '#efefef');
+                $('#dailyRate').prop('disabled', false).css('background', '');
+            } else if (payrollBasis === "Monthly") {
+                $('#basicMonthlyPay').prop('disabled', false).css('background', '');
+                $('#dailyRate').prop('disabled', true).css('background', '#efefef');
+            }
+        });
+
+        // Auto-compute rates from monthly pay
+        $('#basicMonthlyPay').on('change', function () {
+            if (config.canViewSalaries && $('#payrollBasis').val() === 'Monthly') {
+                computeRatesFromMonthly();
+            }
+        });
+
+        // Auto-compute rates from daily rate
+        $('#dailyRate').on('change', function () {
+            if (config.canViewSalaries && $('#payrollBasis').val() === 'Daily') {
+                computeRatesFromDaily();
+            }
+        });
+
+        // ── Helper Functions ─────────────────────────────────────────────────────
+        function initializeDatePickers() {
+            $('.bt-datepicker').datepicker({
+                format   : 'yyyy/mm/dd',
+                autoclose: true
+            });
+        }
+
+        function initializeSelect2() {
+            $('#payrollBasis, #payrollType').select2({
+                selectOnClose         : true,
+                minimumResultsForSearch: Infinity,
+                width: '100%'
+            });
+
+            $('#bankType').select2({
+                placeholder: "Select Bank Type",
+                allowClear : true,
+                width      : '100%',
+                ajax: {
+                    url         : config.endpoints.bankTypes,
+                    dataType    : 'json',
+                    delay       : 250,
+                    processResults: function (data) {
+                        return {
+                            results: $.map(data, function (item) {
+                                return { id: item.bankType, text: item.bankName };
+                            })
+                        };
+                    }
+                }
+            });
+        }
+
+        function loadFormData() {
+            if ("@Model.payrollBasis") $('#payrollBasis').val("@Model.payrollBasis").trigger('change');
+            if ("@Model.payrollType")  $('#payrollType').val("@Model.payrollType").trigger('change');
+
+            if ("@Model.bankType") {
+                const option = new Option("@Model.bankType", "@Model.bankType", true, true);
+                $('#bankType').append(option).trigger('change');
+            }
+
+            if ("@Model.effectivityDate") {
+                $('#effectivityDate').datepicker('setDate', formatDate("@Model.effectivityDate"));
+            }
+
+            // Salary fields — only load real values if user can view them
+            if (config.canViewSalaries) {
+                if ("@Model.meritServicePay") $('#meritServicePay').val("@Model.meritServicePay");
+                if ("@Model.basicSalary")     $('#basicSalary').val("@Model.basicSalary");
+                if ("@Model.basicMonthlyPay") $('#basicMonthlyPay').val("@Model.basicMonthlyPay");
+                if ("@Model.dailyRate")       $('#dailyRate').val("@Model.dailyRate");
+                if ("@Model.hourlyRate")      $('#hourlyRate').val("@Model.hourlyRate");
+            }
+            // Non-salary fields always load
+            if ("@Model.contriPIFadditional") $('#contriPIFadditional').val("@Model.contriPIFadditional");
+            if ("@Model.mp2")       $('#mp2').val("@Model.mp2");
+            if ("@Model.bankCode")  $('#bankCode').val("@Model.bankCode");
+            if ("@Model.accountNo") $('#accountNo').val("@Model.accountNo");
+            if ("@Model.sssNo")     $('#sssNo').val("@Model.sssNo");
+            if ("@Model.philhealthNo") $('#philhealthNo').val("@Model.philhealthNo");
+            if ("@Model.hdmfNo")    $('#hdmfNo').val("@Model.hdmfNo");
+            if ("@Model.tinNo")     $('#tinNo').val("@Model.tinNo");
+
+            $('#isMinimumWageEarner').prop('checked', '@Model.isMinimumWageEarner' === 'True');
+            $('#isNoLate').prop('checked',            '@Model.isNoLate'            === 'True');
+            $('#isNoOTPremium').prop('checked',       '@Model.isNoOTPremium'       === 'True');
+
+            storeOriginalData();
+        }
+
+        function storeOriginalData() {
+            originalFormData = {
+                basicMonthlyPay : config.canViewSalaries ? (parseFloat($('#basicMonthlyPay').val()) || 0) : 0,
+                basicSalary     : config.canViewSalaries ? (parseFloat($('#basicSalary').val())     || 0) : 0,
+                meritServicePay : config.canViewSalaries ? (parseFloat($('#meritServicePay').val()) || 0) : 0,
+                dailyRate       : config.canViewSalaries ? (parseFloat($('#dailyRate').val())       || 0) : 0,
+                hourlyRate      : config.canViewSalaries ? (parseFloat($('#hourlyRate').val())      || 0) : 0,
+                payrollBasis    : $('#payrollBasis').val(),
+                payrollType     : $('#payrollType').val()
+            };
+        }
+
+        function enterEditMode() {
+            if (!config.canEditPayroll) {
+                showNotification('You do not have permission to edit payroll details.', 'warning');
+                return;
+            }
+
+            isEditMode = true;
+            enableFormInputs();
+            $('#btnEditPayrollDetails').text('Save').removeClass('btn-primary').addClass('btn-success');
+            $('#btnCancelPayrollDetails').removeClass('d-none');
+
+            // Show rate history action column only for FULL access
+            if (config.canFullAccess) {
+                rateHistoryTable.column(0).visible(true);
+            }
+
+            $('#payrollBasis').trigger('change');
+        }
+
+        function exitEditMode() {
+            isEditMode = false;
+            disableFormInputs();
+            $('#btnEditPayrollDetails').text('Edit').removeClass('btn-success').addClass('btn-primary');
+            $('#btnCancelPayrollDetails').addClass('d-none');
+            rateHistoryTable.column(0).visible(false);
+            clearValidation('#payrollDetailsForm');
+        }
+
+        function enableFormInputs() {
+            // Enable all non-salary text/number inputs
+            $('#payrollDetailsForm input[type="text"]:not([id$="Rate"]):not([id="basicMonthlyPay"]), #payrollDetailsForm input[type="number"]:not([id$="Rate"]):not([id="basicMonthlyPay"])').prop('readonly', false);
+
+            // Enable salary inputs only for users who can view/edit salaries
+            if (config.canViewSalaries) {
+                $('#meritServicePay, #basicSalary, #basicMonthlyPay, #dailyRate').prop('readonly', false);
+                // Hourly rate is always computed (readonly)
+                $('#hourlyRate').prop('readonly', true).css('background', '#efefef');
+            }
+
+            // Enable all non-hidden text inputs (SSS, philhealth, etc.)
+            $('#sssNo, #philhealthNo, #hdmfNo, #tinNo, #bankCode, #accountNo, #contriPIFadditional, #mp2').prop('readonly', false);
+
+            // Enable select2 dropdowns
+            $('#payrollBasis, #payrollType, #bankType').prop('disabled', false).trigger('change.select2');
+
+            // Enable datepicker
+            $('#effectivityDate').datepicker('enable');
+        }
+
+        function disableFormInputs() {
+            // Readonly for all text/number inputs
+            $('#payrollDetailsForm input[type="text"], #payrollDetailsForm input[type="number"]').prop('readonly', true);
+
+            // Disable select2 dropdowns
+            $('#payrollBasis, #payrollType, #bankType').prop('disabled', true).trigger('change.select2');
+
+            // Disable datepicker
+            $('#effectivityDate').datepicker('disable');
+        }
+
+        function savePayrollDetails() {
+            if (!validateForm('#payrollDetailsForm')) return;
+
+            // Determine if salary-bearing history row is needed
+            let toInsertHistory = 0;
+            if (config.canViewSalaries) {
+                const currentData = {
+                    basicMonthlyPay : parseFloat($('#basicMonthlyPay').val()) || 0,
+                    basicSalary     : parseFloat($('#basicSalary').val())     || 0,
+                    meritServicePay : parseFloat($('#meritServicePay').val()) || 0,
+                    dailyRate       : parseFloat($('#dailyRate').val())       || 0,
+                    hourlyRate      : parseFloat($('#hourlyRate').val())      || 0,
+                    payrollBasis    : $('#payrollBasis').val(),
+                    payrollType     : $('#payrollType').val()
+                };
+                for (let key in originalFormData) {
+                    if (originalFormData[key] !== currentData[key]) {
+                        toInsertHistory = 1;
+                        break;
+                    }
+                }
+            }
+
+            const formData = {
+                id                  : $('#recordId').val() || 0,
+                employeeNo          : "@Model.employeeNo",
+                isMinimumWageEarner : $('#isMinimumWageEarner').prop('checked'),
+                fixedNetPay         : parseFloat($('#fixedNetPay').val())         || 0,
+                // Salary fields — send real values only if visible; controller also guards on server side
+                meritServicePay     : config.canViewSalaries ? (parseFloat($('#meritServicePay').val())  || 0) : 0,
+                basicSalary         : config.canViewSalaries ? (parseFloat($('#basicSalary').val())      || 0) : 0,
+                basicMonthlyPay     : config.canViewSalaries ? (parseFloat($('#basicMonthlyPay').val())  || 0) : 0,
+                dailyRate           : config.canViewSalaries ? (parseFloat($('#dailyRate').val())         || 0) : 0,
+                hourlyRate          : config.canViewSalaries ? (parseFloat($('#hourlyRate').val())        || 0) : 0,
+                effectivityDate     : $('#effectivityDate').val(),
+                payrollBasis        : $('#payrollBasis').val(),
+                payrollType         : $('#payrollType').val(),
+                mp2                 : parseFloat($('#mp2').val())                 || 0,
+                contriPIFadditional : parseFloat($('#contriPIFadditional').val()) || 0,
+                tinNo               : $('#tinNo').val()?.trim(),
+                sssNo               : $('#sssNo').val()?.trim(),
+                philhealthNo        : $('#philhealthNo').val()?.trim(),
+                hdmfNo              : $('#hdmfNo').val()?.trim(),
+                bankType            : $('#bankType').val(),
+                bankCode            : $('#bankCode').val()?.trim(),
+                accountNo           : $('#accountNo').val()?.trim(),
+                isNoLate            : $('#isNoLate').prop('checked'),
+                isNoOTPremium       : $('#isNoOTPremium').prop('checked'),
+                payrollGroup        : $('#payrollGroup').val(),
+                toInsertHistory     : toInsertHistory
+            };
+
+            const $btn = $('#btnEditPayrollDetails');
+            toggleButtonLoading($btn, true, 'Saving...');
+
+            $.ajax({
+                url     : config.endpoints.updatePayrollDetails,
+                type    : 'POST',
+                data    : formData,
+                dataType: 'json',
+                success : response => {
+                    if (response.success) {
+                        showNotification(response.message, 'success');
+                        rateHistoryTable.ajax.reload(null, false);
+                        exitEditMode();
+                        storeOriginalData();
+                        if (typeof userTable !== 'undefined') {
+                            userTable.ajax.reload(null, false);
+                        }
+                    } else {
+                        showNotification(response.message, 'error');
+                    }
+                },
+                error   : () => showNotification('Unable to save payroll details. Please try again.', 'error'),
+                complete: () => toggleButtonLoading($btn, false)
+            });
+        }
+
+        function computeRatesFromMonthly() {
+            const basicMonthlyPay = parseFloat($('#basicMonthlyPay').val()) || 0;
+            const dailyRate  = (basicMonthlyPay / 313 * 12).toFixed(2);
+            const hourlyRate = (dailyRate / 8).toFixed(2);
+            $('#dailyRate').val(dailyRate);
+            $('#hourlyRate').val(hourlyRate);
+        }
+
+        function computeRatesFromDaily() {
+            const dailyRate      = parseFloat($('#dailyRate').val()) || 0;
+            const basicMonthlyPay = (dailyRate * 26).toFixed(2);
+            const hourlyRate      = (dailyRate / 8).toFixed(2);
+            $('#basicMonthlyPay').val(basicMonthlyPay);
+            $('#hourlyRate').val(hourlyRate);
+        }
+
+        function validateForm(formSelector) {
+            clearValidation(formSelector);
+            let isValid = true;
+
+            $(formSelector + ' .required-field').each(function () {
+                // Skip the masked salary fields (they are hidden inputs or display-only text inputs)
+                if (!config.canViewSalaries &&
+                    ['basicMonthlyPay', 'dailyRate', 'hourlyRate'].includes($(this).attr('id'))) return;
+
+                if (!$(this).val() || $(this).val() === '' || $(this).val() === '-1') {
+                    $(this).addClass('is-invalid');
+                    isValid = false;
+                }
+            });
+
+            if (!isValid) showNotification('Please fill in all required fields.', 'warning');
+            return isValid;
+        }
+
+        function clearValidation(formSelector) {
+            $(formSelector + ' .form-control, ' + formSelector + ' .form-select').removeClass('is-invalid');
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date  = new Date(dateString);
+            const year  = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day   = String(date.getDate()).padStart(2, '0');
+            return `${year}/${month}/${day}`;
+        }
+
+        function toggleButtonLoading($btn, loading, text = '') {
+            if (loading) {
+                if (!$btn.data('original-html')) $btn.data('original-html', $btn.html());
+                const icon = text ? '<i class="fas fa-spinner fa-spin"></i> ' : '<i class="fas fa-spinner fa-spin"></i>';
+                $btn.prop('disabled', true).html(icon + text);
+            } else {
+                $btn.prop('disabled', false).html($btn.data('original-html') || $btn.html());
+                $btn.removeData('original-html');
+            }
+        }
+
+        function showNotification(message, type) {
+            const types = { success: 'Success', error: 'Error', warning: 'Warning', info: 'Information' };
+            toastr[type](message, types[type] || 'Notification');
+        }
+    });
+</script>

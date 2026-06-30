@@ -1,0 +1,1108 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutFillow.cshtml";
+    ViewData["Title"] = "User List";
+}
+
+<div class="col-12">
+    <div class="card">
+        <div class="card-header">
+            <div class="row" style="width:100%;">
+                <h4 class="card-title">User List</h4>
+                <br> <br> <br>
+
+                <div class="row" style="margin-left:0px;width:100%;">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Record Status</h5>
+                            <select name="filterRecordStatus" id="filterRecordStatus" class="form-control">
+                                <option value="active" selected>ACTIVE</option>
+                                <option value="inactive">INACTIVE</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                    </div>
+                    <div class="col-md-6 d-flex justify-content-end align-items-end gap-2">
+                        <button type="button" class="btn btn-warning" id="btnBulkCreateUsers" title="Create user accounts for all employees without accounts">
+                            <i class="fa fa-users"></i> Sync Employee Accounts
+                        </button>
+                        <button type="button" class="btn btn-primary" id="btnAddUser">
+                            <i class="fa fa-plus"></i> New User
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="userTable" class="display" style="min-width: 845px">
+                    <thead>
+                        <tr>
+                            <th>Action</th>
+                            <th>User Code</th>
+                            <th>Full Name</th>
+                            <th>Role Code</th>
+                            <th>Linked Employee</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+
+        <!-- Modal for Add -->
+        <div class="modal fade" id="addUserModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add User Form</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addUserForm">
+                            <!-- Employee Search Section -->
+                            <div class="alert alert-primary">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>Link to Existing Employee:</strong> Search by employee number to auto-fill employee details
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-8">
+                                    <label class="form-label">Search Employee Number</label>
+                                    <input type="text" class="form-control alphanum" id="searchEmployeeNo" placeholder="Enter Employee Number">
+                                </div>
+                                <div class="col-md-4 d-flex align-items-end">
+                                    <button type="button" class="btn btn-primary w-100" id="btnSearchEmployee">
+                                        <i class="fas fa-search"></i> Search Employee
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div id="employeeSearchResult" class="alert alert-success d-none mb-3">
+                                <i class="fas fa-check-circle"></i>
+                                <strong>Employee Found!</strong> Details have been auto-filled below.
+                            </div>
+
+                            <hr>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="mb-3">
+                                        <label for="addUserCode" class="form-label">User Code (Employee No) <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control alphanum" id="addUserCode" name="userCode" required maxlength="50">
+                                        <div class="invalid-feedback">Please provide a valid user code.</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="addPassword" class="form-label">Password <span class="text-danger">*</span></label>
+                                        <input type="password" class="form-control" id="addPassword" name="password" required maxlength="100">
+                                        <div class="invalid-feedback">Please provide a password.</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="addRepeatPassword" class="form-label">Repeat Password <span class="text-danger">*</span></label>
+                                        <input type="password" class="form-control" id="addRepeatPassword" name="repeatPassword" required maxlength="100">
+                                        <div class="invalid-feedback">Passwords do not match.</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="addLastName" class="form-label">Last Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="addLastName" name="lastName" required maxlength="100">
+                                        <div class="invalid-feedback">Please provide a last name.</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="addFirstName" class="form-label">First Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="addFirstName" name="firstName" required maxlength="100">
+                                        <div class="invalid-feedback">Please provide a first name.</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="addMiddleName" class="form-label">Middle Name</label>
+                                        <input type="text" class="form-control" id="addMiddleName" name="middleName" maxlength="100">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="mb-3">
+                                        <label for="addRoleCode" class="form-label">Role <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="addRoleCode" name="roleCode" style="width:100%" required>
+                                            <option value="">Select Role...</option>
+                                        </select>
+                                        <div class="invalid-feedback">Please select a role.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="btnSaveNewUser">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for View/Edit -->
+        <div class="modal fade" id="viewUserModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="viewModalTitle">User Form</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="viewUserForm">
+                            <input type="hidden" id="viewUserId" name="id">
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="mb-3">
+                                        <label for="viewUserCode" class="form-label">User Code</label>
+                                        <input type="text" class="form-control alphanum" id="viewUserCode" name="userCode" readonly maxlength="50">
+                                        <div class="invalid-feedback">Please provide a valid user code.</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row edit-only d-none">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="viewPassword" class="form-label">New Password <small class="text-muted">(leave blank to keep current)</small></label>
+                                        <input type="password" class="form-control" id="viewPassword" name="password" maxlength="100">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="viewRepeatPassword" class="form-label">Repeat New Password</label>
+                                        <input type="password" class="form-control" id="viewRepeatPassword" name="repeatPassword" maxlength="100">
+                                        <div class="invalid-feedback">Passwords do not match.</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="viewLastName" class="form-label">Last Name</label>
+                                        <input type="text" class="form-control" id="viewLastName" name="lastName" readonly maxlength="100">
+                                        <div class="invalid-feedback">Please provide a last name.</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="viewFirstName" class="form-label">First Name</label>
+                                        <input type="text" class="form-control" id="viewFirstName" name="firstName" readonly maxlength="100">
+                                        <div class="invalid-feedback">Please provide a first name.</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="viewMiddleName" class="form-label">Middle Name</label>
+                                        <input type="text" class="form-control" id="viewMiddleName" name="middleName" readonly maxlength="100">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="mb-3">
+                                        <label for="viewRoleCode" class="form-label">Role</label>
+                                        <select class="form-select" id="viewRoleCode" name="roleCode" style="width:100%" disabled>
+                                            <option value="">Select Role...</option>
+                                        </select>
+                                        <div class="invalid-feedback">Please select a role.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="btnEditUser">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button type="button" class="btn btn-success d-none" id="btnSaveUser">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Fillow_style
+{
+    <style>
+        .table-responsive {
+            border-radius: 0.375rem;
+        }
+
+        #userTable_wrapper .dataTables_length,
+        #userTable_wrapper .dataTables_filter {
+            margin-bottom: 1rem;
+        }
+
+        #userTable_wrapper .dataTables_info,
+        #userTable_wrapper .dataTables_paginate {
+            margin-top: 1rem;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .modal-content {
+            border-radius: 0.5rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        .invalid-feedback {
+            display: none;
+        }
+
+        .form-control.is-invalid,
+        .form-select.is-invalid {
+            border-color: #dc3545;
+        }
+
+            .form-control.is-invalid ~ .invalid-feedback,
+            .form-select.is-invalid ~ .invalid-feedback {
+                display: block;
+            }
+
+        .form-control[readonly] {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        .form-select[disabled] {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        .edit-mode .form-control[readonly] {
+            background-color: #ffffff;
+            border-color: #ced4da;
+        }
+
+        .edit-mode .form-select[disabled] {
+            background-color: #ffffff;
+            border-color: #ced4da;
+        }
+
+        .select2-container .select2-selection--single {
+            height: 38px;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 36px;
+            padding-left: 12px;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 36px;
+        }
+
+        .select2-container--default.select2-container--focus .select2-selection--single {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        .select2-container--default .select2-selection--single.select2-selection--disabled {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        .is-invalid + .select2-container .select2-selection--single {
+            border-color: #dc3545;
+        }
+
+        .swal2-popup {
+            border-radius: 15px !important;
+            padding: 2rem !important;
+        }
+
+        .swal2-title {
+            font-size: 1.875rem !important;
+            font-weight: 600 !important;
+            color: #545454 !important;
+            margin: 1rem 0 0.5rem 0 !important;
+        }
+
+        .swal2-html-container {
+            font-size: 1rem !important;
+            color: #737373 !important;
+            margin: 0 0 2rem 0 !important;
+        }
+
+        .swal2-actions {
+            gap: 0.5rem !important;
+        }
+
+        .swal2-confirm {
+            background-color: #7c3aed !important;
+            border-color: #7c3aed !important;
+            color: white !important;
+            font-weight: 500 !important;
+            padding: 0.75rem 2rem !important;
+            border-radius: 8px !important;
+            font-size: 0.875rem !important;
+        }
+
+        .swal2-cancel {
+            background-color: #6b7280 !important;
+            border-color: #6b7280 !important;
+            color: white !important;
+            font-weight: 500 !important;
+            padding: 0.75rem 2rem !important;
+            border-radius: 8px !important;
+            font-size: 0.875rem !important;
+        }
+
+        .swal2-confirm:hover {
+            background-color: #6d28d9 !important;
+            border-color: #6d28d9 !important;
+        }
+
+        .swal2-cancel:hover {
+            background-color: #4b5563 !important;
+            border-color: #4b5563 !important;
+        }
+
+        .card-header {
+            border-bottom: none !important;
+        }
+
+        #filterRecordStatus {
+            width: 100%;
+        }
+
+        .badge-linked {
+            background-color: #28a745;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+        }
+
+        .badge-unlinked {
+            background-color: #6c757d;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+        }
+
+        .edit-mode #viewUserCode,
+        .edit-mode #viewLastName,
+        .edit-mode #viewFirstName,
+        .edit-mode #viewMiddleName {
+            background-color: #f8f9fa !important;
+            border-color: #dee2e6 !important;
+            cursor: not-allowed;
+        }
+    </style>
+}
+
+@section Fillow_script
+{
+    <script>
+        $(document).ready(function () {
+
+            MODULE = 'SuserM';
+            access = ROLE_ACCESS?.[MODULE];
+
+            if (access != 'EDIT' && access != 'READWRITE' && access != 'FULL') {
+                $('#btnEditUser').hide();
+            }
+
+            if (access != 'READWRITE' && access != 'FULL') {
+                $('#btnAddUser').hide();
+                $('#btnBulkCreateUsers').hide();
+            }
+            
+            // ADD THIS:
+            if (access != 'FULL') {
+                // hide any delete buttons already in the DOM (e.g. on table reload)
+                $('.deleteUser').hide();
+            }
+
+
+            toastr.options = {
+                positionClass: "toast-top-right",
+                timeOut: 5000,
+                closeButton: true,
+                debug: false,
+                newestOnTop: true,
+                progressBar: true,
+                preventDuplicates: true,
+                onclick: null,
+                showDuration: "300",
+                hideDuration: "1000",
+                extendedTimeOut: "1000",
+                showEasing: "swing",
+                hideEasing: "linear",
+                showMethod: "fadeIn",
+                hideMethod: "fadeOut",
+                tapToDismiss: false
+            };
+
+            let isViewingDeleted = false;
+            let canEditRole = false;
+
+            initializeSelect2();
+
+            $('#filterRecordStatus').select2({
+                selectOnClose: true,
+                minimumResultsForSearch: Infinity
+            });
+
+            $('#filterRecordStatus').on('change', function () {
+                isViewingDeleted = $(this).val() === 'inactive';
+                updateTableView();
+            });
+
+            loadRoles();
+
+            var table = $('#userTable').DataTable({
+                processing: true,
+                serverSide: false,
+                ajax: {
+                    url: "/UserList/GetUserList",
+                    type: "GET",
+                    datatype: "json",
+                    error: function (xhr, error, code) {
+                        console.log('Error loading data:', error);
+                        showNotification('Error loading user data. Please refresh the page.', 'error');
+                    }
+                },
+                columns: [
+                    {
+                        data: "id",
+                        width: "15%",
+                        orderable: false,
+                        render: function (data) {
+                            if (isViewingDeleted) {
+                                return `
+                                    <div class="d-flex gap-1">
+                                        <button type="button" class="btn btn-sm btn-success shadow-sm restoreUser" data-id="${data}" title="Restore">
+                                            <i class="fas fa-undo"></i>
+                                        </button>
+                                    </div>`;
+                            } else {
+                                // Only render delete button if user has FULL access
+                                const deleteBtn = (access === 'FULL')
+                                    ? `<button type="button" class="btn btn-sm btn-danger shadow-sm deleteUser" data-id="${data}" title="Delete">
+                                            <i class="fa fa-trash"></i>
+                                       </button>`
+                                    : '';
+
+                                return `
+                                    <div class="d-flex gap-1">
+                                        <button type="button" class="btn btn-sm btn-primary shadow-sm viewUser" data-id="${data}" title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        ${deleteBtn}
+                                    </div>`;
+                            }
+                        }
+                    },
+                    {
+                        data: "userCode",
+                        width: "20%"
+                    },
+                    {
+                        data: null,
+                        width: "30%",
+                        render: function (data) {
+                            let fullName = data.firstName + ' ';
+                            if (data.middleName) {
+                                fullName += data.middleName + ' ';
+                            }
+                            fullName += data.lastName;
+                            return fullName;
+                        }
+                    },
+                    {
+                        data: "roleCode",
+                        width: "15%"
+                    },
+                    {
+                        data: null,
+                        width: "20%",
+                        render: function (data) {
+                            if (data.employeeName) {
+                                return `<span class="badge-linked"><i class="fas fa-link"></i> ${data.employeeName}</span>`;
+                            } else {
+                                return `<span class="badge-unlinked"><i class="fas fa-unlink"></i> Not Linked</span>`;
+                            }
+                        }
+                    }
+                ],
+                order: [],
+                pageLength: 25,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                language: {
+                    processing: "Loading...",
+                    emptyTable: "No users found",
+                    zeroRecords: "No matching users found",
+                    paginate: {
+                        next: '<i class="fa fa-angle-double-right" aria-hidden="true"></i>',
+                        previous: '<i class="fa fa-angle-double-left" aria-hidden="true"></i>'
+                    }
+                }
+            });
+
+            // Bulk Create
+            $('#btnBulkCreateUsers').click(function () {
+                Swal.fire({
+                    title: 'Sync Employee Accounts',
+                    text: 'This will create user accounts for all employees who don\'t have one yet. Default password will be "DefaultPass123!". Continue?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, Create Accounts',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#ffc107',
+                    cancelButtonColor: '#6c757d',
+                    allowOutsideClick: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const $btn = $('#btnBulkCreateUsers');
+                        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Creating...');
+
+                        $.post('/UserList/BulkCreateUserAccounts', { defaultPassword: 'DefaultPass123!' })
+                            .done(function (response) {
+                                if (response.success) {
+                                    table.ajax.reload(null, false);
+                                    showNotification(response.message, 'success');
+                                } else {
+                                    showNotification(response.message, 'error');
+                                }
+                            })
+                            .fail(function () {
+                                showNotification('Unable to create user accounts.', 'error');
+                            })
+                            .always(function () {
+                                $btn.prop('disabled', false).html('<i class="fa fa-users"></i> Sync Employee Accounts');
+                            });
+                    }
+                });
+            });
+
+            // Search Employee
+            $('#btnSearchEmployee').click(function () {
+                const employeeNo = $('#searchEmployeeNo').val().trim();
+
+                if (!employeeNo) {
+                    showNotification('Please enter an employee number', 'warning');
+                    return;
+                }
+
+                const $btn = $(this);
+                $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Searching...');
+
+                $.get('/UserList/SearchEmployee', { employeeNo: employeeNo })
+                    .done(function (response) {
+                        if (response.success && response.data) {
+                            $('#addUserCode').val(response.data.employeeNo);
+                            $('#addLastName').val(response.data.lastName);
+                            $('#addFirstName').val(response.data.firstName);
+                            $('#addMiddleName').val(response.data.middleName || '');
+                            $('#employeeSearchResult').removeClass('d-none');
+                            showNotification('Employee found! Details have been auto-filled.', 'success');
+                        } else {
+                            showNotification(response.message || 'Employee not found', 'error');
+                            $('#employeeSearchResult').addClass('d-none');
+                        }
+                    })
+                    .fail(function () {
+                        showNotification('Error searching for employee', 'error');
+                        $('#employeeSearchResult').addClass('d-none');
+                    })
+                    .always(function () {
+                        $btn.prop('disabled', false).html('<i class="fas fa-search"></i> Search Employee');
+                    });
+            });
+
+            $('#searchEmployeeNo').on('keypress', function (e) {
+                if (e.which === 13) {
+                    e.preventDefault();
+                    $('#btnSearchEmployee').click();
+                }
+            });
+
+            // Add User
+            $('#btnAddUser').click(function () {
+                resetAddForm();
+                $('#addUserModal').modal('show');
+                $('#addUserModal').on('shown.bs.modal', function () {
+                    $('#searchEmployeeNo').focus();
+                });
+            });
+
+            // View User
+            $(document).on('click', '.viewUser', function (e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+                var $btn = $(this);
+
+                $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+
+                $.get('/UserList/GetUser', { id: id }, function (response) {
+                    if (response.success && response.data) {
+                        var data = response.data;
+
+                        canEditRole = response.canEditRole || false;
+
+                        resetViewForm();
+                        setViewMode();
+
+                        $('#viewUserId').val(data.id);
+                        $('#viewUserCode').val(data.userCode);
+                        $('#viewLastName').val(data.lastName);
+                        $('#viewFirstName').val(data.firstName);
+                        $('#viewMiddleName').val(data.middleName || '');
+
+                        if (data.roleCode) {
+                            $('#viewRoleCode').val(data.roleCode).trigger('change');
+                        }
+
+                        $('#viewUserModal').modal('show');
+                    } else {
+                        showNotification(response.message || 'Unable to load user data', 'error');
+                    }
+                }).fail(function () {
+                    showNotification('Unable to load user data', 'error');
+                }).always(function () {
+                    $btn.prop('disabled', false).html('<i class="fas fa-eye"></i>');
+                });
+            });
+
+            // Edit button
+            $('#btnEditUser').click(function () {
+                setEditMode();
+                $('#viewUserCode').focus();
+            });
+
+            // Cancel edit
+            $('#btnCancelEdit').click(function () {
+                var id = $('#viewUserId').val();
+                $.get('/UserList/GetUser', { id: id }, function (response) {
+                    if (response.success && response.data) {
+                        var data = response.data;
+                        canEditRole = response.canEditRole || false;
+
+                        $('#viewUserCode').val(data.userCode);
+                        $('#viewLastName').val(data.lastName);
+                        $('#viewFirstName').val(data.firstName);
+                        $('#viewMiddleName').val(data.middleName || '');
+
+                        if (data.roleCode) {
+                            $('#viewRoleCode').val(data.roleCode).trigger('change');
+                        }
+
+                        $('#viewPassword').val('');
+                        $('#viewRepeatPassword').val('');
+                        $('#roleRestriction').remove();
+
+                        setViewMode();
+                        clearValidation('#viewUserForm');
+                    }
+                });
+            });
+
+            // Save updated user
+            $('#btnSaveUser').click(function () {
+                clearValidation('#viewUserForm');
+
+                if (!validateViewForm()) return;
+
+                var formData = {
+                    id: parseInt($('#viewUserId').val()),
+                    userCode: $('#viewUserCode').val().trim(),
+                    password: $('#viewPassword').val().trim(),
+                    lastName: $('#viewLastName').val().trim(),
+                    firstName: $('#viewFirstName').val().trim(),
+                    middleName: $('#viewMiddleName').val().trim(),
+                    roleCode: $('#viewRoleCode').val()
+                };
+
+                var $saveBtn = $('#btnSaveUser');
+                $saveBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+
+                $.post('/UserList/UpdateUser', formData, function (response) {
+                    if (response.success) {
+                        setViewMode();
+                        table.ajax.reload(null, false);
+                        showNotification(response.message, 'success');
+                    } else {
+                        showNotification(response.message, 'error');
+                    }
+                }).fail(function () {
+                    showNotification('Unable to save user. Please try again.', 'error');
+                }).always(function () {
+                    $saveBtn.prop('disabled', false).html('Save');
+                });
+            });
+
+            // Save new user
+            $('#btnSaveNewUser').click(function () {
+                clearValidation('#addUserForm');
+
+                if (!validateAddForm()) return;
+
+                var formData = {
+                    userCode: $('#addUserCode').val().trim(),
+                    password: $('#addPassword').val(),
+                    lastName: $('#addLastName').val().trim(),
+                    firstName: $('#addFirstName').val().trim(),
+                    middleName: $('#addMiddleName').val().trim(),
+                    roleCode: $('#addRoleCode').val()
+                };
+
+                var $saveBtn = $('#btnSaveNewUser');
+                $saveBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+
+                $.post('/UserList/AddUser', formData, function (response) {
+                    if (response.success) {
+                        $('#addUserModal').modal('hide');
+                        table.ajax.reload(null, false);
+                        showNotification(response.message, 'success');
+                    } else {
+                        showNotification(response.message, 'error');
+                    }
+                }).fail(function () {
+                    showNotification('Unable to save user. Please try again.', 'error');
+                }).always(function () {
+                    $saveBtn.prop('disabled', false).html('Save');
+                });
+            });
+
+            // Delete
+            $(document).on('click', '.deleteUser', function (e) {
+                e.preventDefault();
+                deleteWithReason({
+                    title: 'Inactive User',
+                    text: 'Are you sure you want to inactive this user?',
+                    url: '/UserList/DeleteUser',
+                    id: $(this).data('id'),
+                    button: $(this),
+                    table: table
+                });
+            });
+
+            // Restore
+            $(document).on('click', '.restoreUser', function (e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+                var $btn = $(this);
+
+                Swal.fire({
+                    title: 'Restore Record',
+                    text: 'Are you sure you want to restore this user?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, Restore',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d',
+                    reverseButtons: false,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+
+                        $.post('/UserList/RestoreUser', { id: id }, function (response) {
+                            if (response.success) {
+                                table.ajax.reload(null, false);
+                                showNotification(response.message, 'success');
+                            } else {
+                                showNotification(response.message, 'error');
+                            }
+                        }).fail(function () {
+                            showNotification('Unable to restore user. Please try again.', 'error');
+                        }).always(function () {
+                            $btn.prop('disabled', false).html('<i class="fas fa-undo"></i>');
+                        });
+                    }
+                });
+            });
+
+            // Modal cleanup
+            $('#addUserModal').on('hidden.bs.modal', function () {
+                resetAddForm();
+            });
+
+            $('#viewUserModal').on('hidden.bs.modal', function () {
+                resetViewForm();
+                setViewMode();
+                $('#roleRestriction').remove();
+                canEditRole = false;
+            });
+
+            // Enter key shortcuts
+            $('#addUserForm').on('keypress', function (e) {
+                if (e.which === 13 && !$(e.target).is('button')) {
+                    e.preventDefault();
+                    $('#btnSaveNewUser').click();
+                }
+            });
+
+            $('#viewUserForm').on('keypress', function (e) {
+                if (e.which === 13 && $('#viewUserModal .modal-body').hasClass('edit-mode')) {
+                    e.preventDefault();
+                    $('#btnSaveUser').click();
+                }
+            });
+
+            // ── Helpers ──────────────────────────────────────────────
+
+            function initializeSelect2() {
+                $('#addRoleCode').select2({
+                    placeholder: "Select Role",
+                    allowClear: true,
+                    dropdownParent: $('#addUserModal')
+                });
+
+                $('#viewRoleCode').select2({
+                    placeholder: "Select Role",
+                    allowClear: true,
+                    dropdownParent: $('#viewUserModal')
+                });
+            }
+
+            function loadRoles() {
+                $.get('/UserList/GetActiveRoles', function (response) {
+                    if (response.data) {
+                        var addOptions = '<option value="">Select Role...</option>';
+                        var viewOptions = '<option value="">Select Role...</option>';
+
+                        $.each(response.data, function (index, role) {
+                            addOptions += `<option value="${role.roleCode}">${role.roleName}</option>`;
+                            viewOptions += `<option value="${role.roleCode}">${role.roleName}</option>`;
+                        });
+
+                        $('#addRoleCode').html(addOptions);
+                        $('#viewRoleCode').html(viewOptions);
+                    }
+                }).fail(function () {
+                    showNotification('Error loading roles', 'error');
+                });
+            }
+
+            function updateTableView() {
+                if (isViewingDeleted) {
+                    table.ajax.url('/UserList/GetDeletedUserList').load();
+                    $('#btnAddUser').hide();
+                } else {
+                    table.ajax.url('/UserList/GetUserList').load();
+                    if (access === 'READWRITE' || access === 'FULL') {
+                        $('#btnAddUser').show();
+                    }
+                }
+            }
+
+            function resetAddForm() {
+                $('#addUserForm')[0].reset();
+                $('#searchEmployeeNo').val('');
+                $('#employeeSearchResult').addClass('d-none');
+                $('#addRoleCode').val(null).trigger('change');
+                clearValidation('#addUserForm');
+                $('#btnSaveNewUser').prop('disabled', false).html('Save');
+            }
+
+            function resetViewForm() {
+                $('#viewUserForm')[0].reset();
+                $('#viewRoleCode').val(null).trigger('change');
+                clearValidation('#viewUserForm');
+                $('#btnSaveUser').prop('disabled', false).html('Save');
+            }
+
+            function setViewMode() {
+                $('#viewModalTitle').text('View User');
+                $('#viewUserModal .modal-body').removeClass('edit-mode');
+
+                $('#viewUserCode').prop('readonly', true);
+                $('#viewLastName').prop('readonly', true);
+                $('#viewFirstName').prop('readonly', true);
+                $('#viewMiddleName').prop('readonly', true);
+                $('#viewRoleCode').prop('disabled', true);
+
+                $('.edit-required').addClass('d-none');
+                $('.edit-only').addClass('d-none');
+
+                $('#btnEditUser').removeClass('d-none');
+                $('#btnSaveUser').addClass('d-none');
+                $('#btnCancelEdit').addClass('d-none');
+
+                clearValidation('#viewUserForm');
+            }
+
+            function setEditMode() {
+                $('#viewModalTitle').text('Edit User');
+                $('#viewUserModal .modal-body').addClass('edit-mode');
+
+                // Keep these readonly/non-editable
+                $('#viewUserCode').prop('readonly', true);
+                $('#viewLastName').prop('readonly', true);
+                $('#viewFirstName').prop('readonly', true);
+                $('#viewMiddleName').prop('readonly', true);
+
+                if (canEditRole) {
+                    $('#viewRoleCode').prop('disabled', false);
+                    $('#roleRestriction').remove();
+                } else {
+                    $('#viewRoleCode').prop('disabled', true);
+                    if ($('#roleRestriction').length === 0) {
+                        $('#viewRoleCode').closest('.mb-3').after(`
+                            <div id="roleRestriction" class="alert alert-primary mt-2">
+                                <i class="fas fa-lock"></i> <strong>Note:</strong> Role can only be changed by administrators.
+                            </div>
+                        `);
+                    }
+                }
+
+                $('.edit-required').removeClass('d-none');
+                $('.edit-only').removeClass('d-none');
+
+                $('#btnEditUser').addClass('d-none');
+                $('#btnSaveUser').removeClass('d-none');
+                $('#btnCancelEdit').removeClass('d-none');
+            }
+
+            function clearValidation(formSelector) {
+                $(formSelector + ' .form-control, ' + formSelector + ' .form-select').removeClass('is-invalid');
+                $(formSelector + ' .invalid-feedback').hide();
+            }
+
+            function validateAddForm() {
+                var isValid = true;
+
+                if (!$('#addUserCode').val().trim()) {
+                    $('#addUserCode').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                var password = $('#addPassword').val();
+                var repeatPassword = $('#addRepeatPassword').val();
+
+                if (!password) {
+                    $('#addPassword').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                if (!repeatPassword || password !== repeatPassword) {
+                    $('#addRepeatPassword').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                if (!$('#addLastName').val().trim()) {
+                    $('#addLastName').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                if (!$('#addFirstName').val().trim()) {
+                    $('#addFirstName').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                if (!$('#addRoleCode').val()) {
+                    $('#addRoleCode').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                return isValid;
+            }
+
+            function validateViewForm() {
+                var isValid = true;
+
+                if (!$('#viewUserCode').val().trim()) {
+                    $('#viewUserCode').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                var password = $('#viewPassword').val();
+                var repeatPassword = $('#viewRepeatPassword').val();
+
+                if (password || repeatPassword) {
+                    if (password !== repeatPassword) {
+                        $('#viewRepeatPassword').addClass('is-invalid');
+                        isValid = false;
+                    }
+                }
+
+                if (!$('#viewLastName').val().trim()) {
+                    $('#viewLastName').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                if (!$('#viewFirstName').val().trim()) {
+                    $('#viewFirstName').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                if (!$('#viewRoleCode').val()) {
+                    // Only validate role if user can edit it
+                    if (canEditRole) {
+                        $('#viewRoleCode').addClass('is-invalid');
+                        isValid = false;
+                    }
+                }
+
+                return isValid;
+            }
+
+            function showNotification(message, type) {
+                if (type === 'success') {
+                    toastr.success(message, "Success");
+                } else if (type === 'error') {
+                    toastr.error(message, "Error");
+                } else if (type === 'warning') {
+                    toastr.warning(message, "Warning");
+                } else {
+                    toastr.info(message, "Information");
+                }
+            }
+
+            // Live validation clear on input
+            $('#addUserCode, #addPassword, #addRepeatPassword, #addLastName, #addFirstName, #addMiddleName').on('input', function () {
+                $(this).removeClass('is-invalid');
+            });
+
+            $('#addRoleCode').on('change', function () {
+                $(this).removeClass('is-invalid');
+            });
+
+            $('#viewUserCode, #viewPassword, #viewRepeatPassword, #viewLastName, #viewFirstName, #viewMiddleName').on('input', function () {
+                $(this).removeClass('is-invalid');
+            });
+
+            $('#viewRoleCode').on('change', function () {
+                $(this).removeClass('is-invalid');
+            });
+
+        });
+    </script>
+}

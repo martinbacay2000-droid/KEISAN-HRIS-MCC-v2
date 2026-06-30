@@ -1,0 +1,1335 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutFillow.cshtml";
+    ViewData["Title"] = "Undertime Request";
+}
+<div class="col-12">
+    <div class="card">
+        <div class="card-header">
+            <div class="row" style="width:100%;">
+                <h4 class="card-title">Undertime Request</h4>
+                <br> <br> <br>
+
+                <div class="row date-range" style="margin-left:0px;width:100%;">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Select Status</h5>
+                            <select name="filterStatusName" id="filterStatusName" class="form-control">
+                                <option value="All">ALL</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Approved">Approved</option>
+                                <option value="Cancelled">Cancelled</option>
+                                <option value="Declined">Declined</option>
+                                <option value="Processed">Processed</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label>Date From </label>
+                        <div class="input-hasicon">
+                            <input name="dateFrom" id="dateFrom" class="form-control formInput date-from" placeholder="mm/dd/yyyy">
+                            <div class="icon"><i class="far fa-calendar"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label>Date To </label>
+                        <div class="input-hasicon">
+                            <input name="dateTo" id="dateTo" class="form-control formInput date-to" placeholder="mm/dd/yyyy">
+                            <div class="icon"><i class="far fa-calendar"></i></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row align-items-end mt-2" style="margin-left:0px;width:100%;">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Branch</h5>
+                            <select name="branch" id="filterBranch" class="form-control"></select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Department</h5>
+                            <select name="department" id="filterDepartment" class="form-control"></select>
+                        </div>
+                    </div>
+                    <div class="col-md-6 d-flex justify-content-end">
+                        <div class="form-group me-2">
+                            <button type="button" class="btn btn-warning" id="btnExportToExcel">
+                                <i class="fas fa-file-excel"></i> Export to Excel
+                            </button>
+                        </div>
+                        <div class="form-group">
+                            <button type="button" class="btn btn-primary" id="btnAddUndertimeRequest">
+                                <i class="fa fa-plus"></i> New Undertime Request
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="undertimeRequestTable" class="display" style="min-width: 845px">
+                    <thead>
+                        <tr>
+                            <th>Action</th>
+                            <th>Control</th>
+                            <th>Employee Name</th>
+                            <th>Date In</th>
+                            <th>Date Out</th>
+                            <th>Time Out</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                            <th>Requested By</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+
+        <!-- Modal for Add -->
+        <div class="modal fade" id="addUndertimeRequestModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add Undertime Request</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addUndertimeRequestForm">
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="addEmployeeName" class="form-label">Employee Name <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="addEmployeeName" name="employeeNo" style="width:100%" required>
+                                        <option value="">Select Employee...</option>
+                                    </select>
+                                    <div class="invalid-feedback">
+                                        Please select an employee.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row date-range">
+                                <div class="col-md-6 mb-3">
+                                    <label>Date In <span class="text-danger">*</span></label>
+                                    <div class="input-hasicon">
+                                        <input name="addDateIn" id="addDateIn" class="form-control formInput date-from" placeholder="mm/dd/yyyy" required>
+                                        <div class="icon"><i class="far fa-calendar"></i></div>
+                                    </div>
+                                    <div class="invalid-feedback">Please select date in.</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label>Date Out <span class="text-danger">*</span></label>
+                                    <div class="input-hasicon">
+                                        <input name="addDateOut" id="addDateOut" class="form-control formInput date-to" placeholder="mm/dd/yyyy" required>
+                                        <div class="icon"><i class="far fa-calendar"></i></div>
+                                    </div>
+                                    <div class="invalid-feedback">Please select date out.</div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="addTimeOut" class="form-label">Time Out <span class="text-danger">*</span></label>
+                                    <input type="time" class="form-control" id="addTimeOut" name="undertimeTimeOUT" required>
+                                    <div class="invalid-feedback">
+                                        Please select time out.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="addReason" class="form-label">Reason <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="addReason" name="undertimeReason" rows="3" maxlength="1000" required placeholder="Enter reason for undertime..."></textarea>
+                                <div class="invalid-feedback">
+                                    Please provide the reason for undertime.
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="addRemarks" class="form-label">Remarks</label>
+                                <textarea class="form-control" id="addRemarks" name="remarks" rows="2" maxlength="1000"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="btnSaveNewUndertimeRequest">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for View/Edit -->
+        <div class="modal fade" id="viewUndertimeRequestModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="viewModalTitle">View Undertime Request</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="viewUndertimeRequestForm">
+                            <input type="hidden" id="viewUndertimeRequestId" name="id">
+                            <input type="hidden" id="viewUndertimeRequestStatus" name="statusName">
+
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="viewEmployeeName" class="form-label">Employee Name <span class="text-danger edit-required d-none">*</span></label>
+                                    <select class="form-select" id="viewEmployeeName" name="employeeNo" style="width:100%" disabled>
+                                        <option value="">Select Employee...</option>
+                                    </select>
+                                    <div class="invalid-feedback">
+                                        Please select an employee.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row date-range">
+                                <div class="col-md-6 mb-3">
+                                    <label>Date In <span class="text-danger edit-required d-none">*</span></label>
+                                    <div class="input-hasicon">
+                                        <input name="viewDateIn" id="viewDateIn" class="form-control formInput date-from" placeholder="mm/dd/yyyy" readonly>
+                                        <div class="icon"><i class="far fa-calendar"></i></div>
+                                    </div>
+                                    <div class="invalid-feedback">Please select date in.</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label>Date Out <span class="text-danger edit-required d-none">*</span></label>
+                                    <div class="input-hasicon">
+                                        <input name="viewDateOut" id="viewDateOut" class="form-control formInput date-to" placeholder="mm/dd/yyyy" readonly>
+                                        <div class="icon"><i class="far fa-calendar"></i></div>
+                                    </div>
+                                    <div class="invalid-feedback">Please select date out.</div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="viewTimeOut" class="form-label">Time Out <span class="text-danger edit-required d-none">*</span></label>
+                                    <input type="time" class="form-control" id="viewTimeOut" name="undertimeTimeOUT" readonly>
+                                    <div class="invalid-feedback">
+                                        Please select time out.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="viewReason" class="form-label">Reason <span class="text-danger edit-required d-none">*</span></label>
+                                <textarea class="form-control" id="viewReason" name="undertimeReason" rows="3" maxlength="1000" readonly></textarea>
+                                <div class="invalid-feedback">
+                                    Please provide the reason for undertime.
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="viewRemarks" class="form-label">Remarks</label>
+                                <textarea class="form-control" id="viewRemarks" name="remarks" rows="2" maxlength="1000" readonly></textarea>
+                            </div>
+                            <!-- Approval Progress Tracker -->
+                            <div id="approvalProgress" class="mt-3 d-none">
+                                <hr>
+                                <h6 class="text-muted mb-2"><i class="fas fa-tasks me-1"></i> Approval Progress</h6>
+                                <div id="approvalSteps" class="d-flex flex-wrap gap-2"></div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-between">
+                        <div>
+                            <button type="button" class="btn btn-secondary btn-custom d-none" id="btnCancelUndertimeRequest">
+                                <i class="fas fa-ban"></i> Cancel Request
+                            </button>
+                        </div>
+                        <div>
+                            <button type="button" class="btn btn-success d-none" id="btnApproveUndertimeRequest">
+                                <i class="fas fa-check"></i> Approve
+                            </button>
+                            <button type="button" class="btn btn-primary d-none" id="btnEditUndertimeRequest">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button type="button" class="btn btn-success d-none" id="btnSaveUndertimeRequest">Save</button>
+                            <button type="button" class="btn btn-danger d-none" id="btnCancelEdit">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Fillow_style
+{
+    <style>
+        .table-responsive {
+            border-radius: 0.375rem;
+        }
+
+        /* DataTable spacing */
+        #undertimeRequestTable_wrapper .dataTables_length,
+        #undertimeRequestTable_wrapper .dataTables_filter {
+            margin-bottom: 1rem;
+        }
+
+        #undertimeRequestTable_wrapper .dataTables_info,
+        #undertimeRequestTable_wrapper .dataTables_paginate {
+            margin-top: 1rem;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .modal-content {
+            border-radius: 0.5rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        /* Readonly/disabled field styling */
+        .form-control[readonly],
+        .form-select[disabled] {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        /* Edit mode styling - restore normal appearance */
+        .edit-mode .form-control[readonly],
+        .edit-mode .form-select[disabled] {
+            background-color: #ffffff;
+            border-color: #ced4da;
+        }
+
+        .invalid-feedback {
+            display: none;
+        }
+
+        .form-control.is-invalid,
+        .form-select.is-invalid {
+            border-color: #dc3545;
+        }
+
+            .form-control.is-invalid ~ .invalid-feedback,
+            .form-select.is-invalid ~ .invalid-feedback {
+                display: block;
+            }
+
+        /* Validation for Select2 */
+        .is-invalid + .select2-container .select2-selection--single {
+            border-color: #dc3545;
+        }
+
+        .select2-container .select2-selection--single {
+            height: 38px;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 36px;
+            padding-left: 12px;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 36px;
+        }
+
+        /* Select2 focus state */
+        .select2-container--default.select2-container--focus .select2-selection--single {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        /* Select2 disabled state */
+        .select2-container--default .select2-selection--single.select2-selection--disabled {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        .swal2-popup {
+            border-radius: 15px !important;
+            padding: 2rem !important;
+        }
+
+        /* Error icon styling */
+        .swal2-icon.swal2-error {
+            border-color: #f27474 !important;
+            color: #f27474 !important;
+        }
+
+            .swal2-icon.swal2-error .swal2-x-mark {
+                display: none !important;
+            }
+
+            .swal2-icon.swal2-error::before {
+                content: "\f2ed" !important;
+                font-family: "Font Awesome 5 Free" !important;
+                font-weight: 900 !important;
+                font-size: 2.5rem !important;
+                color: #f27474 !important;
+                display: block !important;
+            }
+
+        /* SweetAlert text styling */
+        .swal2-title {
+            font-size: 1.875rem !important;
+            font-weight: 600 !important;
+            color: #545454 !important;
+            margin: 1rem 0 0.5rem 0 !important;
+        }
+
+        .swal2-html-container {
+            font-size: 1rem !important;
+            color: #737373 !important;
+            margin: 0 0 2rem 0 !important;
+        }
+
+        /* SweetAlert buttons */
+        .swal2-actions {
+            gap: 0.5rem !important;
+        }
+
+        .swal2-confirm {
+            background-color: #7c3aed !important;
+            border-color: #7c3aed !important;
+            color: white !important;
+            font-weight: 500 !important;
+            padding: 0.75rem 2rem !important;
+            border-radius: 8px !important;
+            font-size: 0.875rem !important;
+        }
+
+        .swal2-cancel {
+            background-color: #6b7280 !important;
+            border-color: #6b7280 !important;
+            color: white !important;
+            font-weight: 500 !important;
+            padding: 0.75rem 2rem !important;
+            border-radius: 8px !important;
+            font-size: 0.875rem !important;
+        }
+
+        /* Button hover states */
+        .swal2-confirm:hover {
+            background-color: #6d28d9 !important;
+            border-color: #6d28d9 !important;
+        }
+
+        .swal2-cancel:hover {
+            background-color: #4b5563 !important;
+            border-color: #4b5563 !important;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.35rem 0.65rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 0.25rem;
+        }
+
+        /* Status color variants */
+        .status-pending {
+            background-color: #ffc107;
+            color: #000;
+        }
+
+        .status-approved {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .status-declined {
+            background-color: #dc3545;
+            color: #fff;
+        }
+
+        .status-cancelled {
+            background-color: #6c757d;
+            color: #fff;
+        }
+
+        .status-processed {
+            background-color: #17a2b8;
+            color: #fff;
+        }
+
+        .card-header {
+            border-bottom: none !important;
+        }
+
+        #btnCancelUndertimeRequest {
+            background-color: #6c757d !important;
+            border-color: #6c757d !important;
+            color: white !important;
+        }
+
+            #btnCancelUndertimeRequest:hover {
+                background-color: #5a6268 !important;
+                border-color: #545b62 !important;
+            }
+
+        .status-partial {
+            background-color: #fd7e14;
+            color: #fff;
+        }
+    </style>
+}
+
+@section Fillow_script
+{
+    <script>
+        $(document).ready(function () {
+
+             MODULE = 'RundertimeM';
+             access = ROLE_ACCESS?.[MODULE];
+
+            // LOAD PERMISSIONS FROM SERVER
+            let canEditEmployee = false;
+            let currentEmployeeData = null;
+            let isApprover = false;
+
+            // Load permissions on page load
+            $.get('/UndertimeRequest/GetCurrentEmployee', function(data) {
+                canEditEmployee = data.canEditEmployee;
+                currentEmployeeData = data.currentEmployee;
+                isApprover = data.isApprover;
+            });
+
+            if (access != 'READWRITE' && access != 'FULL') {
+                $('#btnAddUndertimeRequest').hide();
+            }
+
+            // CONFIGURATION
+            const config = {
+                toastr: {
+                    positionClass: "toast-top-right",
+                    timeOut: 5000,
+                    closeButton: true,
+                    progressBar: true,
+                    preventDuplicates: true
+                },
+                endpoints: {
+                    list: "/UndertimeRequest/GetUndertimeRequestList",
+                    get: "/UndertimeRequest/GetUndertimeRequest",
+                    employees: "/UndertimeRequest/GetEmployeeList",
+                    add: "/UndertimeRequest/AddUndertimeRequest",
+                    update: "/UndertimeRequest/UpdateUndertimeRequest",
+                    approve: "/UndertimeRequest/ApproveUndertimeRequest",
+                    decline: "/UndertimeRequest/DeclineUndertimeRequest",
+                    cancel: "/UndertimeRequest/CancelUndertimeRequest"
+                }
+            };
+
+            toastr.options = config.toastr;
+            let isInitialLoad = true;
+
+            // Helper function to convert 24-hour time to 12-hour format
+            function convertTo12Hour(time24) {
+                if (!time24) return '';
+
+                const [hours, minutes] = time24.split(':');
+                let hour = parseInt(hours);
+                const ampm = hour >= 12 ? 'PM' : 'AM';
+
+                hour = hour % 12;
+                hour = hour ? hour : 12; // Convert 0 to 12
+
+                return `${hour}:${minutes} ${ampm}`;
+            }
+
+            function computeDisplayStatus(row) {
+                const final = row.statusName;
+                const l3    = row.statusLevel3;
+                const l2    = row.statusLevel2;
+                const l1    = row.statusLevel1;
+
+                if (final === 'Approved')  return 'Approved';
+                if (final === 'Declined')  return 'Declined';
+                if (final === 'Cancelled') return 'Cancelled';
+                if (final === 'Processed') return 'Processed';
+
+                if (l3 === 'Declined' || l2 === 'Declined' || l1 === 'Declined') return 'Declined';
+                if (l3 === 'Approved' || l2 === 'Approved' || l1 === 'Approved') return 'Partially Approved';
+
+                return 'Pending';
+            }
+
+            // INITIALIZATION
+
+            // Initialize date pickers
+            // Earliest allowed date = today minus 3 calendar days
+            var minUTDate = (access === 'FULL') ? null : new Date();
+            if (minUTDate) minUTDate.setDate(minUTDate.getDate() - 3);
+
+            $('#dateFrom, #dateTo').datepicker({
+                format: 'mm/dd/yyyy',
+                autoclose: true,
+                todayHighlight: true
+            });
+
+            $('#addDateIn, #addDateOut, #viewDateIn, #viewDateOut').datepicker({
+                format: 'mm/dd/yyyy',
+                autoclose: true,
+                todayHighlight: true,
+                startDate: minUTDate
+            });
+
+            // Clear date filters on page load - IMPORTANT!
+            $('#dateFrom, #dateTo').val('');
+
+            // Set default status filter to Pending
+            $('#filterStatusName').val('Pending');
+
+            // Initialize Select2 dropdowns for modals
+            initializeSelect2();
+
+            // Initialize Select2 dropdowns for filters
+            initializeFilterSelect2();
+
+            // HELPER - Convert MM/DD/YYYY to ISO format
+            function toISODate(mmddyyyy) {
+                if (!mmddyyyy) return '';
+                const [m, d, y] = mmddyyyy.split('/');
+                return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+            }
+
+            // DATATABLE CONFIGURATION
+
+            // Initialize DataTable with server-side filtering
+            const table = $('#undertimeRequestTable').DataTable({
+            processing: true,
+            serverSide: false,
+            ajax: {
+                url: config.endpoints.list,
+                type: "GET",
+                data: d => ({
+                    status: isInitialLoad ? 'Default' : $('#filterStatusName').val(),
+                    branch: $('#filterBranch').val(),
+                    department: $('#filterDepartment').val(),
+                    dateFrom: $('#dateFrom').val(),
+                    dateTo: $('#dateTo').val()
+                }),
+                dataSrc: function(json) {
+                    isInitialLoad = false;
+                    return json.data;
+                },
+                error: (xhr, error) => showNotification('Error loading data. Please refresh the page.', 'error')
+            },
+            columns: [
+                    {
+                        data: null,
+                        width: "8%",
+                        orderable: false,
+                        render: (data, type, row) => {
+                            let viewBtn = '';
+                            let declineBtn = '';
+                            if (access === 'READWRITE' || access === 'FULL') {
+                                viewBtn = `<button class="btn btn-sm btn-primary shadow-sm viewUndertimeRequest" data-id="${row.id}" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </button>`;
+                            }
+                            const displayStatus = computeDisplayStatus(row);
+                            if (['Pending', 'Partially Approved', 'Approved'].includes(displayStatus) && row.employeeNo !== sessemployeeNo && (access === 'FULL' || isApprover)) {
+                                declineBtn = `<button class="btn btn-sm btn-danger shadow-sm declineUndertimeRequest" data-id="${row.id}" title="Decline"><i class="fas fa-times"></i></button>`;
+                            }
+                            return `<div class="d-flex gap-1">${viewBtn}${declineBtn}</div>`;
+                        }
+                    },
+                    {
+                        data: null,
+                        width: "5%",
+                        orderable: false,
+                        render: function(data, type, row) {
+                            return `<button class="btn btn-sm btn-warning shadow-sm printUndertimeRequest"
+                                            data-id="${row.id}"
+                                            title="Print PDF">
+                                        <i class="fas fa-print"></i>
+                                    </button>`;
+                        }
+                    },
+                    { data: "employeeName", width: "18%", render: data => data || '' },
+                    { data: "displayDateIn", width: "9%", render: data => data || '' },
+                    { data: "displayDateOut", width: "9%", render: data => data || '' },
+                    {
+                        data: "displayTimeOut",
+                        width: "8%",
+                        render: data => convertTo12Hour(data)
+                    },
+                    {
+                        data: "undertimeReason",
+                        width: "25%",
+                        render: data => !data ? '' : (data.length > 80 ? data.substring(0, 80) + '...' : data)
+                    },
+                    {
+                        data: null,
+                        width: "10%",
+                        render: function(data, type, row) {
+                            const displayStatus = computeDisplayStatus(row);
+                                const statusMap = {
+                                    'Approved':           'status-approved',
+                                    'Declined':           'status-declined',
+                                    'Cancelled':          'status-cancelled',
+                                    'Processed':          'status-processed',
+                                    'Partially Approved': 'status-partial'
+                                };
+                            const statusClass = statusMap[displayStatus] || 'status-pending';
+                            return `<span class="status-badge ${statusClass}">${displayStatus}</span>`;
+                        }
+                    },
+                    { data: "requestedByUser", width: "10%", render: data => data || '' }
+                ],
+                order: [],
+                pageLength: 25,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                language: {
+                    processing: "Loading...",
+                    emptyTable: "No Undertime requests found",
+                    zeroRecords: "No matching Undertime requests found",
+                    paginate: {
+                        next: '<i class="fa fa-angle-double-right"></i>',
+                        previous: '<i class="fa fa-angle-double-left"></i>'
+                    }
+                }
+            });
+
+            // EVENT HANDLERS - FILTERS
+
+            // Reload table when any filter changes
+            $('#filterStatusName, #filterBranch, #filterDepartment, #dateFrom, #dateTo').on('change', () => table.ajax.reload(null, false));
+
+            // EVENT HANDLERS - ADD MODAL
+
+            // Open Add Undertime Request modal
+            $('#btnAddUndertimeRequest').click(() => {
+                resetAddForm();
+
+                if (canEditEmployee) {
+                    // FULL access: Load all employees based on data scope
+                    loadDropdownOptions('#addEmployeeName');
+                } else {
+                    // Limited access: Only show current user
+                    if (currentEmployeeData) {
+                        $('#addEmployeeName').empty()
+                            .append(`<option value="${currentEmployeeData.employeeNo}" selected>${currentEmployeeData.employeeName}</option>`)
+                            .prop('disabled', true)
+                            .trigger('change');
+                    }
+                }
+
+                $('#addTimeOut').val('17:00'); // Set default time
+                $('#addUndertimeRequestModal').modal('show');
+            });
+
+            // Save new Undertime Request
+            $('#btnSaveNewUndertimeRequest').click(() => {
+                if (!validateForm('#addUndertimeRequestForm', ['addEmployeeName', 'addDateIn', 'addDateOut', 'addTimeOut', 'addReason'])) return;
+
+                const formData = getFormData('#addUndertimeRequestForm');
+                saveRequest(config.endpoints.add, formData, '#btnSaveNewUndertimeRequest', true);
+            });
+
+            // EVENT HANDLERS - VIEW/EDIT MODAL
+            $(document).on('click', '.viewUndertimeRequest', function(e) {
+                e.preventDefault();
+                const id   = $(this).data('id');
+                const $btn = $(this);
+                toggleButtonLoading($btn, true);
+
+                $.get(config.endpoints.get, { id })
+                    .done(function(data) {
+                        if (!data || data.error) {
+                            showNotification(data?.error || 'Unable to load Undertime Request data', 'error');
+                            return;
+                        }
+
+                        resetViewForm();
+                        setViewMode();
+
+                        if (canEditEmployee) {
+                            loadDropdownOptionsAsync('#viewEmployeeName')
+                                .done(function() {
+                                    populateViewForm(data);
+                                    updateViewButtons(data);
+                                    $('#viewUndertimeRequestModal').modal('show');
+                                });
+                        } else {
+                            $('#viewEmployeeName')
+                                .empty()
+                                .append(`<option value="${data.employeeNo}" selected>${data.employeeName}</option>`)
+                                .prop('disabled', true);
+                            populateViewForm(data);
+                            updateViewButtons(data);
+                            $('#viewUndertimeRequestModal').modal('show');
+                        }
+                    })
+                    .fail(function() {
+                        showNotification('Unable to load Undertime Request data', 'error');
+                    })
+                    .always(function() {
+                        toggleButtonLoading($btn, false);
+                    });
+            });
+
+            // Approve Undertime Request
+            $('#btnApproveUndertimeRequest').click(() => {
+                const id = $('#viewUndertimeRequestId').val();
+
+                // Show confirmation dialog
+                Swal.fire({
+                    title: 'Approve Request',
+                    text: 'Are you sure you want to approve this Undertime Request?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, Approve',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d'
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        const $btn = $('#btnApproveUndertimeRequest');
+                        toggleButtonLoading($btn, true, 'Approving...');
+
+                        // Send approve request
+                        $.post(config.endpoints.approve, { id, approvedByUser: 'CURRENT_USER' })
+                            .done(response => {
+                                if (response.success) {
+                                    $('#viewUndertimeRequestModal').modal('hide');
+                                    table.ajax.reload(null, false);
+                                    showNotification(response.message, 'success');
+                                } else {
+                                    showNotification(response.message, 'error');
+                                    toggleButtonLoading($btn, false);
+                                }
+                            })
+                            .fail(() => {
+                                showNotification('Unable to approve. Please try again.', 'error');
+                                toggleButtonLoading($btn, false);
+                            });
+                    }
+                });
+            });
+
+            // Switch to edit mode
+            $('#btnEditUndertimeRequest').click(() => {
+                setEditMode();
+                $('#viewEmployeeName').focus();
+            });
+
+            // Cancel edit and revert to view mode
+            $('#btnCancelEdit').click(function() {
+                const id = $('#viewUndertimeRequestId').val();
+                $.get(config.endpoints.get, { id }).done(function(data) {
+                    if (data) {
+                        populateViewForm(data);
+                        setViewMode();
+                        updateViewButtons(data);   // pass full data object
+                        clearValidation('#viewUndertimeRequestForm');
+                    }
+                });
+            });
+
+            // Save changes to Undertime Request
+            $('#btnSaveUndertimeRequest').click(() => {
+                if (!validateForm('#viewUndertimeRequestForm', ['viewEmployeeName', 'viewDateIn', 'viewDateOut', 'viewTimeOut', 'viewReason'])) return;
+
+                const formData = getFormData('#viewUndertimeRequestForm');
+                saveRequest(config.endpoints.update, formData, '#btnSaveUndertimeRequest', false);
+            });
+
+            // EVENT HANDLER - DECLINE UNDERTIME REQUEST
+            $(document).on('click', '.declineUndertimeRequest', function(e) {
+                e.preventDefault();
+                declineWithReason({
+                    title: 'Decline Undertime Request',
+                    text: 'Are you sure you want to decline this Undertime Request?',
+                    url: config.endpoints.decline,
+                    id: $(this).data('id'),
+                    declinedByUser: 'CURRENT_USER',
+                    button: $(this),
+                    table: table
+                });
+            });
+
+            // Cancel Undertime Request
+            $('#btnCancelUndertimeRequest').click(() => {
+                const id = $('#viewUndertimeRequestId').val();
+                cancelWithReason({
+                    title: 'Cancel Undertime Request',
+                    text: 'Are you sure you want to cancel this Undertime Request?',
+                    url: config.endpoints.cancel,
+                    id: id,
+                    cancelledByUser: sessemployeeNo || 'CURRENT_USER',
+                    button: $('#btnCancelUndertimeRequest'),
+                    table: table,
+                    onSuccess: function(response) {
+                        $('#viewUndertimeRequestModal').modal('hide');
+                    }
+                });
+            });
+            // EVENT HANDLERS - MODAL LIFECYCLE
+
+            // Reset form when Add modal is closed
+            $('#addUndertimeRequestModal').on('hidden.bs.modal', resetAddForm);
+
+            // Reset form when View/Edit modal is closed
+            $('#viewUndertimeRequestModal').on('hidden.bs.modal', () => {
+                resetViewForm();
+                setViewMode();
+                resetAllButtons();
+            });
+
+            // EVENT HANDLERS - KEYBOARD
+
+            // Submit Add form on Enter key
+            $('#addUndertimeRequestForm').on('keypress', e => {
+                if (e.which === 13) {
+                    e.preventDefault();
+                    $('#btnSaveNewUndertimeRequest').click();
+                }
+            });
+
+            // Submit Edit form on Enter key (only in edit mode)
+            $('#viewUndertimeRequestForm').on('keypress', e => {
+                if (e.which === 13 && $('#viewUndertimeRequestModal .modal-body').hasClass('edit-mode')) {
+                    e.preventDefault();
+                    $('#btnSaveUndertimeRequest').click();
+                }
+            });
+
+            // EVENT HANDLERS - VALIDATION
+
+            // Remove validation error on user input
+            $('#addEmployeeName, #addDateIn, #addDateOut, #addTimeOut, #addReason, #addRemarks, #viewEmployeeName, #viewDateIn, #viewDateOut, #viewTimeOut, #viewReason, #viewRemarks')
+                .on('input change', function() { $(this).removeClass('is-invalid'); });
+
+            // EVENT HANDLER - PRINT PDF
+            $(document).on('click', '.printUndertimeRequest', function(e) {
+                e.preventDefault();
+                const id = $(this).data('id');
+                const $btn = $(this);
+
+                toggleButtonLoading($btn, true);
+
+                // Open PDF in new tab
+                window.open(`/UndertimeRequestPdf/PreviewPdf?id=${id}`, '_blank');
+
+                setTimeout(() => toggleButtonLoading($btn, false), 1000);
+            });
+
+            // EVENT HANDLER - EXPORT TO EXCEL
+            $('#btnExportToExcel').click(function() {
+                const $btn = $(this);
+                const pageInfo = table.page.info();
+                if (pageInfo.recordsDisplay === 0) {
+                    return showNotification('No data available to export', 'warning');
+                }
+                const sortMap = ['', '', 'employeeName', 'displayDateIn', 'displayDateOut',
+                                 'displayTimeOut', 'undertimeReason', 'statusName', 'requestedByUser'];
+                const [sortIndex, sortDir] = table.order()[0] || [3, 'desc'];
+                const exportLimit = pageInfo.length === -1 ? -1 : pageInfo.length;
+                const params = new URLSearchParams({
+                    status: isInitialLoad ? 'Default' : ($('#filterStatusName').val() || 'Default'),
+                    branch: $('#filterBranch').val() || '',
+                    department: $('#filterDepartment').val() || '',
+                    dateFrom: $('#dateFrom').val() || '',
+                    dateTo: $('#dateTo').val() || '',
+                    offset: pageInfo.start,
+                    limit: exportLimit,
+                    sortColumn: sortMap[sortIndex] || '',
+                    sortDirection: sortDir
+                });
+                toggleButtonLoading($btn, true, 'Exporting...');
+                fetch(`/UndertimeRequestExport/ExportToExcel?${params.toString()}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => {
+                            throw new Error(`Server error (${response.status}): ${text}`);
+                        });
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `UndertimeRequest_${new Date().getTime()}.xlsx`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+                    toggleButtonLoading($btn, false);
+                    showNotification(`Successfully exported ${pageInfo.recordsDisplay} record(s).`, 'success');
+                })
+                .catch(error => {
+                    toggleButtonLoading($btn, false);
+                    showNotification(error.message || 'An error occurred during export. Please try again.', 'error');
+                });
+            });
+
+            // HELPER FUNCTIONS - SELECT2 INITIALIZATION
+
+            // Initialize Select2 for Add and View/Edit modals
+            function initializeSelect2() {
+                const modals = {
+                    add: { employee: '#addEmployeeName', parent: '#addUndertimeRequestModal' },
+                    view: { employee: '#viewEmployeeName', parent: '#viewUndertimeRequestModal' }
+                };
+
+                // Initialize Select2 for each modal
+                Object.values(modals).forEach(modal => {
+                    $(modal.employee).select2({ placeholder: "Select Employee", allowClear: true, dropdownParent: $(modal.parent), width: '100%' });
+                });
+            }
+
+            // Initialize Select2 for filter dropdowns
+            function initializeFilterSelect2() {
+                // Status filter dropdown
+                $('#filterStatusName').select2({ selectOnClose: true, minimumResultsForSearch: Infinity });
+
+                // Branch filter dropdown with AJAX
+                $('#filterBranch').select2({
+                    placeholder: "All Branches",
+                    allowClear: true,
+                    ajax: {
+                        url: '/Setup/GetEmployeeBranch',
+                        dataType: 'json',
+                        delay: 250,
+                        processResults: data => ({
+                            results: [{ id: 'ALL', text: 'All Branches' }].concat(
+                                data.map(item => ({ id: item.branchCode, text: item.branchName }))
+                            )
+                        })
+                    }
+                });
+
+                // Department filter dropdown with AJAX
+                $('#filterDepartment').select2({
+                    placeholder: "All Departments",
+                    allowClear: true,
+                    ajax: {
+                        url: '/Setup/GetEmployeeDepartment',
+                        dataType: 'json',
+                        delay: 250,
+                        processResults: data => ({
+                            results: [{ id: 'ALL', text: 'All Departments' }].concat(
+                                data.map(item => ({ id: item.departmentCode, text: item.departmentName }))
+                            )
+                        })
+                    }
+                });
+            }
+
+            // HELPER FUNCTIONS - DROPDOWN LOADING
+
+            // Load employee options (synchronous)
+            function loadDropdownOptions(employeeSelector) {
+                $.get(config.endpoints.employees, data => {
+                    const $select = $(employeeSelector);
+                    $select.empty().append('<option value="">Select Employee...</option>');
+                    data.forEach(item => $select.append(`<option value="${item.employeeNo}">${item.employeeName}</option>`));
+                });
+            }
+
+            // Load employee options (asynchronous with promises)
+            function loadDropdownOptionsAsync(employeeSelector) {
+                return $.get(config.endpoints.employees).done(data => {
+                    const $select = $(employeeSelector);
+                    $select.empty().append('<option value="">Select Employee...</option>');
+                    data.forEach(item => $select.append(`<option value="${item.employeeNo}">${item.employeeName}</option>`));
+                });
+            }
+
+            // HELPER FUNCTIONS - FORM MANAGEMENT
+
+            // Populate view/edit form with undertime request data
+            function populateViewForm(data) {
+                $('#viewUndertimeRequestId').val(data.id);
+                $('#viewUndertimeRequestStatus').val(data.statusName);
+                $('#viewEmployeeName').val(data.employeeNo).trigger('change');
+                $('#viewDateIn').val(data.displayDateIn);
+                $('#viewDateOut').val(data.displayDateOut);
+                $('#viewTimeOut').val(data.displayTimeOut);
+                $('#viewReason').val(data.undertimeReason);
+                $('#viewRemarks').val(data.remarks);
+
+                renderApprovalProgress(data);
+            }
+
+            function renderApprovalProgress(data) {
+                const $progress = $('#approvalProgress');
+                const $steps    = $('#approvalSteps');
+                $steps.empty();
+
+                const overall = data.statusName;
+
+                // Only show tracker when request is live (not cancelled)
+                if (overall === 'Cancelled' || overall === 'Processed') {
+                    $progress.addClass('d-none');
+                    return;
+                }
+
+                const required = data.requiredLevels || [];
+                if (required.length === 0) {
+                    $progress.addClass('d-none');
+                    return;
+                }
+
+                const levelStatus = {
+                    1: data.statusLevel1,
+                    2: data.statusLevel2,
+                    3: data.statusLevel3,
+                    4: data.statusName
+                };
+
+                required.forEach(function(level) {
+                    const st = levelStatus[level] || 'Pending';
+                    let badgeClass, icon;
+
+                    switch (st) {
+                        case 'Approved':
+                            badgeClass = 'bg-success';
+                            icon       = 'fa-check-circle';
+                            break;
+                        case 'Declined':
+                            badgeClass = 'bg-danger';
+                            icon       = 'fa-times-circle';
+                            break;
+                        default:
+                            badgeClass = 'bg-warning';
+                            icon       = 'fa-clock';
+                    }
+
+                    $steps.append(`
+                        <span class="badge ${badgeClass} fs-6 px-3 py-2">
+                            <i class="fas ${icon} me-1"></i>
+                            Level ${level}: ${st}
+                        </span>
+                        ${required.indexOf(level) < required.length - 1
+                            ? '<i class="fas fa-arrow-right align-self-center text-muted"></i>'
+                            : ''}
+                    `);
+                });
+
+                $progress.removeClass('d-none');
+            }
+
+            // Get form data as object
+            function getFormData(formSelector) {
+                const isView = formSelector.includes('view');
+                const prefix = isView ? 'view' : 'add';
+
+                return {
+                    ...(isView && { id: $(`#${prefix}UndertimeRequestId`).val() }),
+                    employeeNo: $(`#${prefix}EmployeeName`).val(),
+                    undertimeDateIN: toISODate($(`#${prefix}DateIn`).val()),  // ← CONVERT TO ISO
+                    undertimeDateOUT: toISODate($(`#${prefix}DateOut`).val()), // ← CONVERT TO ISO
+                    undertimeTimeOUT: $(`#${prefix}TimeOut`).val(),
+                    undertimeReason: $(`#${prefix}Reason`).val().trim(),
+                    remarks: $(`#${prefix}Remarks`).val().trim()
+                };
+            }
+
+            // Save undertime request (add or update)
+            function saveRequest(url, data, buttonSelector, closeModal) {
+                const $btn = $(buttonSelector);
+                toggleButtonLoading($btn, true, 'Saving...');
+
+                // Send save request
+                $.post(url, data)
+                    .done(response => {
+                        if (response.success) {
+                            if (closeModal) $('#addUndertimeRequestModal').modal('hide');
+                            else setViewMode();
+                            table.ajax.reload(null, false);
+                            showNotification(response.message, 'success');
+                        } else {
+                            showNotification(response.message, 'error');
+                        }
+                    })
+                    .fail(() => showNotification('Unable to save. Please try again.', 'error'))
+                    .always(() => toggleButtonLoading($btn, false));
+            }
+
+            // Show/hide buttons based on undertime request status
+            function updateViewButtons(data) {
+                const isFullObject = (typeof data === 'object' && data !== null);
+                const status       = isFullObject ? data.statusName : data;
+
+                $('#btnApproveUndertimeRequest, #btnEditUndertimeRequest, #btnCancelUndertimeRequest')
+                    .addClass('d-none');
+                $('#btnSaveUndertimeRequest, #btnCancelEdit').addClass('d-none');
+
+                const requestEmployeeNo = isFullObject ? data.employeeNo : $('#viewEmployeeName').val();
+                const isOwnRequest      = requestEmployeeNo === sessemployeeNo;
+
+                if (status === 'Cancelled' || status === 'Approved' || status === 'Processed') return;
+
+                if (status === 'Declined') {
+                    if (isOwnRequest || access === 'FULL') {
+                        $('#btnEditUndertimeRequest, #btnCancelUndertimeRequest').removeClass('d-none');
+                    }
+                    return;
+                }
+
+                // Pending / Partially Approved
+                if (isFullObject && typeof data.canCurrentUserApprove !== 'undefined') {
+                    if (data.canCurrentUserApprove) {
+                        $('#btnApproveUndertimeRequest').removeClass('d-none');
+                    }
+                } else {
+                    if (access === 'FULL') {
+                        $('#btnApproveUndertimeRequest').removeClass('d-none');
+                    }
+                }
+
+                if (isOwnRequest || access === 'FULL') {
+                    $('#btnEditUndertimeRequest, #btnCancelUndertimeRequest').removeClass('d-none');
+                }
+            }
+
+            // Reset Add form to initial state
+            function resetAddForm() {
+                $('#addUndertimeRequestForm')[0].reset();
+                $('#addEmployeeName').val(null).trigger('change');
+                $('#addTimeOut').val('17:00');
+                clearValidation('#addUndertimeRequestForm');
+                $('#btnSaveNewUndertimeRequest').prop('disabled', false).html('Save');
+            }
+
+            // Reset View/Edit form to initial state
+            function resetViewForm() {
+                $('#viewUndertimeRequestForm')[0].reset();
+                $('#viewEmployeeName').val(null).trigger('change');
+                $('#approvalProgress').addClass('d-none');
+                $('#approvalSteps').empty();
+                clearValidation('#viewUndertimeRequestForm');
+                $('#btnSaveUndertimeRequest').prop('disabled', false).html('Save');
+            }
+
+            // Reset all modal buttons to initial state
+            function resetAllButtons() {
+                $('#btnApproveUndertimeRequest').prop('disabled', false).html('<i class="fas fa-check"></i> Approve');
+                $('#btnEditUndertimeRequest').prop('disabled', false).html('<i class="fas fa-edit"></i> Edit');
+                $('#btnCancelUndertimeRequest').prop('disabled', false).html('<i class="fas fa-ban"></i> Cancel Request');
+            }
+
+            // HELPER FUNCTIONS - VIEW MODES
+
+            // Set modal to edit mode
+            function setEditMode() {
+                $('#viewModalTitle').text('Edit Undertime Request');
+                $('#viewUndertimeRequestModal .modal-body').addClass('edit-mode');
+
+                // ✅ Only enable employee selector if user has FULL access
+                if (canEditEmployee) {
+                    $('#viewEmployeeName').prop('disabled', false);
+                } else {
+                    $('#viewEmployeeName').prop('disabled', true);
+                }
+
+                $('#viewDateIn, #viewDateOut').prop('readonly', false).datepicker({ format: 'mm/dd/yyyy', autoclose: true, todayHighlight: true, startDate: minUTDate });
+                $('#viewTimeOut, #viewReason, #viewRemarks').prop('readonly', false);
+                $('.edit-required').removeClass('d-none');
+                $('#btnApproveUndertimeRequest, #btnEditUndertimeRequest').addClass('d-none');
+                $('#btnApproveUndertimeRequest, #btnEditUndertimeRequest, #btnCancelUndertimeRequest').addClass('d-none');
+                $('#btnSaveUndertimeRequest, #btnCancelEdit').removeClass('d-none');
+            }
+
+            // Set modal to view-only mode
+            function setViewMode() {
+                const status = $('#viewUndertimeRequestStatus').val();
+                $('#viewModalTitle').text('View Undertime Request');
+                $('#viewUndertimeRequestModal .modal-body').removeClass('edit-mode');
+                $('#viewEmployeeName').prop('disabled', true);
+                $('#viewDateIn, #viewDateOut').datepicker('destroy').prop('readonly', true);
+                $('#viewTimeOut, #viewReason, #viewRemarks').prop('readonly', true);
+                $('.edit-required').addClass('d-none');
+                updateViewButtons(status);
+                $('#btnSaveUndertimeRequest, #btnCancelEdit').addClass('d-none');
+                clearValidation('#viewUndertimeRequestForm');
+            }
+
+            // HELPER FUNCTIONS - VALIDATION
+
+            // Validate form fields
+            function validateForm(formSelector, fields) {
+                clearValidation(formSelector);
+                let isValid = true;
+
+                // Check each required field
+                fields.forEach(field => {
+                    if (!$(`#${field}`).val()) {
+                        $(`#${field}`).addClass('is-invalid');
+                        isValid = false;
+                    }
+                });
+
+                // Additional date validation
+                if (formSelector.includes('add')) {
+                    const dateIn = new Date($('#addDateIn').val());
+                    const dateOut = new Date($('#addDateOut').val());
+                    if (dateOut < dateIn) {
+                        $('#addDateOut').addClass('is-invalid');
+                        showNotification('Date Out cannot be earlier than Date In', 'error');
+                        isValid = false;
+                    }
+                } else {
+                    const dateIn = new Date($('#viewDateIn').val());
+                    const dateOut = new Date($('#viewDateOut').val());
+                    if (dateOut < dateIn) {
+                        $('#viewDateOut').addClass('is-invalid');
+                        showNotification('Date Out cannot be earlier than Date In', 'error');
+                        isValid = false;
+                    }
+                }
+
+                return isValid;
+            }
+
+            // Clear validation errors from form
+            function clearValidation(formSelector) {
+                $(`${formSelector} .form-control, ${formSelector} .form-select`).removeClass('is-invalid');
+            }
+
+            // HELPER FUNCTIONS - UI UTILITIES
+
+            // Toggle button loading state
+            function toggleButtonLoading($btn, loading, text = '') {
+                if (loading) {
+                    // Store original HTML before changing
+                    if (!$btn.data('original-html')) {
+                        $btn.data('original-html', $btn.html());
+                    }
+                    const icon = text ? '<i class="fas fa-spinner fa-spin"></i> ' : '<i class="fas fa-spinner fa-spin"></i>';
+                    $btn.prop('disabled', true).html(icon + text);
+                } else {
+                    // Restore original HTML
+                    const originalHtml = $btn.data('original-html') || 'Save';
+                    $btn.prop('disabled', false).html(originalHtml);
+                    $btn.removeData('original-html');
+                }
+            }
+
+            // Show notification toast
+            function showNotification(message, type) {
+                const types = { success: 'Success', error: 'Error', warning: 'Warning', info: 'Information' };
+                toastr[type](message, types[type] || 'Notification');
+            }
+        });
+
+    </script>
+}

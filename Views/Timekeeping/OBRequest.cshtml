@@ -1,0 +1,1341 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutFillow.cshtml";
+    ViewData["Title"] = "Official Business Request";
+}
+
+<div class="col-12">
+    <div class="card">
+        <div class="card-header">
+            <div class="row" style="width:100%;">
+                <h4 class="card-title">Official Business Request</h4>
+                <br> <br> <br>
+
+                <div class="row date-range" style="margin-left:0px;width:100%;">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Select Status</h5>
+                            <select name="filterStatusName" id="filterStatusName" class="form-control">
+                                <option value="All">ALL</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Approved">Approved</option>
+                                <option value="Cancelled">Cancelled</option>
+                                <option value="Declined">Declined</option>
+                                <option value="Processed">Processed</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3 ">
+                        <label>Date From </label>
+                        <div class="input-hasicon">
+                            <input name="dateFrom" id="dateFrom" class="form-control formInput date-from" placeholder="mm/dd/yyyy">
+                            <div class="icon"><i class="far fa-calendar"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label>Date To </label>
+                        <div class="input-hasicon">
+                            <input name="dateTo" id="dateTo" class="form-control formInput date-to" placeholder="mm/dd/yyyy">
+                            <div class="icon"><i class="far fa-calendar"></i></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row align-items-end mt-2" style="margin-left:0px;width:100%;">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Branch</h5>
+                            <select name="branch" id="filterBranch" class="form-control"></select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Department</h5>
+                            <select name="department" id="filterDepartment" class="form-control"></select>
+                        </div>
+                    </div>
+                    <div class="col-md-6 d-flex justify-content-end">
+                        <div class="form-group me-2">
+                            <button type="button" class="btn btn-warning" id="btnExportToExcel">
+                                <i class="fas fa-file-excel"></i> Export to Excel
+                            </button>
+                        </div>
+                        <div class="form-group">
+                            <button type="button" class="btn btn-primary" id="btnAddOBRequest">
+                                <i class="fa fa-plus"></i> New OB Request
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="obRequestTable" class="display" style="min-width: 845px">
+                    <thead>
+                        <tr>
+                            <th>Action</th>
+                            <th>Control</th>
+                            <th>Employee Name</th>
+                            <th>Date In</th>
+                            <th>Date Out</th>
+                            <th>Time In</th>
+                            <th>Time Out</th>
+                            <th>Reason</th>
+                            <th>Attached File</th>
+                            <th>Status</th>
+                            <th>Requested By</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+
+        <!-- Modal for Add -->
+        <div class="modal fade" id="addOBRequestModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add Official Business Request</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addOBRequestForm">
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="addEmployeeName" class="form-label">Employee Name <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="addEmployeeName" name="employeeNo" style="width:100%" required>
+                                        <option value="">Select Employee...</option>
+                                    </select>
+                                    <div class="invalid-feedback">Please select an employee.</div>
+                                </div>
+                            </div>
+
+                            <div class="row date-range">
+                                <div class="col-md-6 mb-3">
+                                    <label>Date From </label>
+                                    <div class="input-hasicon">
+                                        <input name="addDateIn" id="addDateIn" class="form-control formInput date-from" placeholder="mm/dd/yyyy">
+                                        <div class="icon"><i class="far fa-calendar"></i></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label>Date To </label>
+                                    <div class="input-hasicon">
+                                        <input name="addDateOut" id="addDateOut" class="form-control formInput date-to" placeholder="mm/dd/yyyy">
+                                        <div class="icon"><i class="far fa-calendar"></i></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="addTimeIn" class="form-label">Time In <span class="text-danger">*</span></label>
+                                    <input type="time" class="form-control date-to" id="addTimeIn" name="obTimeIn" required>
+                                    <div class="invalid-feedback">Please select time in.</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="addTimeOut" class="form-label">Time Out <span class="text-danger">*</span></label>
+                                    <input type="time" class="form-control" id="addTimeOut" name="obTimeOut" required>
+                                    <div class="invalid-feedback">Please select time out.</div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="addReason" class="form-label">Reason <span class="text-danger">*</span></label>
+                                    <textarea class="form-control" id="addReason" name="obReason" rows="3" required maxlength="500" placeholder="Enter event name and location..."></textarea>
+                                    <div class="invalid-feedback">Please provide the reason details.</div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="addRemarks" class="form-label">Remarks</label>
+                                <textarea class="form-control" id="addRemarks" name="remarks" rows="2" maxlength="1000"></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="addAttachment" class="form-label">Attachment</label>
+                                <input type="file" class="form-control" id="addAttachment" name="attachment" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                                <small class="text-muted">Allowed formats: PDF, JPG, PNG, DOC, DOCX (Max: 5MB)</small>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="btnSaveNewOBRequest">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for View/Edit -->
+        <div class="modal fade" id="viewOBRequestModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="viewModalTitle">View Official Business Request</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="viewOBRequestForm">
+                            <input type="hidden" id="viewOBRequestId" name="id">
+                            <input type="hidden" id="viewOBRequestStatus" name="statusName">
+
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="viewEmployeeName" class="form-label">Employee Name <span class="text-danger edit-required d-none">*</span></label>
+                                    <select class="form-select" id="viewEmployeeName" name="employeeNo" style="width:100%" disabled>
+                                        <option value="">Select Employee...</option>
+                                    </select>
+                                    <div class="invalid-feedback">Please select an employee.</div>
+                                </div>
+                            </div>
+
+                            <div class="row date-range">
+                                <div class="col-md-6 mb-3">
+                                    <label>Date In <span class="text-danger edit-required d-none">*</span></label>
+                                    <div class="input-hasicon">
+                                        <input name="viewDateIn" id="viewDateIn" class="form-control formInput date-from" placeholder="mm/dd/yyyy" readonly>
+                                        <div class="icon"><i class="far fa-calendar"></i></div>
+                                    </div>
+                                    <div class="invalid-feedback">Please select date in.</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label>Date Out <span class="text-danger edit-required d-none">*</span></label>
+                                    <div class="input-hasicon">
+                                        <input name="viewDateOut" id="viewDateOut" class="form-control formInput date-to" placeholder="mm/dd/yyyy" readonly>
+                                        <div class="icon"><i class="far fa-calendar"></i></div>
+                                    </div>
+                                    <div class="invalid-feedback">Please select date out.</div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="viewTimeIn" class="form-label">Time In <span class="text-danger edit-required d-none">*</span></label>
+                                    <input type="time" class="form-control" id="viewTimeIn" name="obTimeIn" readonly>
+                                    <div class="invalid-feedback">Please select time in.</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="viewTimeOut" class="form-label">Time Out <span class="text-danger edit-required d-none">*</span></label>
+                                    <input type="time" class="form-control" id="viewTimeOut" name="obTimeOut" readonly>
+                                    <div class="invalid-feedback">Please select time out.</div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="viewReason" class="form-label">Reason <span class="text-danger edit-required d-none">*</span></label>
+                                    <textarea class="form-control" id="viewReason" name="obReason" rows="3" readonly maxlength="500"></textarea>
+                                    <div class="invalid-feedback">Please provide the reason details.</div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="viewRemarks" class="form-label">Remarks</label>
+                                <textarea class="form-control" id="viewRemarks" name="remarks" rows="2" maxlength="1000" readonly></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="viewAttachment" class="form-label">Attachment</label>
+                                <div id="currentAttachments" class="mb-2"></div>
+                                <input type="file" class="form-control d-none" id="viewAttachment" name="attachment" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                                <small class="text-muted d-none edit-mode-only">Allowed formats: PDF, JPG, PNG, DOC, DOCX (Max: 5MB)</small>
+                            </div>
+                            <!-- Approval Progress Tracker (shown only when request is Pending/Partially Approved) -->
+                            <div id="approvalProgress" class="mt-3 d-none">
+                                <hr>
+                                <h6 class="text-muted mb-2"><i class="fas fa-tasks me-1"></i> Approval Progress</h6>
+                                <div id="approvalSteps" class="d-flex flex-wrap gap-2"></div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-between">
+                        <div>
+                            <button type="button" class="btn btn-secondary btn-custom d-none" id="btnCancelOBRequest">
+                                <i class="fas fa-ban"></i> Cancel Request
+                            </button>
+                        </div>
+                        <div>
+                            <button type="button" class="btn btn-success d-none" id="btnApproveOBRequest">
+                                <i class="fas fa-check"></i> Approve
+                            </button>
+                            <button type="button" class="btn btn-primary d-none" id="btnEditOBRequest">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button type="button" class="btn btn-success d-none" id="btnSaveOBRequest">Save</button>
+                            <button type="button" class="btn btn-danger d-none" id="btnCancelEdit">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attachment View Modal -->
+        <div class="modal fade" id="attachmentModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">View Attachments</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="attachmentList"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Fillow_style
+{
+    <style>
+        .table-responsive {
+            border-radius: 0.375rem;
+        }
+
+        #obRequestTable_wrapper .dataTables_length, #obRequestTable_wrapper .dataTables_filter {
+            margin-bottom: 1rem;
+        }
+
+        #obRequestTable_wrapper .dataTables_info, #obRequestTable_wrapper .dataTables_paginate {
+            margin-top: 1rem;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .modal-content {
+            border-radius: 0.5rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        .form-control[readonly], .form-select[disabled] {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        .edit-mode .form-control[readonly], .edit-mode .form-select[disabled] {
+            background-color: #ffffff;
+            border-color: #ced4da;
+        }
+
+        .invalid-feedback {
+            display: none;
+        }
+
+        .form-control.is-invalid, .form-select.is-invalid {
+            border-color: #dc3545;
+        }
+
+        .form-control.is-invalid ~ .invalid-feedback, .form-select.is-invalid ~ .invalid-feedback {
+            display: block;
+        }
+
+        .is-invalid + .select2-container .select2-selection--single {
+            border-color: #dc3545;
+        }
+
+        .select2-container .select2-selection--single {
+            height: 38px;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 36px;
+            padding-left: 12px;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 36px;
+        }
+
+        .select2-container--default.select2-container--focus .select2-selection--single {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        .select2-container--default .select2-selection--single.select2-selection--disabled {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.35rem 0.65rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 0.25rem;
+        }
+
+        .status-pending {
+            background-color: #ffc107;
+            color: #000;
+        }
+
+        .status-approved {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .status-declined {
+            background-color: #dc3545;
+            color: #fff;
+        }
+
+        .status-cancelled {
+            background-color: #6c757d;
+            color: #fff;
+        }
+
+        .status-processed {
+            background-color: #17a2b8;
+            color: #fff;
+        }
+
+        .card-header {
+            border-bottom: none !important;
+        }
+
+        .attachment-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            background-color: #f8f9fa;
+        }
+
+        .attachment-item a {
+            text-decoration: none;
+            color: #0d6efd;
+        }
+
+        .attachment-item a:hover {
+            text-decoration: underline;
+        }
+
+        #btnCancelOBRequest {
+            background-color: #6c757d !important;
+            border-color: #6c757d !important;
+            color: white !important;
+        }
+
+        #btnCancelOBRequest:hover {
+            background-color: #5a6268 !important;
+            border-color: #545b62 !important;
+        }
+
+        .status-partial {
+            background-color: #fd7e14; /* Bootstrap orange */
+            color: #fff;
+        }
+    </style>
+}
+
+@section Fillow_script
+{
+    <script>
+        $(document).ready(function () {
+            // CONFIGURATION
+
+            MODULE = 'RofficialbusinessM';
+            access = ROLE_ACCESS?.[MODULE];
+
+            // LOAD PERMISSIONS FROM SERVER
+            let canEditEmployee = false;
+            let currentEmployeeData = null;
+            let isApprover = false;
+
+            // Load permissions on page load
+            $.get('/OBRequest/GetCurrentEmployee', function(data) {
+                canEditEmployee = data.canEditEmployee;
+                currentEmployeeData = data.currentEmployee;
+                isApprover = data.isApprover;
+            });
+
+            if (access != 'READWRITE' && access != 'FULL') {
+                $('#btnAddOBRequest').hide();
+                $('#btnEditOBRequest').hide();
+                $('#btnApproveOBRequest').hide();
+            }
+
+            const config = {
+                toastr: { positionClass: "toast-top-right", timeOut: 5000, closeButton: true, progressBar: true, preventDuplicates: true },
+                endpoints: {
+                    list: "/OBRequest/GetOBRequestList",
+                    get: "/OBRequest/GetOBRequest",
+                    employees: "/OBRequest/GetEmployeeList",
+                    attachments: "/OBRequest/GetOBAttachments",
+                    add: "/OBRequest/AddOBRequest",
+                    update: "/OBRequest/UpdateOBRequest",
+                    approve: "/OBRequest/ApproveOBRequest",
+                    decline: "/OBRequest/DeclineOBRequest",
+                    cancel: "/OBRequest/CancelOBRequest"
+                }
+            };
+
+            toastr.options = config.toastr;
+            let isInitialLoad = true;
+
+            // INITIALIZATION
+            // Earliest allowed date = today minus 3 calendar days
+            var minOBDate = (access === 'FULL') ? null : new Date();
+            if (minOBDate) minOBDate.setDate(minOBDate.getDate() - 3);
+
+            $('#dateFrom, #dateTo').datepicker({
+                format: 'mm/dd/yyyy',
+                autoclose: true,
+                todayHighlight: true
+            });
+
+            $('#addDateIn, #addDateOut, #viewDateIn, #viewDateOut').datepicker({
+                format: 'mm/dd/yyyy',
+                autoclose: true,
+                todayHighlight: true,
+                startDate: minOBDate
+            });
+
+            $('#addTimeIn, #addTimeOut, #viewTimeIn, #viewTimeOut').prop('disabled', false).prop('readonly', false);
+
+            // CHECK FOR STATUS PARAMETER FROM DASHBOARD
+            const urlParams = new URLSearchParams(window.location.search);
+            const statusParam = urlParams.get('status');
+
+            // SET FILTER BASED ON URL PARAMETER OR DEFAULT TO PENDING
+            if (statusParam) {
+                // Capitalize first letter to match dropdown values
+                const formattedStatus = statusParam.charAt(0).toUpperCase() + statusParam.slice(1).toLowerCase();
+                $('#filterStatusName').val(formattedStatus);
+            } else {
+                $('#filterStatusName').val('Pending');
+            }
+
+            initializeSelect2();
+            initializeFilterSelect2();
+
+            // DATATABLE CONFIGURATION
+            const table = $('#obRequestTable').DataTable({
+                processing: true,
+                serverSide: false,
+                ajax: {
+                    url: config.endpoints.list,
+                    type: "GET",
+                    data: d => ({
+                        status: $('#filterStatusName').val(),
+                        branch: $('#filterBranch').val(),
+                        department: $('#filterDepartment').val(),
+                        dateFrom: $('#dateFrom').val(),
+                        dateTo: $('#dateTo').val()
+                    }),
+                    dataSrc: function(json) { isInitialLoad = false; return json.data; },
+                    error: () => showNotification('Error loading data. Please refresh the page.', 'error')
+                },
+                columns: [
+                {
+                    data: null, width: "10%", orderable: false,
+                    render: (data, type, row) => {
+                        let viewBtn = '';
+                        let declineBtn = '';
+
+                        if (access === 'READ' || access === 'READWRITE' || access === 'FULL') {
+                            viewBtn = `<button class="btn btn-sm btn-primary shadow-sm viewOBRequest" data-id="${row.id}" title="View"><i class="fas fa-eye"></i></button>`;
+                        }
+                        // Show decline button to FULL access OR approvers for pending requests
+                        const displayStatus = computeDisplayStatus(row);
+                        if (['Pending', 'Partially Approved', 'Approved'].includes(displayStatus) && row.employeeNo !== sessemployeeNo && (access === 'FULL' || isApprover)) {
+                            declineBtn = `<button class="btn btn-sm btn-danger shadow-sm declineOBRequest" data-id="${row.id}" title="Decline"><i class="fas fa-times"></i></button>`;
+                        }
+
+                        return `<div class="d-flex gap-1">${viewBtn}${declineBtn}</div>`;
+                    }
+                },
+                {
+                    data: null,
+                    width: "5%",
+                    orderable: false,
+                    render: function(data, type, row) {
+                        return `<button class="btn btn-sm btn-warning shadow-sm printOBRequest"
+                                        data-id="${row.id}"
+                                        title="Print PDF">
+                                    <i class="fas fa-print"></i>
+                                </button>`;
+                    }
+                },
+                { data: "employeeName", width: "15%", render: data => data || '' },
+                { data: "displayDateIn", width: "10%", render: data => data || '' },
+                { data: "displayDateOut", width: "10%", render: data => data || '' },
+                {
+                    data: "displayTimeIn",
+                    width: "8%",
+                    render: data => convertTo12Hour(data)
+                },
+                {
+                    data: "displayTimeOut",
+                    width: "8%",
+                    render: data => convertTo12Hour(data)
+                },
+                { data: "obReason", width: "18%", render: data => !data ? '' : (data.length > 80 ? data.substring(0, 80) + '...' : data) },
+                {
+                    data: null, width: "8%", orderable: false,
+                    render: (data, type, row) => `<button class="btn btn-sm btn-outline-primary viewAttachment" data-id="${row.id}" data-employee="${row.employeeNo}" title="View Attachments"><i class="fas fa-paperclip"></i></button>`
+                },
+                {
+                    data: null,
+                    width: "8%",
+                    render: function(data, type, row) {
+                        // Compute the display status client-side using the three level columns
+                        const displayStatus = computeDisplayStatus(row);
+                        const statusMap = {
+                            'Approved':           'status-approved',
+                            'Declined':           'status-declined',
+                            'Cancelled':          'status-cancelled',
+                            'Processed':          'status-processed',
+                            'Partially Approved': 'status-partial'
+                        };
+                        const statusClass = statusMap[displayStatus] || 'status-pending';
+                        return `<span class="status-badge ${statusClass}">${displayStatus}</span>`;
+                    }
+                },
+                { data: "requestedByUser", width: "10%", render: data => data || '' }
+            ],
+                order: [],
+                pageLength: 25,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                language: {
+                    processing: "Loading...",
+                    emptyTable: "No OB requests found",
+                    zeroRecords: "No matching OB requests found",
+                    paginate: { next: '<i class="fa fa-angle-double-right"></i>', previous: '<i class="fa fa-angle-double-left"></i>' }
+                }
+            });
+
+            // EVENT HANDLERS - FILTERS
+            $('#filterStatusName, #filterBranch, #filterDepartment, #dateFrom, #dateTo').on('change', () => table.ajax.reload(null, false));
+
+            $('#addTimeIn, #addTimeOut').on('focus', function() {
+                $(this).prop('disabled', false).prop('readonly', false);
+            });
+
+            $('#viewTimeIn, #viewTimeOut').on('focus', function() {
+                if ($('#viewOBRequestModal .modal-body').hasClass('edit-mode')) {
+                    $(this).prop('disabled', false).prop('readonly', false);
+                }
+            });
+
+            // HELPER FUNCTIONS - DATE CONVERSION
+            function toISODate(mmddyyyy) {
+                if (!mmddyyyy) return '';
+                const [m, d, y] = mmddyyyy.split('/');
+                return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+            }
+
+            // Helper function to convert 24-hour time to 12-hour format
+            function convertTo12Hour(time24) {
+                if (!time24) return '';
+
+                const [hours, minutes] = time24.split(':');
+                let hour = parseInt(hours);
+                const ampm = hour >= 12 ? 'PM' : 'AM';
+
+                hour = hour % 12;
+                hour = hour ? hour : 12; // Convert 0 to 12
+
+                return `${hour}:${minutes} ${ampm}`;
+            }
+
+            // Computes a human-friendly status label from the three DB level columns.
+            // requiredLevels is optionally passed in from the detail view; for the list
+            // we approximate using what is non-null/non-Pending.
+            function computeDisplayStatus(row, requiredLevels) {
+                const l4 = row.statusLevel4 || row.statusName;
+                const l3 = row.statusLevel3;
+                const l2 = row.statusLevel2;
+                const l1 = row.statusLevel1;
+
+                if (l4 === 'Approved')  return 'Approved';
+                if (l4 === 'Declined')  return 'Declined';
+                if (l4 === 'Cancelled') return 'Cancelled';
+                if (l4 === 'Processed') return 'Processed';
+
+                if (l3 === 'Declined' || l2 === 'Declined' || l1 === 'Declined') return 'Declined';
+                if (l3 === 'Approved' || l2 === 'Approved' || l1 === 'Approved') return 'Partially Approved';
+
+                return 'Pending';
+            }
+
+            // EVENT HANDLERS - ADD MODAL
+            $('#btnAddOBRequest').click(() => {
+                resetAddForm();
+                if (canEditEmployee) {
+                    loadDropdownOptions('#addEmployeeName');
+                } else {
+                    if (currentEmployeeData) {
+                        $('#addEmployeeName').empty()
+                            .append(`<option value="${currentEmployeeData.employeeNo}" selected>${currentEmployeeData.employeeName}</option>`)
+                            .prop('disabled', true)
+                            .trigger('change');
+                    }
+                }
+
+                setTimeout(() => {
+                    $('#addTimeIn').val('08:00').prop('disabled', false).prop('readonly', false);
+                    $('#addTimeOut').val('17:00').prop('disabled', false).prop('readonly', false);
+                }, 100);
+                $('#addOBRequestModal').modal('show');
+            });
+
+            // EVENT HANDLERS - CANCEL ACTION
+            $('#btnCancelOBRequest').click(() => {
+                const id = $('#viewOBRequestId').val();
+                cancelWithReason({
+                    title: 'Cancel OB Request',
+                    text: 'Are you sure you want to cancel this OB Request?',
+                    url: config.endpoints.cancel,
+                    id: id,
+                    cancelledByUser: sessemployeeNo || 'CURRENT_USER',
+                    button: $('#btnCancelOBRequest'),
+                    table: table,
+                    onSuccess: function(response) {
+                        $('#viewOBRequestModal').modal('hide');
+                    }
+                });
+            });
+
+            $('#btnSaveNewOBRequest').click(() => {
+                if (!validateForm('#addOBRequestForm', ['addEmployeeName', 'addReason', 'addDateIn', 'addTimeIn', 'addDateOut', 'addTimeOut'])) return;
+                if (!validateDates('#addDateIn', '#addDateOut')) return;
+
+                const formData = new FormData();
+                formData.append('employeeNo', $('#addEmployeeName').val());
+                formData.append('obDateIn', toISODate($('#addDateIn').val()));
+                formData.append('obTimeIn', $('#addTimeIn').val());
+                formData.append('obDateOut', toISODate($('#addDateOut').val()));
+                formData.append('obTimeOut', $('#addTimeOut').val());
+                formData.append('obReason', $('#addReason').val().trim());
+                formData.append('remarks', $('#addRemarks').val().trim());
+
+                const file = $('#addAttachment')[0].files[0];
+                if (file) formData.append('attachment', file);
+
+                saveRequest(config.endpoints.add, formData, '#btnSaveNewOBRequest', true);
+            });
+
+            // EVENT HANDLERS - VIEW/EDIT MODAL
+            $(document).on('click', '.viewOBRequest', function(e) {
+                e.preventDefault();
+                const id   = $(this).data('id');
+                const $btn = $(this);
+                toggleButtonLoading($btn, true);
+
+                $.get(config.endpoints.get, { id })
+                    .done(function(data) {
+                        if (!data || data.error) {
+                            showNotification(data?.error || 'Unable to load OB Request data', 'error');
+                            return;
+                        }
+
+                        resetViewForm();
+                        setViewMode();
+
+                        if (canEditEmployee) {
+                            loadDropdownOptionsAsync('#viewEmployeeName')
+                                .done(function() {
+                                    populateViewForm(data);
+                                    // ↓ Pass full data object so canCurrentUserApprove is available
+                                    updateViewButtons(data);
+                                    $('#viewOBRequestModal').modal('show');
+                                });
+                        } else {
+                            $('#viewEmployeeName')
+                                .empty()
+                                .append(`<option value="${data.employeeNo}" selected>
+                                             ${data.employeeName}
+                                         </option>`)
+                                .prop('disabled', true);
+                            populateViewForm(data);
+                            // ↓ Pass full data object
+                            updateViewButtons(data);
+                            $('#viewOBRequestModal').modal('show');
+                        }
+                    })
+                    .fail(function() {
+                        showNotification('Unable to load OB Request data', 'error');
+                    })
+                    .always(function() {
+                        toggleButtonLoading($btn, false);
+                    });
+            });
+
+            $('#btnApproveOBRequest').click(() => {
+                const id = $('#viewOBRequestId').val();
+                Swal.fire({
+                    title: 'Approve Request',
+                    text: 'Are you sure you want to approve this OB Request?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, Approve',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d'
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        const $btn = $('#btnApproveOBRequest');
+                        toggleButtonLoading($btn, true, 'Approving...');
+                        $.post(config.endpoints.approve, { id, approvedByUser: 'CURRENT_USER' })
+                            .done(response => {
+                                if (response.success) {
+                                    $('#viewOBRequestModal').modal('hide');
+                                    table.ajax.reload(null, false);
+                                    showNotification(response.message, 'success');
+                                } else {
+                                    showNotification(response.message, 'error');
+                                    toggleButtonLoading($btn, false);
+                                }
+                            })
+                            .fail(() => {
+                                showNotification('Unable to approve. Please try again.', 'error');
+                                toggleButtonLoading($btn, false);
+                            });
+                    }
+                });
+            });
+
+            $('#btnEditOBRequest').click(() => {
+                setEditMode();
+                setTimeout(() => {
+                    $('#viewTimeIn, #viewTimeOut').prop('disabled', false).prop('readonly', false);
+                }, 100);
+                $('#viewEmployeeName').focus();
+            });
+
+            $('#btnCancelEdit').click(function() {
+                const id = $('#viewOBRequestId').val();
+                $.get(config.endpoints.get, { id }).done(function(data) {
+                    if (data) {
+                        populateViewForm(data);
+                        setViewMode();
+                        // Re-evaluate approve button with full server data
+                        updateViewButtons(data);
+                        clearValidation('#viewOBRequestForm');
+                    }
+                });
+            });
+
+            $('#btnSaveOBRequest').click(() => {
+                if (!validateForm('#viewOBRequestForm', ['viewEmployeeName', 'viewReason', 'viewDateIn', 'viewTimeIn', 'viewDateOut', 'viewTimeOut'])) return;
+                if (!validateDates('#viewDateIn', '#viewDateOut')) return;
+
+                const formData = new FormData();
+                formData.append('id', $('#viewOBRequestId').val());
+                formData.append('employeeNo', $('#viewEmployeeName').val());
+                formData.append('obDateIn', toISODate($('#viewDateIn').val()));
+                formData.append('obTimeIn', $('#viewTimeIn').val());
+                formData.append('obDateOut', toISODate($('#viewDateOut').val()));
+                formData.append('obTimeOut', $('#viewTimeOut').val());
+                formData.append('obReason', $('#viewReason').val().trim());
+                formData.append('remarks', $('#viewRemarks').val().trim());
+
+                const file = $('#viewAttachment')[0].files[0];
+                if (file) formData.append('attachment', file);
+
+                saveRequest(config.endpoints.update, formData, '#btnSaveOBRequest', false);
+            });
+
+            // EVENT HANDLERS - DECLINE ACTION
+            $(document).on('click', '.declineOBRequest', function(e) {
+                e.preventDefault();
+                declineWithReason({
+                    title: 'Decline OB Request',
+                    text: 'Are you sure you want to decline this OB Request?',
+                    url: config.endpoints.decline,
+                    id: $(this).data('id'),
+                    declinedByUser: 'CURRENT_USER',
+                    button: $(this),
+                    table: table
+                });
+            });
+
+            // EVENT HANDLERS - MODAL LIFECYCLE
+            $('#addOBRequestModal').on('shown.bs.modal', function() {
+                $('#addTimeIn, #addTimeOut').prop('disabled', false).prop('readonly', false);
+            });
+
+            $('#addOBRequestModal').on('hidden.bs.modal', resetAddForm);
+
+            $('#viewOBRequestModal').on('shown.bs.modal', function() {
+                if ($('#viewOBRequestModal .modal-body').hasClass('edit-mode')) {
+                    $('#viewTimeIn, #viewTimeOut').prop('disabled', false).prop('readonly', false);
+                }
+            });
+
+            $('#viewOBRequestModal').on('hidden.bs.modal', () => {
+                resetViewForm();
+                setViewMode();
+                resetAllButtons();
+            });
+
+            // EVENT HANDLERS - KEYBOARD
+            $('#addOBRequestForm').on('keypress', e => {
+                if (e.which === 13) { e.preventDefault(); $('#btnSaveNewOBRequest').click(); }
+            });
+            $('#viewOBRequestForm').on('keypress', e => {
+                if (e.which === 13 && $('#viewOBRequestModal .modal-body').hasClass('edit-mode')) {
+                    e.preventDefault(); $('#btnSaveOBRequest').click();
+                }
+            });
+
+            // EVENT HANDLERS - VALIDATION
+            $('#addEmployeeName, #addReason, #addDateIn, #addTimeIn, #addDateOut, #addTimeOut, #addRemarks, #viewEmployeeName, #viewReason, #viewDateIn, #viewTimeIn, #viewDateOut, #viewTimeOut, #viewRemarks')
+                .on('input change', function() { $(this).removeClass('is-invalid'); });
+
+            // EVENT HANDLERS - PRINT PDF
+            $(document).on('click', '.printOBRequest', function(e) {
+                e.preventDefault();
+                const id = $(this).data('id');
+                const $btn = $(this);
+
+                toggleButtonLoading($btn, true);
+
+                // Open PDF in new tab
+                window.open(`/OBRequestPdf/PreviewPdf?id=${id}`, '_blank');
+
+                setTimeout(() => toggleButtonLoading($btn, false), 1000);
+            });
+
+            // EVENT HANDLER - EXPORT TO EXCEL
+            $('#btnExportToExcel').click(function() {
+                const $btn = $(this);
+                const pageInfo = table.page.info();
+
+                if (pageInfo.recordsDisplay === 0) {
+                    return showNotification('No data available to export', 'warning');
+                }
+
+                const sortMap = ['', '', 'employeeName', 'displayDateIn', 'displayDateOut',
+                                 'displayTimeIn', 'displayTimeOut', 'obReason', '', 'statusName', 'requestedByUser'];
+
+                const [sortIndex, sortDir] = table.order()[0] || [3, 'desc'];
+
+                // Use -1 for "All", otherwise use the current page length
+                const exportLimit = pageInfo.length === -1 ? -1 : pageInfo.length;
+
+                const params = new URLSearchParams({
+                    status: isInitialLoad ? 'Default' : ($('#filterStatusName').val() || 'Default'),
+                    branch: $('#filterBranch').val() || '',
+                    department: $('#filterDepartment').val() || '',
+                    dateFrom: $('#dateFrom').val() || '',
+                    dateTo: $('#dateTo').val() || '',
+                    offset: pageInfo.start,
+                    limit: exportLimit,
+                    sortColumn: sortMap[sortIndex] || '',
+                    sortDirection: sortDir
+                });
+
+                toggleButtonLoading($btn, true, 'Exporting...');
+
+                fetch(`/OBRequestExport/ExportToExcel?${params.toString()}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => {
+                            throw new Error(`Server error (${response.status}): ${text}`);
+                        });
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `OBRequest_${new Date().getTime()}.xlsx`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+                    toggleButtonLoading($btn, false);
+                    showNotification(`Successfully exported ${pageInfo.recordsDisplay} record(s).`, 'success');
+                })
+                .catch(error => {
+                    toggleButtonLoading($btn, false);
+                    showNotification(error.message || 'An error occurred during export. Please try again.', 'error');
+                });
+            });
+
+            // EVENT HANDLER - VIEW ATTACHMENTS
+            $(document).on('click', '.viewAttachment', function(e) {
+                e.preventDefault();
+                const employeeNo = $(this).data('employee');
+                loadAttachmentsList(employeeNo);
+                $('#attachmentModal').modal('show');
+            });
+
+            // HELPER FUNCTIONS - SELECT2 INITIALIZATION
+            function initializeSelect2() {
+                const modals = {
+                    add: { employee: '#addEmployeeName', parent: '#addOBRequestModal' },
+                    view: { employee: '#viewEmployeeName', parent: '#viewOBRequestModal' }
+                };
+                Object.values(modals).forEach(modal => {
+                    $(modal.employee).select2({ placeholder: "Select Employee", allowClear: true, dropdownParent: $(modal.parent), width: '100%' });
+                });
+            }
+
+            function initializeFilterSelect2() {
+                $('#filterStatusName').select2({ selectOnClose: true, minimumResultsForSearch: Infinity });
+                $('#filterBranch').select2({
+                    placeholder: "Select Branch", allowClear: true,
+                    ajax: {
+                        url: '/Setup/GetEmployeeBranch', dataType: 'json', delay: 250,
+                        processResults: data => ({
+                            results: [{ id: 'ALL', text: 'All Branches' }].concat(data.map(item => ({ id: item.branchCode, text: item.branchName })))
+                        })
+                    }
+                });
+                $('#filterDepartment').select2({
+                    placeholder: "Select Employee Department", allowClear: true,
+                    ajax: {
+                        url: '/Setup/GetEmployeeDepartment', dataType: 'json', delay: 250,
+                        processResults: data => ({
+                            results: [{ id: 'ALL', text: 'All Departments' }].concat(data.map(item => ({ id: item.departmentCode, text: item.departmentName })))
+                        })
+                    }
+                });
+            }
+
+            // HELPER FUNCTIONS - DROPDOWN LOADING
+            function loadDropdownOptions(employeeSelector) {
+                $.get(config.endpoints.employees, data => {
+                    const $select = $(employeeSelector);
+                    $select.empty().append('<option value="">Select Employee...</option>');
+                    data.forEach(item => $select.append(`<option value="${item.employeeNo}">${item.employeeName}</option>`));
+                });
+            }
+
+            function loadDropdownOptionsAsync(employeeSelector) {
+                return $.get(config.endpoints.employees).done(data => {
+                    const $select = $(employeeSelector);
+                    $select.empty().append('<option value="">Select Employee...</option>');
+                    data.forEach(item => $select.append(`<option value="${item.employeeNo}">${item.employeeName}</option>`));
+                });
+            }
+
+            // HELPER FUNCTIONS - FORM MANAGEMENT
+            function populateViewForm(data) {
+                $('#viewOBRequestId').val(data.id);
+                $('#viewOBRequestStatus').val(data.statusLevel4 || data.statusName);
+                $('#viewEmployeeName').val(data.employeeNo).trigger('change');
+                $('#viewDateIn').val(data.displayDateIn);
+                $('#viewTimeIn').val(data.displayTimeIn);
+                $('#viewDateOut').val(data.displayDateOut);
+                $('#viewTimeOut').val(data.displayTimeOut);
+                $('#viewReason').val(data.obReason);
+                $('#viewRemarks').val(data.remarks);
+
+                loadCurrentAttachments(data.employeeNo);
+
+                // Render approval progress
+                renderApprovalProgress(data);
+            }
+
+            function renderApprovalProgress(data) {
+                const $progress = $('#approvalProgress');
+                const $steps    = $('#approvalSteps');
+                $steps.empty();
+
+                const overall = data.statusLevel4 || data.statusName;
+
+                // Only show the tracker when the request is live (not cancelled/processed)
+                if (overall === 'Cancelled' || overall === 'Processed') {
+                    $progress.addClass('d-none');
+                    return;
+                }
+
+                const required = data.requiredLevels || [];   // e.g. [2, 3, 4]
+                if (required.length === 0) {
+                    $progress.addClass('d-none');
+                    return;
+                }
+
+                // Map DB column names to levels
+                const levelStatus = {
+                    1: data.statusLevel1,
+                    2: data.statusLevel2,
+                    3: data.statusLevel3,
+                    4: data.statusLevel4
+                };
+
+                required.forEach(function(level) {
+                    const st = levelStatus[level] || 'Pending';
+                    let badgeClass, icon;
+
+                    switch (st) {
+                        case 'Approved':
+                            badgeClass = 'bg-success';
+                            icon       = 'fa-check-circle';
+                            break;
+                        case 'Declined':
+                            badgeClass = 'bg-danger';
+                            icon       = 'fa-times-circle';
+                            break;
+                        default:
+                            badgeClass = 'bg-warning';
+                            icon       = 'fa-clock';
+                    }
+
+                    $steps.append(`
+                        <span class="badge ${badgeClass} fs-6 px-3 py-2">
+                            <i class="fas ${icon} me-1"></i>
+                            Level ${level}: ${st}
+                        </span>
+                        ${required.indexOf(level) < required.length - 1
+                            ? '<i class="fas fa-arrow-right align-self-center text-muted"></i>'
+                            : ''}
+                    `);
+                });
+
+                $progress.removeClass('d-none');
+            }
+
+            function loadCurrentAttachments(employeeNo) {
+                $.get(config.endpoints.attachments, { employeeNo }, data => {
+                    const container = $('#currentAttachments');
+                    container.empty();
+                    if (data && data.length > 0) {
+                        data.forEach(attachment => {
+                            const fileName = attachment.attachmentPath.split('/').pop();
+                            container.append(`
+                                <div class="attachment-item">
+                                    <i class="fas fa-file"></i>
+                                    <a href="${attachment.attachmentPath}" target="_blank">${fileName}</a>
+                                    <small class="text-muted ms-auto">${new Date(attachment.dtAdded).toLocaleDateString()}</small>
+                                </div>
+                            `);
+                        });
+                    } else {
+                        container.append('<small class="text-muted">No attachments found</small>');
+                    }
+                });
+            }
+
+            function loadAttachmentsList(employeeNo) {
+                $.get(config.endpoints.attachments, { employeeNo }, data => {
+                    const container = $('#attachmentList');
+                    container.empty();
+                    if (data && data.length > 0) {
+                        data.forEach(attachment => {
+                            const fileName = attachment.attachmentPath.split('/').pop();
+                            container.append(`
+                                <div class="attachment-item mb-3">
+                                    <i class="fas fa-file-alt fa-2x me-3"></i>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1"><a href="${attachment.attachmentPath}" target="_blank" class="text-decoration-none">${fileName}</a></h6>
+                                        <small class="text-muted">Added: ${new Date(attachment.dtAdded).toLocaleDateString()}</small>
+                                    </div>
+                                    <a href="${attachment.attachmentPath}" target="_blank" class="btn btn-sm btn-outline-primary ms-2"><i class="fas fa-download"></i> View</a>
+                                </div>
+                            `);
+                        });
+                    } else {
+                        container.append('<p class="text-muted text-center">No attachments found for this employee.</p>');
+                    }
+                });
+            }
+
+            function saveRequest(url, data, buttonSelector, closeModal) {
+                const $btn = $(buttonSelector);
+                toggleButtonLoading($btn, true, 'Saving...');
+                $.ajax({
+                    url, type: 'POST', data, processData: false, contentType: false,
+                    success: response => {
+                        if (response.success) {
+                            if (closeModal) $('#addOBRequestModal').modal('hide');
+                            else setViewMode();
+                            table.ajax.reload(null, false);
+                            showNotification(response.message, 'success');
+                        } else {
+                            showNotification(response.message, 'error');
+                        }
+                    },
+                    error: () => showNotification('Unable to save. Please try again.', 'error'),
+                    complete: () => toggleButtonLoading($btn, false)
+                });
+            }
+
+            function updateViewButtons(data) {
+                // Normalise: callers may pass either a full data object or just a status string
+                const isFullObject = (typeof data === 'object' && data !== null);
+                const status       = isFullObject
+                    ? (data.statusLevel4 || data.statusName)
+                    : data;
+
+                // Hide all action buttons first
+                $('#btnApproveOBRequest, #btnEditOBRequest, #btnCancelOBRequest').addClass('d-none');
+                $('#btnSaveOBRequest, #btnCancelEdit').addClass('d-none');
+
+                const requestEmployeeNo = isFullObject ? data.employeeNo : $('#viewEmployeeName').val();
+                const isOwnRequest      = requestEmployeeNo === sessemployeeNo;
+
+                // ── Cancelled / Processed: nothing to do ──────────────────────────────
+                if (status === 'Cancelled' || status === 'Processed') return;
+
+                // ── Approved: nothing actionable ──────────────────────────────────────
+                if (status === 'Approved') return;
+
+                // ── Declined: only the requester (or FULL) can edit/resubmit ─────────
+                if (status === 'Declined') {
+                    if (isOwnRequest || access === 'FULL') {
+                        $('#btnEditOBRequest, #btnCancelOBRequest').removeClass('d-none');
+                    }
+                    return;
+                }
+
+                // ── Pending (including Partially Approved state) ───────────────────────
+
+                // Approve button: use the server-computed flag when available,
+                // fall back to access-level check for FULL users.
+                if (isFullObject && typeof data.canCurrentUserApprove !== 'undefined') {
+                    // Server already determined if it's this user's turn
+                    if (data.canCurrentUserApprove) {
+                        $('#btnApproveOBRequest').removeClass('d-none');
+                    }
+                } else {
+                    // Fallback: FULL access always sees approve button on pending requests
+                    if (access === 'FULL') {
+                        $('#btnApproveOBRequest').removeClass('d-none');
+                    }
+                }
+
+                // Edit and Cancel: only the requester or FULL access
+                if (isOwnRequest || access === 'FULL') {
+                    $('#btnEditOBRequest, #btnCancelOBRequest').removeClass('d-none');
+                }
+            }
+
+            function resetAddForm() {
+                $('#addOBRequestForm')[0].reset();
+                $('#addEmployeeName').val(null).trigger('change');
+                clearValidation('#addOBRequestForm');
+                $('#btnSaveNewOBRequest').prop('disabled', false).html('Save');
+            }
+
+            function resetViewForm() {
+                $('#viewOBRequestForm')[0].reset();
+                $('#viewEmployeeName').val(null).trigger('change');
+                $('#currentAttachments').empty();
+                clearValidation('#viewOBRequestForm');
+                $('#btnSaveOBRequest').prop('disabled', false).html('Save');
+            }
+
+            function resetAllButtons() {
+                $('#btnApproveOBRequest').prop('disabled', false).html('<i class="fas fa-check"></i> Approve');
+                $('#btnEditOBRequest').prop('disabled', false).html('<i class="fas fa-edit"></i> Edit');
+                $('#btnCancelOBRequest').prop('disabled', false).html('<i class="fas fa-ban"></i> Cancel Request');
+            }
+
+            // HELPER FUNCTIONS - VIEW MODES
+            function setViewMode() {
+                const status = $('#viewOBRequestStatus').val();
+                $('#viewModalTitle').text('View Official Business Request');
+                $('#viewOBRequestModal .modal-body').removeClass('edit-mode');
+                $('#viewEmployeeName, #viewSelectReason').prop('disabled', true);
+                $('#viewDateIn, #viewDateOut').datepicker('destroy').prop('readonly', true);
+                $('#viewTimeIn, #viewTimeOut, #viewReason, #viewRemarks').prop('readonly', true);
+                $('.edit-required').addClass('d-none');
+                $('#viewAttachment').addClass('d-none');
+                $('.edit-mode-only').addClass('d-none');
+                updateViewButtons(status);
+                $('#btnSaveOBRequest, #btnCancelEdit').addClass('d-none');
+                clearValidation('#viewOBRequestForm');
+            }
+
+            function setEditMode() {
+                $('#viewModalTitle').text('Edit Official Business Request');
+                $('#viewOBRequestModal .modal-body').addClass('edit-mode');
+
+                // Only enable employee selector if user has FULL access
+                if (canEditEmployee) {
+                    $('#viewEmployeeName').prop('disabled', false);
+                } else {
+                    $('#viewEmployeeName').prop('disabled', true);
+                }
+
+                $('#viewDateIn, #viewDateOut').prop('readonly', false).datepicker({ format: 'mm/dd/yyyy', autoclose: true, todayHighlight: true, startDate: minOBDate });
+                $('#viewTimeIn, #viewTimeOut').prop('readonly', false).prop('disabled', false);
+                $('#viewReason, #viewRemarks').prop('readonly', false);
+                $('.edit-required').removeClass('d-none');
+                $('#viewAttachment').removeClass('d-none');
+                $('.edit-mode-only').removeClass('d-none');
+                $('#btnApproveOBRequest, #btnEditOBRequest').addClass('d-none');
+                $('#btnSaveOBRequest, #btnCancelEdit').removeClass('d-none');
+            }
+
+            // HELPER FUNCTIONS - VALIDATION
+            function validateForm(formSelector, fields) {
+                clearValidation(formSelector);
+                let isValid = true;
+                fields.forEach(field => {
+                    if (!$(`#${field}`).val()) {
+                        $(`#${field}`).addClass('is-invalid');
+                        isValid = false;
+                    }
+                });
+                return isValid;
+            }
+
+            function validateDates(dateInSelector, dateOutSelector) {
+                if ($(dateInSelector).val() && $(dateOutSelector).val()) {
+                    const dateIn = new Date($(dateInSelector).val());
+                    const dateOut = new Date($(dateOutSelector).val());
+                    if (dateOut < dateIn) {
+                        $(dateOutSelector).addClass('is-invalid');
+                        showNotification('Date Out cannot be earlier than Date In', 'error');
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            function clearValidation(formSelector) {
+                $(`${formSelector} .form-control, ${formSelector} .form-select`).removeClass('is-invalid');
+            }
+
+            // HELPER FUNCTIONS - UI UTILITIES
+            function toggleButtonLoading($btn, loading, text = '') {
+                if (loading) {
+                    if (!$btn.data('original-html')) $btn.data('original-html', $btn.html());
+                    const icon = text ? '<i class="fas fa-spinner fa-spin"></i> ' : '<i class="fas fa-spinner fa-spin"></i>';
+                    $btn.prop('disabled', true).html(icon + text);
+                } else {
+                    const originalHtml = $btn.data('original-html') || 'Save';
+                    $btn.prop('disabled', false).html(originalHtml).removeData('original-html');
+                }
+            }
+
+            function showNotification(message, type) {
+                const types = { success: 'Success', error: 'Error', warning: 'Warning', info: 'Information' };
+                toastr[type](message, types[type] || 'Notification');
+            }
+
+            validationinputs();
+        });
+    </script>
+}

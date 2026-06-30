@@ -1,0 +1,1599 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutFillow.cshtml";
+    ViewData["Title"] = "Leave Request";
+}
+
+<div class="col-12">
+    <div class="card">
+        <div class="card-header">
+            <div class="row" style="width:100%;">
+                <h4 class="card-title">Leave Request</h4>
+                <br> <br> <br>
+
+                <div class="row date-range" style="margin-left:0px;width:100%;">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Select Status</h5>
+                            <select name="filterStatusName" id="filterStatusName" class="form-control">
+                                <option value="All">ALL</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Approved">Approved</option>
+                                <option value="Cancelled">Cancelled</option>
+                                <option value="Declined">Declined</option>
+                                <option value="Processed">Processed</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label>Date From </label>
+                        <div class="input-hasicon">
+                            <input name="dateFrom" id="dateFrom" class="form-control formInput date-from" placeholder="mm/dd/yyyy">
+                            <div class="icon"><i class="far fa-calendar"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label>Date To </label>
+                        <div class="input-hasicon">
+                            <input name="dateTo" id="dateTo" class="form-control formInput date-to" placeholder="mm/dd/yyyy">
+                            <div class="icon"><i class="far fa-calendar"></i></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row align-items-end mt-2" style="margin-left:0px;width:100%;">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Branch</h5>
+                            <select name="branch" id="filterBranch" class="form-control"></select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Department</h5>
+                            <select name="department" id="filterDepartment" class="form-control"></select>
+                        </div>
+                    </div>
+                    <div class="col-md-6 d-flex justify-content-end">
+                        <div class="form-group me-2">
+                            <button type="button" class="btn btn-warning" id="btnExportToExcel">
+                                <i class="fas fa-file-excel"></i> Export to Excel
+                            </button>
+                        </div>
+                        <div class="form-group">
+                            <button type="button" class="btn btn-primary" id="btnAddLeaveRequest">
+                                <i class="fa fa-plus"></i> New Leave Request
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="leaveRequestTable" class="display" style="min-width: 845px">
+                    <thead>
+                        <tr>
+                            <th>Action</th>
+                            <th>Control</th>
+                            <th>Employee Name</th>
+                            <th>Leave Type</th>
+                            <th>Date From</th>
+                            <th>Date To</th>
+                            <th>Days</th>
+                            <th>Type</th>
+                            <th>Reason</th>
+                            <th>Attached File</th>
+                            <th>Status</th>
+                            <th>Requested By</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+
+        <!-- Modal for Add -->
+        <div class="modal fade" id="addLeaveRequestModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add Leave Request</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <!-- LEFT COLUMN -->
+                            <div class="col-lg-8">
+                                <form id="addLeaveRequestForm">
+                                    <div class="row">
+                                        <div class="col-md-12 mb-3">
+                                            <label for="addEmployeeName" class="form-label">Employee Name <span class="text-danger">*</span></label>
+                                            <select class="form-select" id="addEmployeeName" name="employeeNo" style="width:100%" required>
+                                                <option value="">Select Employee...</option>
+                                            </select>
+                                            <div class="invalid-feedback">Please select an employee.</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="addLeaveType" class="form-label">Leave Type <span class="text-danger">*</span></label>
+                                            <select class="form-select" id="addLeaveType" name="leaveCode" style="width:100%" required>
+                                                <option value="">Select Leave Type...</option>
+                                            </select>
+                                            <div class="invalid-feedback">Please select a leave type.</div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="addRemainingDays" class="form-label">Remaining Days</label>
+                                            <input type="text" class="form-control" id="addRemainingDays" readonly style="background-color: #f8f9fa;">
+                                        </div>
+                                    </div>
+
+                                    <div class="row date-range">
+                                        <div class="col-md-6 mb-3">
+                                            <label>Date From <span class="text-danger">*</span></label>
+                                            <div class="input-hasicon">
+                                                <input name="addDateFrom" id="addDateFrom" class="form-control formInput date-from" placeholder="mm/dd/yyyy" required>
+                                                <div class="icon"><i class="far fa-calendar"></i></div>
+                                            </div>
+                                            <div class="invalid-feedback">Please select date from.</div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label>Date To <span class="text-danger">*</span></label>
+                                            <div class="input-hasicon">
+                                                <input name="addDateTo" id="addDateTo" class="form-control formInput date-to" placeholder="mm/dd/yyyy" required>
+                                                <div class="icon"><i class="far fa-calendar"></i></div>
+                                            </div>
+                                            <div class="invalid-feedback">Please select date to.</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-12 mb-3">
+                                            <label class="form-label">Leave Duration <span class="text-danger">*</span></label>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="radio" name="addLeaveDuration" id="addWholeDayRadio" value="whole" checked>
+                                                <label class="form-check-label" for="addWholeDayRadio">Whole Day</label>
+                                            </div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="radio" name="addLeaveDuration" id="addFirstHalfRadio" value="first">
+                                                <label class="form-check-label" for="addFirstHalfRadio">First Half</label>
+                                            </div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="radio" name="addLeaveDuration" id="addSecondHalfRadio" value="second">
+                                                <label class="form-check-label" for="addSecondHalfRadio">Second Half</label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-12 mb-3">
+                                            <label for="addTotalDays" class="form-label">Total Requested Days</label>
+                                            <input type="text" class="form-control" id="addTotalDays" readonly style="background-color: #f8f9fa;">
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-12 mb-3">
+                                            <label for="addReason" class="form-label">Reason Details <span class="text-danger">*</span></label>
+                                            <textarea class="form-control" id="addReason" name="leaveReason" rows="3" required maxlength="500" placeholder="Enter reason details..."></textarea>
+                                            <div class="invalid-feedback">Please provide reason details.</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="addRemarks" class="form-label">Remarks</label>
+                                        <textarea class="form-control" id="addRemarks" name="remarks" rows="2" maxlength="1000"></textarea>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="addAttachment" class="form-label">Attachment</label>
+                                        <input type="file" class="form-control" id="addAttachment" name="attachment" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                                        <small class="text-muted">Allowed formats: PDF, JPG, PNG, DOC, DOCX (Max: 5MB)</small>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- RIGHT COLUMN - Leave Balance -->
+                            <div class="col-lg-4">
+                                <h5 class="form-label">Employee Leave Balance</h5>
+                                <div class="table-responsive">
+                                    <table id="addLeaveBalanceTable" class="table table-sm table-bordered">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Leave Type</th>
+                                                <th>Balance</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="btnSaveNewLeaveRequest">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for View/Edit -->
+        <div class="modal fade" id="viewLeaveRequestModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="viewModalTitle">View Leave Request</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <!-- LEFT COLUMN -->
+                            <div class="col-lg-8">
+                                <form id="viewLeaveRequestForm">
+                                    <input type="hidden" id="viewLeaveRequestId" name="id">
+                                    <input type="hidden" id="viewLeaveRequestStatus" name="statusName">
+
+                                    <div class="row">
+                                        <div class="col-md-12 mb-3">
+                                            <label for="viewEmployeeName" class="form-label">Employee Name <span class="text-danger edit-required d-none">*</span></label>
+                                            <select class="form-select" id="viewEmployeeName" name="employeeNo" style="width:100%" disabled>
+                                                <option value="">Select Employee...</option>
+                                            </select>
+                                            <div class="invalid-feedback">Please select an employee.</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="viewLeaveType" class="form-label">Leave Type <span class="text-danger edit-required d-none">*</span></label>
+                                            <select class="form-select" id="viewLeaveType" name="leaveCode" style="width:100%" disabled>
+                                                <option value="">Select Leave Type...</option>
+                                            </select>
+                                            <div class="invalid-feedback">Please select a leave type.</div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="viewRemainingDays" class="form-label">Remaining Days</label>
+                                            <input type="text" class="form-control" id="viewRemainingDays" readonly style="background-color: #f8f9fa;">
+                                        </div>
+                                    </div>
+
+                                    <div class="row date-range">
+                                        <div class="col-md-6 mb-3">
+                                            <label>Date From <span class="text-danger edit-required d-none">*</span></label>
+                                            <div class="input-hasicon">
+                                                <input name="viewDateFrom" id="viewDateFrom" class="form-control formInput date-from" placeholder="mm/dd/yyyy" readonly>
+                                                <div class="icon"><i class="far fa-calendar"></i></div>
+                                            </div>
+                                            <div class="invalid-feedback">Please select date from.</div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label>Date To <span class="text-danger edit-required d-none">*</span></label>
+                                            <div class="input-hasicon">
+                                                <input name="viewDateTo" id="viewDateTo" class="form-control formInput date-to" placeholder="mm/dd/yyyy" readonly>
+                                                <div class="icon"><i class="far fa-calendar"></i></div>
+                                            </div>
+                                            <div class="invalid-feedback">Please select date to.</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-12 mb-3">
+                                            <label class="form-label">Leave Duration <span class="text-danger edit-required d-none">*</span></label>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="radio" name="viewLeaveDuration" id="viewWholeDayRadio" value="whole" disabled>
+                                                <label class="form-check-label" for="viewWholeDayRadio">Whole Day</label>
+                                            </div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="radio" name="viewLeaveDuration" id="viewFirstHalfRadio" value="first" disabled>
+                                                <label class="form-check-label" for="viewFirstHalfRadio">First Half</label>
+                                            </div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="radio" name="viewLeaveDuration" id="viewSecondHalfRadio" value="second" disabled>
+                                                <label class="form-check-label" for="viewSecondHalfRadio">Second Half</label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-12 mb-3">
+                                            <label for="viewTotalDays" class="form-label">Total Requested Days</label>
+                                            <input type="text" class="form-control" id="viewTotalDays" readonly style="background-color: #f8f9fa;">
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-12 mb-3">
+                                            <label for="viewReason" class="form-label">Reason Details <span class="text-danger edit-required d-none">*</span></label>
+                                            <textarea class="form-control" id="viewReason" name="leaveReason" rows="3" readonly maxlength="500"></textarea>
+                                            <div class="invalid-feedback">Please provide reason details.</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="viewRemarks" class="form-label">Remarks</label>
+                                        <textarea class="form-control" id="viewRemarks" name="remarks" rows="2" maxlength="1000" readonly></textarea>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="viewAttachment" class="form-label">Attachment</label>
+                                        <div id="currentAttachments" class="mb-2"></div>
+                                        <input type="file" class="form-control d-none" id="viewAttachment" name="attachment" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                                        <small class="text-muted d-none edit-mode-only">Allowed formats: PDF, JPG, PNG, DOC, DOCX (Max: 5MB)</small>
+                                    </div>
+                                    <!-- Approval Progress Tracker -->
+                                    <div id="approvalProgress" class="mt-3 d-none">
+                                        <hr>
+                                        <h6 class="text-muted mb-2">
+                                            <i class="fas fa-tasks me-1"></i> Approval Progress
+                                        </h6>
+                                        <div id="approvalSteps" class="d-flex flex-wrap gap-2"></div>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- RIGHT COLUMN - Leave Balance -->
+                            <div class="col-lg-4">
+                                <h5 class="form-label">Employee Leave Balance</h5>
+                                <div class="table-responsive">
+                                    <table id="viewLeaveBalanceTable" class="table table-sm table-bordered">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Leave Type</th>
+                                                <th>Balance</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-between">
+                        <div>
+                            <button type="button" class="btn btn-secondary btn-custom d-none" id="btnCancelLeaveRequest">
+                                <i class="fas fa-ban"></i> Cancel Request
+                            </button>
+                        </div>
+                        <div>
+                            <button type="button" class="btn btn-success d-none" id="btnApproveLeaveRequest">
+                                <i class="fas fa-check"></i> Approve
+                            </button>
+                            <button type="button" class="btn btn-primary d-none" id="btnEditLeaveRequest">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button type="button" class="btn btn-success d-none" id="btnSaveLeaveRequest">Save</button>
+                            <button type="button" class="btn btn-danger d-none" id="btnCancelEdit">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attachment View Modal -->
+        <div class="modal fade" id="attachmentModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">View Attachments</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="attachmentList"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Fillow_style
+{
+    <style>
+        .table-responsive {
+            border-radius: 0.375rem;
+        }
+
+        #leaveRequestTable_wrapper .dataTables_length, #leaveRequestTable_wrapper .dataTables_filter {
+            margin-bottom: 1rem;
+        }
+
+        #leaveRequestTable_wrapper .dataTables_info, #leaveRequestTable_wrapper .dataTables_paginate {
+            margin-top: 1rem;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .modal-content {
+            border-radius: 0.5rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        .form-control[readonly], .form-select[disabled] {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        .edit-mode .form-control[readonly]:not([id*="Remaining"]):not([id*="Total"]),
+        .edit-mode .form-select[disabled] {
+            background-color: #ffffff;
+            border-color: #ced4da;
+        }
+
+        .edit-mode input[type="radio"][disabled] {
+            pointer-events: auto;
+        }
+
+        .invalid-feedback {
+            display: none;
+        }
+
+        .form-control.is-invalid, .form-select.is-invalid {
+            border-color: #dc3545;
+        }
+
+            .form-control.is-invalid ~ .invalid-feedback, .form-select.is-invalid ~ .invalid-feedback {
+                display: block;
+            }
+
+        .is-invalid + .select2-container .select2-selection--single {
+            border-color: #dc3545;
+        }
+
+        .select2-container .select2-selection--single {
+            height: 38px;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 36px;
+            padding-left: 12px;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 36px;
+        }
+
+        .select2-container--default.select2-container--focus .select2-selection--single {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        .select2-container--default .select2-selection--single.select2-selection--disabled {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.35rem 0.65rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 0.25rem;
+        }
+
+        .status-pending {
+            background-color: #ffc107;
+            color: #000;
+        }
+
+        .status-approved {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .status-declined {
+            background-color: #dc3545;
+            color: #fff;
+        }
+
+        .status-cancelled {
+            background-color: #6c757d;
+            color: #fff;
+        }
+
+        .status-processed {
+            background-color: #17a2b8;
+            color: #fff;
+        }
+
+        .card-header {
+            border-bottom: none !important;
+        }
+
+        .attachment-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            background-color: #f8f9fa;
+        }
+
+            .attachment-item a {
+                text-decoration: none;
+                color: #0d6efd;
+            }
+
+                .attachment-item a:hover {
+                    text-decoration: underline;
+                }
+
+        #btnCancelLeaveRequest {
+            background-color: #6c757d !important;
+            border-color: #6c757d !important;
+            color: white !important;
+        }
+
+            #btnCancelLeaveRequest:hover {
+                background-color: #5a6268 !important;
+                border-color: #545b62 !important;
+            }
+
+        #addLeaveBalanceTable, #viewLeaveBalanceTable {
+            font-size: 0.875rem;
+        }
+
+            #addLeaveBalanceTable thead, #viewLeaveBalanceTable thead {
+                position: sticky;
+                top: 0;
+                z-index: 1;
+            }
+
+        .status-partial {
+            background-color: #fd7e14;
+            color: #fff;
+        }
+    </style>
+}
+
+@section Fillow_script
+{
+    <script>
+        $(document).ready(function () {
+            // CONFIGURATION
+            MODULE = 'RleaveM';
+            access = ROLE_ACCESS?.[MODULE];
+
+            // LOAD PERMISSIONS FROM SERVER
+            let canEditEmployee = false;
+            let currentEmployeeData = null;
+            let isApprover = false;
+
+            // Load permissions on page load
+            $.get('/LeaveRequest/GetCurrentEmployee', function(data) {
+                canEditEmployee = data.canEditEmployee;
+                currentEmployeeData = data.currentEmployee;
+                isApprover = data.isApprover;
+            });
+
+            if (access != 'READWRITE' && access != 'FULL') {
+                $('#btnAddLeaveRequest').hide();
+                $('#btnEditLeaveRequest').hide();
+                $('#btnApproveLeaveRequest').hide();
+            }
+
+            const config = {
+                toastr: { positionClass: "toast-top-right", timeOut: 5000, closeButton: true, progressBar: true, preventDuplicates: true },
+                endpoints: {
+                    list: "/LeaveRequest/GetLeaveRequestList",
+                    get: "/LeaveRequest/GetLeaveRequest",
+                    employees: "/LeaveRequest/GetEmployeeList",
+                    leaveTypes: "/LeaveRequest/GetLeaveTypesList",
+                    employeeLeaveTypes: "/LeaveRequest/GetEmployeeLeaveTypes",
+                    leaveCredits: "/LeaveRequest/GetLeaveCredits",
+                    calculateDays: "/LeaveRequest/CalculateLeaveDays",
+                    attachments: "/LeaveRequest/GetLeaveAttachments",
+                    add: "/LeaveRequest/AddLeaveRequest",
+                    update: "/LeaveRequest/UpdateLeaveRequest",
+                    approve: "/LeaveRequest/ApproveLeaveRequest",
+                    decline: "/LeaveRequest/DeclineLeaveRequest",
+                    cancel: "/LeaveRequest/CancelLeaveRequest"
+                }
+            };
+
+            toastr.options = config.toastr;
+            let isInitialLoad = true;
+
+            // Computes display status from the three DB level columns.
+            // rq_leave: statusLevel2, statusLevel3, statusLevel4 (final gate)
+            function computeDisplayStatus(row) {
+                const l4 = row.statusLevel4 || row.statusName;
+                const l3 = row.statusLevel3;
+                const l2 = row.statusLevel2;
+                const l1 = row.statusLevel1;
+
+                if (l4 === 'Approved')  return 'Approved';
+                if (l4 === 'Declined')  return 'Declined';
+                if (l4 === 'Cancelled') return 'Cancelled';
+                if (l4 === 'Processed') return 'Processed';
+
+                if (l3 === 'Declined' || l2 === 'Declined' || l1 === 'Declined') return 'Declined';
+                if (l3 === 'Approved' || l2 === 'Approved' || l1 === 'Approved') return 'Partially Approved';
+
+                return 'Pending';
+            }
+
+            // INITIALIZATION
+            // Earliest allowed date = today minus 3 calendar days
+            var minLeaveDate = (access === 'FULL') ? null : new Date();
+            if (minLeaveDate) minLeaveDate.setDate(minLeaveDate.getDate() - 3);
+
+            function getMinDateForLeaveCode(leaveCode) {
+                if (access === 'FULL') return null;
+                var d = new Date();
+                if (leaveCode === 'SL') return null;
+                if (leaveCode === 'BL' || leaveCode === 'VL') {
+                    d.setDate(d.getDate() - 7);
+                    return d;
+                }
+                var def = new Date();
+                def.setDate(def.getDate() - 3);
+                return def;
+            }
+
+            function applyMinDateToDatepickers(selector1, selector2, leaveCode) {
+                var minDate = getMinDateForLeaveCode(leaveCode);
+                $(selector1).datepicker('setStartDate', minDate);
+                $(selector2).datepicker('setStartDate', minDate);
+            }
+
+            $('#dateFrom, #dateTo').datepicker({
+                format: 'mm/dd/yyyy',
+                autoclose: true,
+                todayHighlight: true
+            });
+
+            $('#addDateFrom, #addDateTo, #viewDateFrom, #viewDateTo').datepicker({
+                format: 'mm/dd/yyyy',
+                autoclose: true,
+                todayHighlight: true,
+                startDate: minLeaveDate
+            });
+
+            $('#filterStatusName').val('Pending');
+            initializeSelect2();
+            initializeFilterSelect2();
+
+            // DATATABLE CONFIGURATION
+            const table = $('#leaveRequestTable').DataTable({
+                processing: true,
+                serverSide: false,
+                ajax: {
+                    url: config.endpoints.list,
+                    type: "GET",
+                    data: d => ({
+                        status: isInitialLoad ? 'Default' : $('#filterStatusName').val(),
+                        branch: $('#filterBranch').val(),
+                        department: $('#filterDepartment').val(),
+                        dateFrom: $('#dateFrom').val(),
+                        dateTo: $('#dateTo').val()
+                    }),
+                    dataSrc: function(json) { isInitialLoad = false; return json.data; },
+                    error: () => showNotification('Error loading data. Please refresh the page.', 'error')
+                },
+                columns: [
+                    {
+                        data: null, width: "10%", orderable: false,
+                        render: (data, type, row) => {
+                            let viewBtn = '';
+                            let declineBtn = '';
+
+                            if (access === 'READ' || access === 'READWRITE' || access === 'FULL') {
+                                viewBtn = `<button class="btn btn-sm btn-primary shadow-sm viewLeaveRequest" data-id="${row.id}" title="View"><i class="fas fa-eye"></i></button>`;
+                            }
+                            const displayStatus = computeDisplayStatus(row);
+                            if (['Pending', 'Partially Approved', 'Approved'].includes(displayStatus) && row.employeeNo !== sessemployeeNo && (access === 'FULL' || isApprover)) {
+                                declineBtn = `<button class="btn btn-sm btn-danger shadow-sm declineLeaveRequest" data-id="${row.id}" title="Decline"><i class="fas fa-times"></i></button>`;
+                            }
+                            return `<div class="d-flex gap-1">${viewBtn}${declineBtn}</div>`;
+                        }
+                    },
+                    {
+                        data: null,
+                        width: "5%",
+                        orderable: false,
+                        render: function(data, type, row) {
+                            return `<button class="btn btn-sm btn-warning shadow-sm printLeaveRequest"
+                                            data-id="${row.id}"
+                                            title="Print PDF">
+                                        <i class="fas fa-print"></i>
+                                    </button>`;
+                        }
+                    },
+                    { data: "fullName", width: "15%", render: data => data || '' },
+                    { data: "leaveName", width: "12%", render: data => data || '' },
+                    { data: "displayDateFrom", width: "10%", render: data => data || '' },
+                    { data: "displayDateTo", width: "10%", render: data => data || '' },
+                    { data: "leaveCountDays", width: "6%", render: data => data || '0' },
+                    { data: "leaveType", width: "8%", render: data => formatLeaveType(data) },
+                    { data: "leaveReason", width: "15%", render: data => !data ? '' : (data.length > 50 ? data.substring(0, 50) + '...' : data) },
+                    {
+                        data: null, width: "8%", orderable: false,
+                        render: (data, type, row) => `<button class="btn btn-sm btn-outline-primary viewAttachment" data-id="${row.id}" data-employee="${row.employeeNo}" title="View Attachments"><i class="fas fa-paperclip"></i></button>`
+                    },
+                    {
+                        data: null,
+                        width: "8%",
+                        render: function(data, type, row) {
+                            const displayStatus = computeDisplayStatus(row);
+                            const statusMap = {
+                                'Approved':           'status-approved',
+                                'Declined':           'status-declined',
+                                'Cancelled':          'status-cancelled',
+                                'Processed':          'status-processed',
+                                'Partially Approved': 'status-partial'
+                            };
+                            const statusClass = statusMap[displayStatus] || 'status-pending';
+                            return `<span class="status-badge ${statusClass}">${displayStatus}</span>`;
+                        }
+                    },
+                    { data: "requestedByUser", width: "12%", render: data => data || '' }
+                ],
+                order: [],
+                pageLength: 25,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                language: {
+                    processing: "Loading...",
+                    emptyTable: "No leave requests found",
+                    zeroRecords: "No matching leave requests found",
+                    paginate: { next: '<i class="fa fa-angle-double-right"></i>', previous: '<i class="fa fa-angle-double-left"></i>' }
+                }
+            });
+
+            // EVENT HANDLERS - FILTERS
+            $('#filterStatusName, #filterBranch, #filterDepartment, #dateFrom, #dateTo').on('change', () => table.ajax.reload(null, false));
+
+            // EVENT HANDLERS - ADD MODAL
+            $('#btnAddLeaveRequest').click(() => {
+                resetAddForm();
+
+                if (canEditEmployee) {
+                    // FULL access: Load all employees based on data scope
+                    loadEmployeeDropdown('#addEmployeeName');
+                } else {
+                    // Limited access: Only show current user
+                    if (currentEmployeeData) {
+                        $('#addEmployeeName').empty()
+                            .append(`<option value="${currentEmployeeData.employeeNo}" selected>${currentEmployeeData.employeeName}</option>`)
+                            .prop('disabled', true)
+                            .trigger('change');
+
+                        // Load leave balance for current user
+                        loadEmployeeLeaveBalance(currentEmployeeData.employeeNo, '#addLeaveBalanceTable');
+                    }
+                }
+
+                loadLeaveTypesDropdown('#addLeaveType');
+                $('#addLeaveRequestModal').modal('show');
+            });
+
+            $('#btnSaveNewLeaveRequest').click(() => {
+                if (!validateForm('#addLeaveRequestForm', ['addEmployeeName', 'addLeaveType', 'addDateFrom', 'addDateTo', 'addReason'])) return;
+                if (!validateDates('#addDateFrom', '#addDateTo')) return;
+                if (!validateLeaveBalance('#addRemainingDays', '#addTotalDays')) return;
+
+                const formData = new FormData();
+                formData.append('employeeNo', $('#addEmployeeName').val());
+                formData.append('leaveCode', $('#addLeaveType').val());
+                formData.append('leaveDateFrom', toISODate($('#addDateFrom').val()));
+                formData.append('leaveDateTo', toISODate($('#addDateTo').val()));
+                formData.append('leaveCountDays', $('#addTotalDays').val());
+                formData.append('leaveCountHours', 0);
+                formData.append('leaveType', $('input[name="addLeaveDuration"]:checked').val());
+                formData.append('leaveReason', $('#addReason').val().trim());
+                formData.append('remarks', $('#addRemarks').val().trim());
+                formData.append('creditDeductionOnly', false);
+
+                const file = $('#addAttachment')[0].files[0];
+                if (file) formData.append('attachment', file);
+
+                saveRequest(config.endpoints.add, formData, '#btnSaveNewLeaveRequest', true);
+            });
+
+            // EVENT HANDLERS - VIEW/EDIT MODAL
+            $(document).on('click', '.viewLeaveRequest', function(e) {
+                e.preventDefault();
+                const id   = $(this).data('id');
+                const $btn = $(this);
+                toggleButtonLoading($btn, true);
+
+                $.get(config.endpoints.get, { id })
+                    .done(function(data) {
+                        if (!data || data.error) {
+                            showNotification(data?.error || 'Unable to load leave request data', 'error');
+                            return;
+                        }
+
+                        resetViewForm();
+                        setViewMode();
+
+                        if (canEditEmployee) {
+                            $.when(
+                                loadEmployeeDropdown('#viewEmployeeName'),
+                                loadLeaveTypesDropdown('#viewLeaveType')
+                            ).done(function() {
+                                populateViewForm(data);
+                                updateViewButtons(data);       // ← pass full data object
+                                $('#viewLeaveRequestModal').modal('show');
+                            });
+                        } else {
+                            $('#viewEmployeeName')
+                                .empty()
+                                .append(`<option value="${data.employeeNo}" selected>${data.fullName}</option>`)
+                                .prop('disabled', true);
+
+                            loadLeaveTypesDropdown('#viewLeaveType').done(function() {
+                                populateViewForm(data);
+                                updateViewButtons(data);       // ← pass full data object
+                                $('#viewLeaveRequestModal').modal('show');
+                            });
+                        }
+                    })
+                    .fail(function() {
+                        showNotification('Unable to load leave request data', 'error');
+                    })
+                    .always(function() {
+                        toggleButtonLoading($btn, false);
+                    });
+            });
+
+            $('#btnApproveLeaveRequest').click(() => {
+                const id = $('#viewLeaveRequestId').val();
+                Swal.fire({
+                    title: 'Approve Request',
+                    text: 'Are you sure you want to approve this leave request?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, Approve',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d'
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        const $btn = $('#btnApproveLeaveRequest');
+                        toggleButtonLoading($btn, true, 'Approving...');
+                        $.post(config.endpoints.approve, { id, approvedByUser: sessemployeeNo || 'CURRENT_USER' })
+                            .done(response => {
+                                if (response.success) {
+                                    $('#viewLeaveRequestModal').modal('hide');
+                                    table.ajax.reload(null, false);
+                                    showNotification(response.message, 'success');
+                                } else {
+                                    showNotification(response.message, 'error');
+                                    toggleButtonLoading($btn, false);
+                                }
+                            })
+                            .fail(() => {
+                                showNotification('Unable to approve. Please try again.', 'error');
+                                toggleButtonLoading($btn, false);
+                            });
+                    }
+                });
+            });
+
+            $('#btnEditLeaveRequest').click(() => {
+                setEditMode();
+                $('#viewEmployeeName').focus();
+            });
+
+            $('#btnCancelEdit').click(function() {
+                const id = $('#viewLeaveRequestId').val();
+                $.get(config.endpoints.get, { id }).done(function(data) {
+                    if (data) {
+                        populateViewForm(data);
+                        setViewMode();
+                        updateViewButtons(data);   // pass full data object
+                        clearValidation('#viewLeaveRequestForm');
+                    }
+                });
+            });
+
+            $('#btnSaveLeaveRequest').click(() => {
+                if (!validateForm('#viewLeaveRequestForm', ['viewEmployeeName', 'viewLeaveType', 'viewDateFrom', 'viewDateTo', 'viewReason'])) return;
+                if (!validateDates('#viewDateFrom', '#viewDateTo')) return;
+                if (!validateLeaveBalance('#viewRemainingDays', '#viewTotalDays')) return;
+
+                const formData = new FormData();
+                formData.append('id', $('#viewLeaveRequestId').val());
+                formData.append('employeeNo', $('#viewEmployeeName').val());
+                formData.append('leaveCode', $('#viewLeaveType').val());
+                formData.append('leaveDateFrom', toISODate($('#viewDateFrom').val()));
+                formData.append('leaveDateTo', toISODate($('#viewDateTo').val()));
+                formData.append('leaveCountDays', $('#viewTotalDays').val());
+                formData.append('leaveCountHours', 0);
+                formData.append('leaveType', $('input[name="viewLeaveDuration"]:checked').val());
+                formData.append('leaveReason', $('#viewReason').val().trim());
+                formData.append('remarks', $('#viewRemarks').val().trim());
+                formData.append('creditDeductionOnly', false);
+
+                const file = $('#viewAttachment')[0].files[0];
+                if (file) formData.append('attachment', file);
+
+                saveRequest(config.endpoints.update, formData, '#btnSaveLeaveRequest', false);
+            });
+
+            // EVENT HANDLERS - CANCEL & DECLINE
+            $('#btnCancelLeaveRequest').click(() => {
+                const id = $('#viewLeaveRequestId').val();
+                cancelWithReason({
+                    title: 'Cancel Leave Request',
+                    text: 'Are you sure you want to cancel this leave request?',
+                    url: config.endpoints.cancel,
+                    id: id,
+                    cancelledByUser: sessemployeeNo || 'CURRENT_USER',
+                    button: $('#btnCancelLeaveRequest'),
+                    table: table,
+                    onSuccess: function(response) {
+                        $('#viewLeaveRequestModal').modal('hide');
+                    }
+                });
+            });
+
+            $(document).on('click', '.declineLeaveRequest', function(e) {
+                e.preventDefault();
+                declineWithReason({
+                    title: 'Decline Leave Request',
+                    text: 'Are you sure you want to decline this leave request?',
+                    url: config.endpoints.decline,
+                    id: $(this).data('id'),
+                    declinedByUser: sessemployeeNo || 'CURRENT_USER',
+                    button: $(this),
+                    table: table
+                });
+            });
+
+            // EVENT HANDLERS - EMPLOYEE CHANGE
+            $('#addEmployeeName').on('select2:select', function(e) {
+                const empNo = e.params.data.id;
+                loadEmployeeLeaveBalance(empNo, '#addLeaveBalanceTable');
+                $('#addLeaveType').val('').trigger('change');
+                $('#addRemainingDays').val('');
+            });
+
+            $('#viewEmployeeName').on('select2:select', function(e) {
+                const empNo = e.params.data.id;
+                loadEmployeeLeaveBalance(empNo, '#viewLeaveBalanceTable');
+                $('#viewLeaveType').val('').trigger('change');
+                $('#viewRemainingDays').val('');
+            });
+
+            // EVENT HANDLERS - LEAVE TYPE CHANGE
+            $('#addLeaveType').on('change', function() {
+                const empNo = $('#addEmployeeName').val();
+                const leaveCode = $(this).val();
+
+                // Reset dates and total days when leave type changes
+                // to prevent stale data being submitted with wrong leaveCode
+                $('#addDateFrom').val('');
+                $('#addDateTo').val('');
+                $('#addTotalDays').val('');
+
+                applyMinDateToDatepickers('#addDateFrom', '#addDateTo', leaveCode);
+                if (empNo && leaveCode) {
+                    calculateRemainingLeaveCredits(empNo, leaveCode, '#addRemainingDays');
+                } else {
+                    $('#addRemainingDays').val('');
+                }
+            });
+
+            $('#viewLeaveType').on('change', function() {
+                const empNo = $('#viewEmployeeName').val();
+                const leaveCode = $(this).val();
+                applyMinDateToDatepickers('#viewDateFrom', '#viewDateTo', leaveCode);
+                if (empNo && leaveCode) {
+                    calculateRemainingLeaveCredits(empNo, leaveCode, '#viewRemainingDays');
+                } else {
+                    $('#viewRemainingDays').val('');
+                }
+            });
+
+            // EVENT HANDLERS - DATE & DURATION CHANGE
+            $('#addDateFrom, #addDateTo, input[name="addLeaveDuration"]').on('change', function() {
+                const dateFrom = $('#addDateFrom').val();
+                const dateTo = $('#addDateTo').val();
+                const leaveType = $('input[name="addLeaveDuration"]:checked').val();
+                if (dateFrom && dateTo) {
+                    calculateLeaveDays(dateFrom, dateTo, leaveType, '#addTotalDays');
+                }
+            });
+
+            $('#viewDateFrom, #viewDateTo, input[name="viewLeaveDuration"]').on('change', function() {
+                const dateFrom = $('#viewDateFrom').val();
+                const dateTo = $('#viewDateTo').val();
+                const leaveType = $('input[name="viewLeaveDuration"]:checked').val();
+                if (dateFrom && dateTo) {
+                    calculateLeaveDays(dateFrom, dateTo, leaveType, '#viewTotalDays');
+                }
+            });
+
+            // EVENT HANDLERS - ATTACHMENTS
+            $(document).on('click', '.viewAttachment', function(e) {
+                e.preventDefault();
+                const employeeNo = $(this).data('employee');
+                loadAttachmentsList(employeeNo);
+                $('#attachmentModal').modal('show');
+            });
+
+            // EVENT HANDLERS - MODAL LIFECYCLE
+            $('#addLeaveRequestModal').on('hidden.bs.modal', resetAddForm);
+            $('#viewLeaveRequestModal').on('hidden.bs.modal', () => {
+                resetViewForm();
+                setViewMode();
+                resetAllButtons();
+            });
+
+            // EVENT HANDLERS - KEYBOARD
+            $('#addLeaveRequestForm').on('keypress', e => {
+                if (e.which === 13) { e.preventDefault(); $('#btnSaveNewLeaveRequest').click(); }
+            });
+            $('#viewLeaveRequestForm').on('keypress', e => {
+                if (e.which === 13 && $('#viewLeaveRequestModal .modal-body').hasClass('edit-mode')) {
+                    e.preventDefault(); $('#btnSaveLeaveRequest').click();
+                }
+            });
+
+            // EVENT HANDLERS - PRINT PDF
+            $(document).on('click', '.printLeaveRequest', function(e) {
+                e.preventDefault();
+                const id = $(this).data('id');
+                const $btn = $(this);
+
+                toggleButtonLoading($btn, true);
+                window.open(`/LeaveRequestPdf/PreviewPdf?id=${id}`, '_blank');
+                setTimeout(() => toggleButtonLoading($btn, false), 1000);
+            });
+
+            // EVENT HANDLER - EXPORT TO EXCEL (CURRENT PAGE ONLY)
+            $('#btnExportToExcel').click(function() {
+                const $btn = $(this);
+                const pageInfo = table.page.info();
+
+                // Validate data
+                if (pageInfo.recordsDisplay === 0) {
+                    return showNotification('No data available to export', 'warning');
+                }
+
+                const sortMap = ['', '', 'fullName', 'leaveName', 'displayDateFrom', 'displayDateTo', 'leaveCountDays', 'leaveType', 'leaveReason', '', 'statusName'];
+                const [sortIndex, sortDir] = table.order()[0] || [4, 'desc'];
+
+                // Use -1 for "All", otherwise use the current page length
+                const exportLimit = pageInfo.length === -1 ? -1 : pageInfo.length;
+
+                const params = new URLSearchParams({
+                    status: isInitialLoad ? 'Default' : ($('#filterStatusName').val() || 'Default'),
+                    branch: $('#filterBranch').val() || '',
+                    department: $('#filterDepartment').val() || '',
+                    dateFrom: $('#dateFrom').val() || '',
+                    dateTo: $('#dateTo').val() || '',
+                    offset: pageInfo.start,
+                    limit: exportLimit,
+                    sortColumn: sortMap[sortIndex] || '',
+                    sortDirection: sortDir,
+                    leaveType: 'leave'
+                });
+
+                toggleButtonLoading($btn, true, 'Exporting...');
+
+                fetch(`/LeaveRequestExport/ExportToExcel?${params.toString()}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => {
+                            throw new Error(`Server error (${response.status}): ${text}`);
+                        });
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `LeaveRequest_${new Date().getTime()}.xlsx`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+                    toggleButtonLoading($btn, false);
+                    showNotification(`Successfully exported ${pageInfo.recordsDisplay} record(s).`, 'success');
+                })
+                .catch(error => {
+                    toggleButtonLoading($btn, false);
+                    showNotification(error.message || 'An error occurred during export. Please try again.', 'error');
+                });
+            });
+
+            // EVENT HANDLERS - VALIDATION
+            $('#addEmployeeName, #addLeaveType, #addReason, #addDateFrom, #addDateTo, #viewEmployeeName, #viewLeaveType, #viewReason, #viewDateFrom, #viewDateTo')
+                .on('input change', function() { $(this).removeClass('is-invalid'); });
+
+            // HELPER FUNCTIONS - SELECT2 INITIALIZATION
+            function initializeSelect2() {
+                const modals = {
+                    add: { employee: '#addEmployeeName', leaveType: '#addLeaveType', parent: '#addLeaveRequestModal' },
+                    view: { employee: '#viewEmployeeName', leaveType: '#viewLeaveType', parent: '#viewLeaveRequestModal' }
+                };
+                Object.values(modals).forEach(modal => {
+                    $(modal.employee).select2({ placeholder: "Select Employee", allowClear: true, dropdownParent: $(modal.parent), width: '100%' });
+                    $(modal.leaveType).select2({ placeholder: "Select Leave Type", allowClear: true, dropdownParent: $(modal.parent), width: '100%' });
+                });
+            }
+
+            function initializeFilterSelect2() {
+                $('#filterStatusName').select2({ selectOnClose: true, minimumResultsForSearch: Infinity });
+                $('#filterBranch').select2({
+                    placeholder: "Select Branch", allowClear: true,
+                    ajax: {
+                        url: '/Setup/GetEmployeeBranch', dataType: 'json', delay: 250,
+                        processResults: data => ({
+                            results: [{ id: 'ALL', text: 'All Branches' }].concat(data.map(item => ({ id: item.branchCode, text: item.branchName })))
+                        })
+                    }
+                });
+                $('#filterDepartment').select2({
+                    placeholder: "Select Employee Department", allowClear: true,
+                    ajax: {
+                        url: '/Setup/GetEmployeeDepartment', dataType: 'json', delay: 250,
+                        processResults: data => ({
+                            results: [{ id: 'ALL', text: 'All Departments' }].concat(data.map(item => ({ id: item.departmentCode, text: item.departmentName })))
+                        })
+                    }
+                });
+            }
+
+            // HELPER FUNCTIONS - DROPDOWN LOADING
+            function loadEmployeeDropdown(selector) {
+                return $.get(config.endpoints.employees, data => {
+                    const $select = $(selector);
+                    $select.empty().append('<option value="">Select Employee...</option>');
+                    data.forEach(item => $select.append(`<option value="${item.employeeNo}">${item.employeeName}</option>`));
+                });
+            }
+
+            function loadLeaveTypesDropdown(selector) {
+                return $.get(config.endpoints.leaveTypes, data => {
+                    const $select = $(selector);
+                    $select.empty().append('<option value="">Select Leave Type...</option>');
+                    data.forEach(item => {
+                        $select.append(`<option value="${item.leaveCode}">${item.leaveName}</option>`);
+                    });
+                });
+            }
+
+            function loadEmployeeLeaveBalance(empNo, tableSelector) {
+                if (!empNo) {
+                    $(tableSelector + ' tbody').html('<tr><td colspan="2" class="text-center text-muted">Select an employee first</td></tr>');
+                    return;
+                }
+
+                $.get(config.endpoints.employeeLeaveTypes, { employeeNo: empNo })
+                    .done(response => {
+                        const $tbody = $(tableSelector + ' tbody');
+                        $tbody.empty();
+
+                        if (response && response.data && response.data.length > 0) {
+                            response.data.forEach(item => {
+                                    const isLWOP = item.leaveCode === 'LWOP' || item.leaveCode === 'SUS';
+                                    const balanceDisplay = isLWOP ? '-' : parseFloat(item.remainingLeaveDays || 0).toFixed(2);
+                                $tbody.append(`
+                                    <tr>
+                                        <td>${item.leaveName || ''}</td>
+                                        <td class="text-end">${balanceDisplay}</td>
+                                    </tr>
+                                `);
+                            });
+                        } else {
+                            $tbody.append('<tr><td colspan="2" class="text-center text-muted">No leave balance available</td></tr>');
+                        }
+                    })
+                    .fail(() => {
+                        $(tableSelector + ' tbody').html('<tr><td colspan="2" class="text-center text-danger">Error loading balance</td></tr>');
+                    });
+            }
+
+            function calculateRemainingLeaveCredits(empNo, leaveCode, targetSelector) {
+                if (!empNo || !leaveCode) {
+                    $(targetSelector).val('');
+                    return;
+                }
+
+                if (leaveCode === 'LWOP' || leaveCode === 'SUS') {
+                    $(targetSelector).val('-');
+                    return;
+                }
+
+                $.get(config.endpoints.employeeLeaveTypes, { employeeNo: empNo })
+                    .done(response => {
+                        if (response && response.data) {
+                            const leaveItem = response.data.find(item => item.leaveCode === leaveCode);
+                            if (leaveItem) {
+                                $(targetSelector).val(parseFloat(leaveItem.remainingLeaveDays || 0).toFixed(2));
+                            } else {
+                                $(targetSelector).val('0.00');
+                            }
+                        }
+                    })
+                    .fail(() => {
+                        $(targetSelector).val('0.00');
+                    });
+            }
+
+            function calculateLeaveDays(dateFrom, dateTo, leaveType, targetSelector) {
+                $.get(config.endpoints.calculateDays, { dateFrom, dateTo, leaveType }, data => {
+                    $(targetSelector).val(data.leaveCount ? data.leaveCount.toFixed(1) : '0');
+                });
+            }
+
+            // HELPER FUNCTIONS - FORM POPULATION & MANAGEMENT
+            function populateViewForm(data) {
+                $('#viewLeaveRequestId').val(data.id);
+                $('#viewLeaveRequestStatus').val(data.statusName);
+
+                // Set employee
+                $('#viewEmployeeName').val(data.employeeNo).trigger('change');
+
+                // Load leave balance
+                loadEmployeeLeaveBalance(data.employeeNo, '#viewLeaveBalanceTable');
+
+                // Set leave type with delay to ensure dropdown is loaded
+                setTimeout(() => {
+                    $('#viewLeaveType').val(data.leaveCode).trigger('change');
+
+                    // Calculate remaining days after leave type is set
+                    setTimeout(() => {
+                        calculateRemainingLeaveCredits(data.employeeNo, data.leaveCode, '#viewRemainingDays');
+                    }, 300);
+                }, 500);
+
+                $('#viewDateFrom').val(data.displayDateFrom);
+                $('#viewDateTo').val(data.displayDateTo);
+                $('#viewTotalDays').val(data.leaveCountDays);
+
+                $(`input[name="viewLeaveDuration"][value="${data.leaveType}"]`).prop('checked', true);
+
+                $('#viewReason').val(data.leaveReason);
+                $('#viewRemarks').val(data.remarks);
+
+                loadCurrentAttachments(data.employeeNo);
+                renderApprovalProgress(data);
+            }
+
+            function renderApprovalProgress(data) {
+                const $progress = $('#approvalProgress');
+                const $steps    = $('#approvalSteps');
+                $steps.empty();
+
+                const overall = data.statusLevel4 || data.statusName;
+
+                if (overall === 'Cancelled') {
+                    $progress.addClass('d-none');
+                    return;
+                }
+
+                const required = data.requiredLevels || [];
+                if (required.length === 0) {
+                    $progress.addClass('d-none');
+                    return;
+                }
+
+                // rq_leave column mapping:
+                //   Level 2 → statusLevel2
+                //   Level 3 → statusLevel3
+                //   Level 4 → statusLevel4 (final gate)
+                const levelStatus = {
+                    1: data.statusLevel1,
+                    2: data.statusLevel2,
+                    3: data.statusLevel3,
+                    4: data.statusLevel4
+                };
+
+                required.forEach(function(level) {
+                    const st = levelStatus[level] || 'Pending';
+                    let badgeClass, icon;
+
+                    switch (st) {
+                        case 'Approved':
+                            badgeClass = 'bg-success';
+                            icon       = 'fa-check-circle';
+                            break;
+                        case 'Declined':
+                            badgeClass = 'bg-danger';
+                            icon       = 'fa-times-circle';
+                            break;
+                        default:
+                            badgeClass = 'bg-warning';
+                            icon       = 'fa-clock';
+                    }
+
+                    $steps.append(`
+                        <span class="badge ${badgeClass} fs-6 px-3 py-2">
+                            <i class="fas ${icon} me-1"></i>
+                            Level ${level}: ${st}
+                        </span>
+                        ${required.indexOf(level) < required.length - 1
+                            ? '<i class="fas fa-arrow-right align-self-center text-muted"></i>'
+                            : ''}
+                    `);
+                });
+
+                $progress.removeClass('d-none');
+            }
+
+            function loadCurrentAttachments(employeeNo) {
+                $.get(config.endpoints.attachments, { employeeNo }, data => {
+                    const container = $('#currentAttachments');
+                    container.empty();
+                    if (data && data.length > 0) {
+                        data.forEach(attachment => {
+                            const fileName = attachment.attachmentPath.split('/').pop();
+                            container.append(`
+                                <div class="attachment-item">
+                                    <i class="fas fa-file"></i>
+                                    <a href="${attachment.attachmentPath}" target="_blank">${fileName}</a>
+                                    <small class="text-muted ms-auto">${new Date(attachment.dtAdded).toLocaleDateString()}</small>
+                                </div>
+                            `);
+                        });
+                    } else {
+                        container.append('<small class="text-muted">No attachments found</small>');
+                    }
+                });
+            }
+
+            function loadAttachmentsList(employeeNo) {
+                $.get(config.endpoints.attachments, { employeeNo }, data => {
+                    const container = $('#attachmentList');
+                    container.empty();
+                    if (data && data.length > 0) {
+                        data.forEach(attachment => {
+                            const fileName = attachment.attachmentPath.split('/').pop();
+                            container.append(`
+                                <div class="attachment-item mb-3">
+                                    <i class="fas fa-file-alt fa-2x me-3"></i>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1"><a href="${attachment.attachmentPath}" target="_blank" class="text-decoration-none">${fileName}</a></h6>
+                                        <small class="text-muted">Added: ${new Date(attachment.dtAdded).toLocaleDateString()}</small>
+                                    </div>
+                                    <a href="${attachment.attachmentPath}" target="_blank" class="btn btn-sm btn-outline-primary ms-2"><i class="fas fa-download"></i> View</a>
+                                </div>
+                            `);
+                        });
+                    } else {
+                        container.append('<p class="text-muted text-center">No attachments found for this employee.</p>');
+                    }
+                });
+            }
+
+            function saveRequest(url, data, buttonSelector, closeModal) {
+                const $btn = $(buttonSelector);
+                toggleButtonLoading($btn, true, 'Saving...');
+                $.ajax({
+                    url, type: 'POST', data, processData: false, contentType: false,
+                    success: response => {
+                        if (response.success) {
+                            if (closeModal) $('#addLeaveRequestModal').modal('hide');
+                            else setViewMode();
+                            table.ajax.reload(null, false);
+                            showNotification(response.message, 'success');
+                        } else {
+                            showNotification(response.message, 'error');
+                        }
+                    },
+                    error: () => showNotification('Unable to save. Please try again.', 'error'),
+                    complete: () => toggleButtonLoading($btn, false)
+                });
+            }
+
+            function updateViewButtons(data) {
+                const isFullObject = (typeof data === 'object' && data !== null);
+                const status       = isFullObject
+                    ? (data.statusLevel4 || data.statusName)
+                    : data;
+
+                $('#btnApproveLeaveRequest, #btnEditLeaveRequest, #btnCancelLeaveRequest').addClass('d-none');
+                $('#btnSaveLeaveRequest, #btnCancelEdit').addClass('d-none');
+
+                const requestEmployeeNo = isFullObject ? data.employeeNo : $('#viewEmployeeName').val();
+                const isOwnRequest      = requestEmployeeNo === sessemployeeNo;
+
+                if (status === 'Cancelled' || status === 'Approved') return;
+
+                if (status === 'Declined') {
+                    if (isOwnRequest || access === 'FULL') {
+                        $('#btnEditLeaveRequest, #btnCancelLeaveRequest').removeClass('d-none');
+                    }
+                    return;
+                }
+
+                // Pending / Partially Approved
+                if (isFullObject && typeof data.canCurrentUserApprove !== 'undefined') {
+                    if (data.canCurrentUserApprove) {
+                        $('#btnApproveLeaveRequest').removeClass('d-none');
+                    }
+                } else {
+                    // Fallback (e.g. called with status string from setViewMode)
+                    if (access === 'FULL' || (isApprover && !isOwnRequest)) {
+                        $('#btnApproveLeaveRequest').removeClass('d-none');
+                    }
+                }
+
+                if (isOwnRequest || access === 'FULL') {
+                    $('#btnEditLeaveRequest, #btnCancelLeaveRequest').removeClass('d-none');
+                }
+            }
+
+            function resetAddForm() {
+                $('#addLeaveRequestForm')[0].reset();
+                $('#addEmployeeName, #addLeaveType').val(null).trigger('change');
+                $('#addLeaveBalanceTable tbody').html('<tr><td colspan="2" class="text-center text-muted">Select an employee first</td></tr>');
+                $('#addRemainingDays, #addTotalDays').val('');
+                $('input[name="addLeaveDuration"][value="whole"]').prop('checked', true);
+                clearValidation('#addLeaveRequestForm');
+                $('#btnSaveNewLeaveRequest').prop('disabled', false).html('Save');
+            }
+
+            function resetViewForm() {
+                $('#viewLeaveRequestForm')[0].reset();
+                $('#viewEmployeeName, #viewLeaveType').val(null).trigger('change');
+                $('#viewLeaveBalanceTable tbody').html('<tr><td colspan="2" class="text-center text-muted">No data</td></tr>');
+                $('#currentAttachments').empty();
+                $('#viewRemainingDays, #viewTotalDays').val('');
+                $('input[name="viewLeaveDuration"][value="whole"]').prop('checked', true);
+                clearValidation('#viewLeaveRequestForm');
+                $('#btnSaveLeaveRequest').prop('disabled', false).html('Save');
+                $('#approvalProgress').addClass('d-none');
+                $('#approvalSteps').empty();
+            }
+
+            function resetAllButtons() {
+                $('#btnApproveLeaveRequest').prop('disabled', false).html('<i class="fas fa-check"></i> Approve');
+                $('#btnEditLeaveRequest').prop('disabled', false).html('<i class="fas fa-edit"></i> Edit');
+                $('#btnCancelLeaveRequest').prop('disabled', false).html('<i class="fas fa-ban"></i> Cancel Request');
+            }
+
+            // HELPER FUNCTIONS - VIEW MODES
+            function setViewMode() {
+                const status = $('#viewLeaveRequestStatus').val();
+                $('#viewModalTitle').text('View Leave Request');
+                $('#viewLeaveRequestModal .modal-body').removeClass('edit-mode');
+                $('#viewEmployeeName, #viewLeaveType').prop('disabled', true);
+                $('#viewDateFrom, #viewDateTo').datepicker('destroy').prop('readonly', true);
+                $('#viewReason, #viewRemarks').prop('readonly', true);
+                $('input[name="viewLeaveDuration"]').prop('disabled', true);
+                $('.edit-required').addClass('d-none');
+                $('#viewAttachment').addClass('d-none');
+                $('.edit-mode-only').addClass('d-none');
+                updateViewButtons(status);
+                $('#btnSaveLeaveRequest, #btnCancelEdit').addClass('d-none');
+                clearValidation('#viewLeaveRequestForm');
+            }
+
+            function setEditMode() {
+                $('#viewModalTitle').text('Edit Leave Request');
+                $('#viewLeaveRequestModal .modal-body').addClass('edit-mode');
+
+                // ✅ Only enable employee selector if user has FULL access
+                if (canEditEmployee) {
+                    $('#viewEmployeeName').prop('disabled', false);
+                } else {
+                    $('#viewEmployeeName').prop('disabled', true);
+                }
+
+                $('#viewLeaveType').prop('disabled', false);
+                $('#viewDateFrom, #viewDateTo').prop('readonly', false).datepicker({ format: 'mm/dd/yyyy', autoclose: true, todayHighlight: true, startDate: minLeaveDate });
+                $('#viewReason, #viewRemarks').prop('readonly', false);
+                $('input[name="viewLeaveDuration"]').prop('disabled', false);
+                $('.edit-required').removeClass('d-none');
+                $('#viewAttachment').removeClass('d-none');
+                $('.edit-mode-only').removeClass('d-none');
+                $('#btnApproveLeaveRequest, #btnEditLeaveRequest').addClass('d-none');
+                $('#btnSaveLeaveRequest, #btnCancelEdit').removeClass('d-none');
+            }
+
+            // HELPER FUNCTIONS - VALIDATION
+            function validateForm(formSelector, fields) {
+                clearValidation(formSelector);
+                let isValid = true;
+                fields.forEach(field => {
+                    if (!$(`#${field}`).val()) {
+                        $(`#${field}`).addClass('is-invalid');
+                        isValid = false;
+                    }
+                });
+                return isValid;
+            }
+
+            function validateDates(dateFromSelector, dateToSelector) {
+                if ($(dateFromSelector).val() && $(dateToSelector).val()) {
+                    const dateFrom = new Date($(dateFromSelector).val());
+                    const dateTo = new Date($(dateToSelector).val());
+                    if (dateTo < dateFrom) {
+                        $(dateToSelector).addClass('is-invalid');
+                        showNotification('Date To cannot be earlier than Date From', 'error');
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            function validateLeaveBalance(remainingSelector, requestedSelector) {
+                const remainingRaw = $(remainingSelector).val();
+                const requested = parseFloat($(requestedSelector).val()) || 0;
+                const leaveCode = $('#addLeaveType').val() || $('#viewLeaveType').val();
+
+                // LWOP/SUS — no balance check, always allow
+                if (remainingRaw === '-' || leaveCode === 'SUS') {
+                    if (leaveCode === 'SUS') {
+                        showNotification('This is a Suspension filing. No balance will be deducted.', 'warning');
+                    } else {
+                        showNotification('This is a Leave Without Pay (LWOP) request. No balance will be deducted.', 'warning');
+                    }
+                    return true;
+                }
+
+                const remaining = parseFloat(remainingRaw) || 0;
+                if (requested > remaining) {
+                    showNotification(`Insufficient leave balance. Remaining: ${remaining.toFixed(2)}, Requested: ${requested.toFixed(1)}`, 'error');
+                    return false;
+                }
+                return true;
+            }
+
+            function clearValidation(formSelector) {
+                $(`${formSelector} .form-control, ${formSelector} .form-select`).removeClass('is-invalid');
+            }
+
+            // HELPER FUNCTIONS - UI UTILITIES
+            function toggleButtonLoading($btn, loading, text = '') {
+                if (loading) {
+                    if (!$btn.data('original-html')) $btn.data('original-html', $btn.html());
+                    const icon = text ? '<i class="fas fa-spinner fa-spin"></i> ' : '<i class="fas fa-spinner fa-spin"></i>';
+                    $btn.prop('disabled', true).html(icon + text);
+                } else {
+                    const originalHtml = $btn.data('original-html') || 'Save';
+                    $btn.prop('disabled', false).html(originalHtml).removeData('original-html');
+                }
+            }
+
+            function showNotification(message, type) {
+                const types = { success: 'Success', error: 'Error', warning: 'Warning', info: 'Information' };
+                toastr[type](message, types[type] || 'Notification');
+            }
+
+            function toISODate(mmddyyyy) {
+                if (!mmddyyyy) return '';
+                const [m, d, y] = mmddyyyy.split('/');
+                return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+            }
+
+            function formatLeaveType(type) {
+                const typeMap = {
+                    'whole': 'Whole Day',
+                    'first': 'First Half',
+                    'second': 'Second Half'
+                };
+                return typeMap[type] || type;
+            }
+
+            validationinputs();
+        });
+    </script>
+}

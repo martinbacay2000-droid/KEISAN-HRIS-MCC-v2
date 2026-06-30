@@ -1,0 +1,1880 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutFillow.cshtml";
+    ViewData["Title"] = "Dashboard";
+    var employeeNo = Context.Session.GetString("employeeNo");
+    var userFullName = Context.Session.GetString("userFullName");
+    var roleCode = Context.Session.GetString("roleCode");
+    var isAdmin = roleCode == "RL-000000";
+    var isHrOrAdmin = isAdmin || (!string.IsNullOrEmpty(roleCode) && roleCode.ToUpper().Contains("HR"));
+}
+
+<style>
+    /* Welcome Card */
+    .welcome-card {
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 2rem;
+        margin-top: -35px;
+    }
+
+    .welcome-content-section {
+        padding: 2rem 2.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: 160px;
+    }
+
+        .welcome-content-section h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+    .welcome-employee-info {
+        font-size: 1.1rem;
+        font-weight: 500;
+        margin-bottom: 0.75rem;
+    }
+
+    .welcome-datetime {
+        font-size: 0.95rem;
+    }
+
+    .welcome-image-section {
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 160px;
+    }
+
+        .welcome-image-section img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            object-position: right top;
+            margin-left: 350px;
+        }
+
+    /* Summary Cards Section */
+    .summary-card {
+        border-radius: 8px;
+        padding: 1.25rem 1rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+        .summary-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .summary-card.pending {
+            border-top: 4px solid #ffa500;
+        }
+
+        .summary-card.approved {
+            border-top: 4px solid #28a745;
+        }
+
+        .summary-card.declined {
+            border-top: 4px solid #dc3545;
+        }
+
+        .summary-card.cancelled {
+            border-top: 4px solid #6c757d;
+        }
+
+    .summary-card-icon {
+        font-size: 1.75rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .summary-card.pending .summary-card-icon {
+        color: #ffa500;
+    }
+
+    .summary-card.approved .summary-card-icon {
+        color: #28a745;
+    }
+
+    .summary-card.declined .summary-card-icon {
+        color: #dc3545;
+    }
+
+    .summary-card.cancelled .summary-card-icon {
+        color: #6c757d;
+    }
+
+    .summary-card-number {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.15rem;
+        line-height: 1;
+    }
+
+    .summary-card.pending .summary-card-number {
+        color: #ffa500;
+    }
+
+    .summary-card.approved .summary-card-number {
+        color: #28a745;
+    }
+
+    .summary-card.declined .summary-card-number {
+        color: #dc3545;
+    }
+
+    .summary-card.cancelled .summary-card-number {
+        color: #6c757d;
+    }
+
+    .summary-card-label {
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .summary-card-subtitle {
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+    }
+
+    /* Chart Cards */
+    .chart-card {
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        border: none;
+        margin-bottom: 1.5rem;
+        height: 100%;
+    }
+
+        .chart-card:hover {
+            transform: translateY(-2px);
+        }
+
+    .chart-card-header {
+        padding: 1rem 1.25rem;
+        border-radius: 8px 8px 0 0;
+    }
+
+    .chart-card-title {
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        margin-bottom: 0;
+        font-size: 0.95rem;
+    }
+
+        .chart-card-title i {
+            margin-right: 0.5rem;
+        }
+
+    .chart-card-body {
+        padding: 1.25rem;
+    }
+
+    .chart-canvas-wrapper {
+        position: relative;
+        width: 100%;
+        height: 220px;
+    }
+
+        .chart-canvas-wrapper canvas {
+            max-height: 220px;
+        }
+
+    /* Employee Count Card */
+    .employee-count-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        color: white;
+        padding: 1.5rem;
+        text-align: center;
+        height: 100%;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+        .employee-count-card:hover {
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .employee-count-card i {
+            font-size: 2.5rem;
+            margin-bottom: 0.75rem;
+            opacity: 0.9;
+        }
+
+        .employee-count-card h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .employee-count-card p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin: 0;
+        }
+
+    /* Employee Schedule Section */
+    .schedule-section {
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+        .schedule-section .card-body {
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            min-height: 280px;
+        }
+
+    .schedule-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        flex-shrink: 0;
+    }
+
+    .schedule-title {
+        display: flex;
+        align-items: center;
+    }
+
+        .schedule-title i {
+            color: #3498db;
+            font-size: 1.1rem;
+            margin-right: 0.5rem;
+        }
+
+        .schedule-title h5 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+    .schedule-effectivity {
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: #6c757d;
+    }
+
+    #scheduleList {
+        overflow-y: auto;
+        flex: 1;
+        max-height: 200px;
+    }
+
+    .schedule-item {
+        border-left: 4px solid #3498db;
+        border-radius: 6px;
+        padding: 0.75rem 1rem;
+        margin-bottom: 0.65rem;
+        transition: all 0.3s ease;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(52, 152, 219, 0.05);
+    }
+
+        .schedule-item:hover {
+            transform: translateX(3px);
+            background: rgba(52, 152, 219, 0.1);
+        }
+
+        .schedule-item:last-child {
+            margin-bottom: 0;
+        }
+
+    .schedule-day {
+        font-weight: 600;
+        font-size: 0.9rem;
+        min-width: 90px;
+    }
+
+    .schedule-time {
+        font-size: 0.85rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #495057;
+    }
+
+        .schedule-time i {
+            font-size: 0.8rem;
+            color: #3498db;
+        }
+
+    .no-schedule {
+        text-align: center;
+        padding: 2rem 1rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        flex: 1;
+    }
+
+        .no-schedule i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.2;
+            color: #6c757d;
+        }
+
+        .no-schedule p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+    /* Announcements Section */
+    .announcements-section {
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .announcements-section .card-body {
+        padding: 1.25rem;
+        display: flex;
+        flex-direction: column;
+        min-height: 280px;
+    }
+
+    .announcements-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        flex-shrink: 0;
+    }
+
+    .announcements-header i {
+        color: #f39c12;
+        font-size: 1.1rem;
+        margin-right: 0.5rem;
+    }
+
+    .announcements-header h5 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    #announcementsList {
+        overflow-y: auto;
+        flex: 1;
+        max-height: 200px;
+    }
+
+    .announcement-card {
+        border-left: 4px solid #f39c12;
+        border-radius: 6px;
+        padding: 1rem;
+        margin-bottom: 0.875rem;
+        transition: all 0.3s ease;
+        background: rgba(243, 156, 18, 0.05);
+    }
+
+    .announcement-card:hover {
+        transform: translateX(3px);
+        background: rgba(243, 156, 18, 0.1);
+    }
+
+    .announcement-card:last-child {
+        margin-bottom: 0;
+    }
+
+    .announcement-title {
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        word-wrap: break-word;
+        color: #2c3e50;
+    }
+
+    .announcement-content {
+        font-size: 0.85rem;
+        line-height: 1.6;
+        margin-bottom: 0.75rem;
+        word-wrap: break-word;
+        color: #495057;
+    }
+
+    .announcement-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.75rem;
+        color: #6c757d;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .announcement-date {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+
+    .announcement-date i {
+        color: #f39c12;
+    }
+
+    .announcement-author {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+
+    .announcement-author i {
+        color: #f39c12;
+    }
+
+    .no-announcements {
+        text-align: center;
+        padding: 2rem 1rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        flex: 1;
+    }
+
+    .no-announcements i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.2;
+        color: #6c757d;
+    }
+
+    .no-announcements p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+    .loading-spinner {
+        text-align: center;
+        padding: 2rem;
+    }
+
+    /* Responsive */
+    @@media (max-width: 1199px) {
+        .chart-canvas-wrapper {
+            height: 200px;
+        }
+
+        .chart-canvas-wrapper canvas {
+            max-height: 200px;
+        }
+    }
+
+    @@media (max-width: 991px) {
+        .welcome-image-section {
+            display: none !important;
+        }
+
+        .chart-canvas-wrapper {
+            height: 220px;
+        }
+
+            .chart-canvas-wrapper canvas {
+                max-height: 220px;
+            }
+    }
+
+    @@media (max-width: 767px) {
+        .summary-card {
+            padding: 1rem 0.75rem;
+        }
+
+        .summary-card-icon {
+            font-size: 1.5rem;
+        }
+
+        .summary-card-number {
+            font-size: 1.75rem;
+        }
+
+        .summary-card-label {
+            font-size: 0.85rem;
+        }
+
+        .summary-card-subtitle {
+            font-size: 0.7rem;
+        }
+
+        .chart-canvas-wrapper {
+            height: 200px;
+        }
+
+            .chart-canvas-wrapper canvas {
+                max-height: 200px;
+            }
+
+        .employee-count-card h2 {
+            font-size: 2rem;
+        }
+
+        .employee-count-card i {
+            font-size: 2rem;
+        }
+
+        .schedule-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.4rem;
+        }
+
+        .schedule-day {
+            min-width: auto;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .summary-card-number {
+            font-size: 1.5rem;
+        }
+
+        .summary-card-icon {
+            font-size: 1.25rem;
+        }
+
+        .chart-canvas-wrapper {
+            height: 180px;
+        }
+
+        .chart-canvas-wrapper canvas {
+            max-height: 180px;
+        }
+    }
+
+    /* Commendation Card */
+    .commendation-section {
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .commendation-section .card-body {
+        padding: 1.25rem;
+        display: flex;
+        flex-direction: column;
+        min-height: 280px;
+    }
+
+    .commendation-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid rgba(184, 134, 11, 0.2);
+        flex-shrink: 0;
+    }
+
+    .commendation-title {
+        display: flex;
+        align-items: center;
+    }
+
+    .commendation-title i {
+        color: #b8860b;
+        font-size: 1.1rem;
+        margin-right: 0.5rem;
+    }
+
+    .commendation-title h5 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #b8860b;
+    }
+
+    .commendation-count-badge {
+        background: linear-gradient(135deg, #b8860b, #ffd700);
+        color: white;
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 0.2rem 0.6rem;
+        border-radius: 12px;
+        min-width: 24px;
+        text-align: center;
+        box-shadow: 0 2px 6px rgba(184, 134, 11, 0.4);
+    }
+
+    #commendationList {
+        overflow-y: auto;
+        flex: 1;
+        max-height: 220px;
+    }
+
+    .commendation-item {
+        border-left: 4px solid #b8860b;
+        border-radius: 6px;
+        padding: 0.75rem 1rem;
+        margin-bottom: 0.65rem;
+        transition: all 0.3s ease;
+        background: linear-gradient(135deg, rgba(255, 215, 0, 0.07), rgba(184, 134, 11, 0.05));
+        border-top: 1px solid rgba(255, 215, 0, 0.2);
+        border-right: 1px solid rgba(255, 215, 0, 0.1);
+        border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+    }
+
+    .commendation-item:hover {
+        transform: translateX(3px);
+        background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(184, 134, 11, 0.1));
+        box-shadow: 0 2px 8px rgba(184, 134, 11, 0.15);
+    }
+
+    .commendation-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .commendation-type-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        background: linear-gradient(135deg, #b8860b, #ffd700);
+        color: white;
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 0.2rem 0.6rem;
+        border-radius: 10px;
+        margin-bottom: 0.4rem;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        box-shadow: 0 2px 5px rgba(184, 134, 11, 0.3);
+    }
+
+    .commendation-activity {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #7a5800;
+        margin-bottom: 0.3rem;
+        line-height: 1.3;
+    }
+
+    .commendation-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.75rem;
+        color: #9a7d3a;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+    }
+
+    .commendation-meta i {
+        color: #b8860b;
+        margin-right: 0.2rem;
+    }
+
+    .no-commendations {
+        text-align: center;
+        padding: 2rem 1rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        flex: 1;
+    }
+
+    .no-commendations i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.25;
+        color: #b8860b;
+    }
+
+    .no-commendations p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #9a7d3a;
+    }
+
+    .commendation-section.card {
+        border-top: 4px solid #b8860b;
+        box-shadow: 0 2px 8px rgba(184, 134, 11, 0.1);
+    }
+
+    @@keyframes memoSlideIn {
+        from
+
+    {
+        opacity: 0;
+        transform: translateY(32px) scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+    }
+
+    #memoNotifOverlay {
+        display: none;
+    }
+
+    #memoNotifOverlay.active {
+        display: flex !important;
+    }
+
+    /* Add these CSS variable overrides for dark mode */
+    [data-theme-version="dark"] .announcement-title {
+        color: #e0e0e0 !important;
+    }
+
+    [data-theme-version="dark"] .announcement-content {
+        color: #b0b0b0 !important;
+    }
+
+    [data-theme-version="dark"] .announcement-meta {
+        color: #888 !important;
+    }
+
+    [data-theme-version="dark"] .announcement-card {
+        background: rgba(243, 156, 18, 0.08) !important;
+    }
+
+    [data-theme-version="dark"] .schedule-day {
+        color: #e0e0e0 !important;
+    }
+
+    [data-theme-version="dark"] .schedule-time {
+        color: #b0b0b0 !important;
+    }
+
+    [data-theme-version="dark"] .schedule-item {
+        background: rgba(52, 152, 219, 0.08) !important;
+    }
+
+    [data-theme-version="dark"] .commendation-activity {
+        color: #ffd700 !important;
+    }
+
+    [data-theme-version="dark"] .commendation-meta {
+        color: #c9a84c !important;
+    }
+
+    [data-theme-version="dark"] .commendation-item {
+        background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(184, 134, 11, 0.08)) !important;
+    }
+
+    [data-theme-version="dark"] .commendation-title h5 {
+        color: #ffffff !important;
+    }
+</style>
+
+<div class="container-fluid">
+    <!-- Welcome Card - UPDATED with card class -->
+    <div class="welcome-card card">
+        <div class="row g-0">
+            <div class="col-lg-4 col-md-5 col-12">
+                <div class="welcome-content-section">
+                    <h1>Welcome@(isAdmin ? ", Admin" : "")!</h1>
+                    <div class="welcome-employee-info">
+                        @employeeNo - @userFullName
+                    </div>
+                    <div class="welcome-datetime">
+                        <span id="currentDateTime"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-8 col-md-7 d-none d-md-block">
+                <div class="welcome-image-section">
+                    <img src="~/Fillow/images/logo-entrance-light.jpg" alt="Logo Hotel Entrance">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="row g-3" id="summaryCardsContainer">
+                <div class="col-12 text-center">
+                    <div class="loading-spinner">
+                        <i class="fas fa-spinner fa-spin fa-2x"></i>
+                        <p class="mt-2">Loading statistics...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- First Row: Schedule + Announcements + Commendations -->
+    <div class="row mb-3">
+        <!-- MY SCHEDULE - changed col-xl-6 to col-xl-4 -->
+        <div class="col-xl-4 col-lg-6 col-12 mb-3 mb-xl-0">
+            <div class="schedule-section card">
+                <div class="card-body">
+                    <div class="schedule-header">
+                        <div class="schedule-title">
+                            <i class="fas fa-calendar-alt"></i>
+                            <h5>My Schedule</h5>
+                        </div>
+                        <div class="schedule-effectivity" id="scheduleEffectivity"></div>
+                    </div>
+                    <div id="scheduleList">
+                        <div class="loading-spinner">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Loading schedule...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ANNOUNCEMENTS - changed col-xl-6 to col-xl-4 -->
+        <div class="col-xl-4 col-lg-6 col-12 mb-3 mb-xl-0">
+            <div class="announcements-section card">
+                <div class="card-body">
+                    <div class="announcements-header">
+                        <i class="fas fa-bullhorn"></i>
+                        <h5>Announcements</h5>
+                    </div>
+                    <div id="announcementsList">
+                        <div class="loading-spinner">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Loading announcements...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MY COMMENDATIONS - new card -->
+        <div class="col-xl-4 col-lg-6 col-12">
+            <div class="commendation-section card">
+                <div class="card-body">
+                    <div class="commendation-header">
+                        <div class="commendation-title">
+                            <i class="fas fa-award"></i>
+                            <h5>My Commendations</h5>
+                        </div>
+                        <span class="commendation-count-badge" id="commendationCount">0</span>
+                    </div>
+                    <div id="commendationList">
+                        <div class="loading-spinner">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Loading commendations...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+@if (isHrOrAdmin)
+{
+        <!-- Second Row: Total Employees + Position Chart -->
+        <div class="row mb-3">
+            <div class="col-xl-3 col-lg-4 col-md-6 col-12 mb-3 mb-xl-0">
+                <div class="employee-count-card">
+                    <i class="fas fa-users"></i>
+                    <h2 id="totalEmployeesCount">0</h2>
+                    <p>Total Active Employees</p>
+                </div>
+            </div>
+
+            <div class="col-xl-9 col-lg-8 col-md-6 col-12">
+                <div class="chart-card card">
+                    <div class="chart-card-header card-header">
+                        <h5 class="chart-card-title">
+                            <i class="fas fa-briefcase text-primary"></i>
+                            Employees by Position
+                        </h5>
+                    </div>
+                    <div class="chart-card-body card-body">
+                        <div class="chart-canvas-wrapper">
+                            <canvas id="positionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Third Row: 3 Pie/Doughnut Charts -->
+        <div class="row mb-3">
+            <div class="col-xl-4 col-lg-4 col-md-6 col-12">
+                <div class="chart-card card">
+                    <div class="chart-card-header card-header">
+                        <h5 class="chart-card-title">
+                            <i class="fas fa-user-tag text-success"></i>
+                            Employment Status
+                        </h5>
+                    </div>
+                    <div class="chart-card-body card-body">
+                        <div class="chart-canvas-wrapper">
+                            <canvas id="employmentStatusChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-4 col-lg-4 col-md-6 col-12">
+                <div class="chart-card card">
+                    <div class="chart-card-header card-header">
+                        <h5 class="chart-card-title">
+                            <i class="fas fa-medal text-warning"></i>
+                            Employees by Rank
+                        </h5>
+                    </div>
+                    <div class="chart-card-body card-body">
+                        <div class="chart-canvas-wrapper">
+                            <canvas id="rankChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-4 col-lg-4 col-md-12 col-12">
+                <div class="chart-card card">
+                    <div class="chart-card-header card-header">
+                        <h5 class="chart-card-title">
+                            <i class="fas fa-building text-info"></i>
+                            Employees by Department
+                        </h5>
+                    </div>
+                    <div class="chart-card-body card-body">
+                        <div class="chart-canvas-wrapper">
+                            <canvas id="departmentChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+}
+
+<!-- ── MEMO NOTIFICATION OVERLAY MODAL ─────────────────────────────── -->
+<div id="memoNotifOverlay" style="position:fixed; inset:0; background:rgba(10,10,20,0.65);
+         backdrop-filter:blur(3px); z-index:9999; align-items:center; justify-content:center;">
+
+    <div id="memoNotifCard" style="
+            background: #fff;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 520px;
+            margin: 1rem;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.22);
+            overflow: hidden;
+            animation: memoSlideIn 0.38s cubic-bezier(.22,.9,.36,1) both;">
+
+        <div style="background: linear-gradient(135deg, #b8860b 0%, #ffd700 100%);
+                        padding: 1.35rem 1.6rem; position:relative;">
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+                <div style="background:rgba(255,255,255,0.18); border-radius:10px;
+                                width:40px; height:40px; display:flex; align-items:center;
+                                justify-content:center; flex-shrink:0;">
+                    <i class="fas fa-envelope-open-text" style="color:#fff; font-size:1.1rem;"></i>
+                </div>
+                <div>
+                    <div style="color:rgba(255,255,255,0.75); font-size:0.72rem;
+                                    font-weight:600; letter-spacing:1px; text-transform:uppercase;">
+                        New Memo
+                    </div>
+                    <div style="color:#fff; font-weight:700; font-size:1.05rem;
+                                    line-height:1.2;" id="memoNotifTitle">
+                        —
+                    </div>
+                </div>
+            </div>
+            <div id="memoNotifPager" style="position:absolute; top:1rem; right:1.25rem;
+                     background:rgba(255,255,255,0.2); color:#fff; font-size:0.72rem;
+                     font-weight:700; padding:0.2rem 0.65rem; border-radius:20px;
+                     display:none;">
+                1 / 1
+            </div>
+        </div>
+
+        <div style="padding:1.4rem 1.6rem 0.5rem;">
+            <div style="display:flex; gap:1rem; margin-bottom:1rem; flex-wrap:wrap;">
+                <div style="display:flex; align-items:center; gap:0.4rem;
+                                background:#fffbea; border-radius:8px; padding:0.4rem 0.8rem;">
+                    <i class="fas fa-hashtag" style="color:#b8860b; font-size:0.78rem;"></i>
+                    <span id="memoNotifSeries" style="font-size:0.82rem; font-weight:700;
+                              color:#b8860b;">—</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:0.4rem;
+                                background:#f0fdf4; border-radius:8px; padding:0.4rem 0.8rem;">
+                    <i class="fas fa-calendar-check" style="color:#16a34a; font-size:0.78rem;"></i>
+                    <span style="font-size:0.78rem; color:#166534; font-weight:600;">Effectivity:&nbsp;</span>
+                    <span id="memoNotifDate" style="font-size:0.82rem; font-weight:700;
+                              color:#166534;">—</span>
+                </div>
+            </div>
+
+            <div id="memoNotifRemarksWrap" style="display:none; margin-bottom:1rem;">
+                <div style="background:#fafafa; border:1px solid #e5e7eb; border-radius:8px;
+                                padding:0.85rem 1rem; font-size:0.84rem; color:#374151;
+                                line-height:1.6; max-height:110px; overflow-y:auto;">
+                    <div style="font-size:0.7rem; font-weight:700; color:#9ca3af;
+                                    letter-spacing:0.8px; text-transform:uppercase;
+                                    margin-bottom:0.4rem;">
+                        Remarks
+                    </div>
+                    <div id="memoNotifRemarks"></div>
+                </div>
+            </div>
+
+            <div style="font-size:0.78rem; color:#9ca3af; margin-bottom:1.1rem;">
+                <i class="fas fa-clock me-1"></i>
+                Issued: <span id="memoNotifIssuedDate">—</span>
+            </div>
+        </div>
+
+        <div style="height:1px; background:#f0f0f0; margin:0 1.6rem;"></div>
+
+        <div style="padding:1.1rem 1.6rem 1.3rem; display:flex;
+                        align-items:center; justify-content:space-between; gap:0.75rem; flex-wrap:wrap;">
+            <div id="memoNotifNavBtns" style="display:none; gap:0.4rem;">
+                <button onclick="memoNotif.prev()" style="
+                        background:#f3f4f6; border:none; border-radius:8px;
+                        width:34px; height:34px; cursor:pointer; font-size:0.85rem;
+                        color:#374151;">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button onclick="memoNotif.next()" style="
+                        background:#f3f4f6; border:none; border-radius:8px;
+                        width:34px; height:34px; cursor:pointer; font-size:0.85rem;
+                        color:#374151;">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+            <div id="memoNotifNavPlaceholder" style="width:1px;"></div>
+
+            <div style="display:flex; gap:0.6rem; margin-left:auto;">
+                <button id="btnMemoNotifLater" onclick="memoNotif.closeLater()" style="
+                        background:#f3f4f6; border:none; border-radius:10px;
+                        padding:0.55rem 1.1rem; font-size:0.85rem; font-weight:600;
+                        color:#6b7280; cursor:pointer;
+                        display:flex; align-items:center; gap:0.4rem;">
+                    <i class="fas fa-bell-slash"></i> Later
+                </button>
+                <button id="btnMemoNotifReceived" onclick="memoNotif.receive()" style="
+                        background: linear-gradient(135deg, #b8860b, #ffd700);
+                        border:none; border-radius:10px; padding:0.55rem 1.25rem;
+                        font-size:0.85rem; font-weight:700; color:#fff; cursor:pointer;
+                        display:flex; align-items:center; gap:0.4rem;
+                        box-shadow: 0 4px 12px rgba(184,134,11,0.4);">
+                    <i class="fas fa-check-circle"></i> Mark as Received
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── MEMO DETAIL QUICK-VIEW MODAL ──────────────────────────────────── -->
+<div class="modal fade" id="memoNotifDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="border-radius:14px; overflow:hidden; border:none;
+                 box-shadow:0 20px 60px rgba(0,0,0,0.18);">
+            <div style="background:linear-gradient(135deg,#b8860b,#ffd700);
+                            padding:1.25rem 1.5rem; display:flex; align-items:center;
+                            justify-content:space-between;">
+                <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <i class="fas fa-file-alt" style="color:#fff; font-size:1.2rem;"></i>
+                    <h5 style="color:#fff; margin:0; font-weight:700;" id="memoDetailModalTitle">Memo</h5>
+                </div>
+                <button type="button" class="btn-close btn-close-white"
+                        data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="padding:1.5rem;">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold text-muted" style="font-size:0.78rem;
+                                   text-transform:uppercase; letter-spacing:0.5px;">Series Number</label>
+                        <div id="memoDetailSeriesNo" class="form-control" style="background:#f8f9fa;"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold text-muted" style="font-size:0.78rem;
+                                   text-transform:uppercase; letter-spacing:0.5px;">Effectivity Date</label>
+                        <div id="memoDetailEffDate" class="form-control" style="background:#f8f9fa;"></div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold text-muted" style="font-size:0.78rem;
+                               text-transform:uppercase; letter-spacing:0.5px;">Title</label>
+                    <div id="memoDetailTitle" class="form-control" style="background:#f8f9fa; font-weight:600;"></div>
+                </div>
+                <div class="mb-3" id="memoDetailRemarksWrap">
+                    <label class="form-label fw-semibold text-muted" style="font-size:0.78rem;
+                               text-transform:uppercase; letter-spacing:0.5px;">Remarks</label>
+                    <div id="memoDetailRemarks" class="form-control" style="background:#f8f9fa;
+                             min-height:80px; white-space:pre-wrap; overflow-y:auto;"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold text-muted" style="font-size:0.78rem;
+                        text-transform:uppercase; letter-spacing:0.5px;">Created By</label>
+                    <div id="memoDetailCreatedBy" class="form-control" style="background:#f8f9fa;"></div>
+                </div>
+                <div id="memoDetailAttachments" class="mt-2"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Fillow_script {
+    <script>
+        const isAdmin = @(isAdmin ? "true" : "false");
+        const isHrOrAdmin = @(isHrOrAdmin ? "true" : "false");
+
+        let positionChart, rankChart, employmentStatusChart, departmentChart;
+
+        const chartColors = {
+            primary: ['#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6', '#1abc9c', '#34495e', '#e67e22', '#95a5a6', '#16a085'],
+            success: ['#28a745', '#20c997', '#17a2b8', '#6f42c1', '#fd7e14'],
+            warm: ['#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#54a0ff', '#ee5a6f', '#c8d6e5', '#01a3a4']
+        };
+
+        // Function to update welcome image based on theme
+        function updateWelcomeImage() {
+            const isDarkMode = $('body').attr('data-theme-version') === 'dark';
+            const $welcomeImage = $('.welcome-image-section img');
+
+            if ($welcomeImage.length) {
+                $welcomeImage.attr('src', isDarkMode
+                    ? '/Fillow/images/logo-entrance-night.jpg'
+                    : '/Fillow/images/logo-entrance-light.jpg'
+                );
+            }
+        }
+
+        // Watch for theme attribute changes using MutationObserver (wrapped in jQuery ready)
+        $(document).ready(function() {
+            // Set initial image
+            updateWelcomeImage();
+
+            // Create observer to watch body data-theme-version attribute
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.attributeName === 'data-theme-version') {
+                        updateWelcomeImage();
+                    }
+                });
+            });
+
+            // Start observing
+            observer.observe(document.body, {
+                attributes: true,
+                attributeFilter: ['data-theme-version']
+            });
+        });
+
+        function updateDateTime() {
+            const now = new Date();
+            const monthNames = ["January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"];
+            const month = monthNames[now.getMonth()];
+            const day = now.getDate();
+            const year = now.getFullYear();
+            let hours = now.getHours();
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            const formattedDate = `${month} ${day}, ${year} at ${hours}:${minutes} ${ampm}`;
+            document.getElementById('currentDateTime').textContent = formattedDate;
+        }
+
+        function loadDashboardSummary() {
+            fetch('/Dashboard/GetDashboardCounts')
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success && result.data) {
+                        renderSummaryCards(result.data);
+                    } else {
+                        showError('Unable to load statistics');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading dashboard:', error);
+                    showError('Error loading dashboard data');
+                });
+        }
+
+        function renderSummaryCards(data) {
+            let totalPending = 0;
+            let totalApproved = 0;
+            let totalDeclined = 0;
+            let totalCancelled = 0;
+
+            Object.keys(data).forEach(key => {
+                totalPending += data[key].pending;
+                totalApproved += data[key].approved;
+                totalDeclined += data[key].declined;
+                totalCancelled += data[key].cancelled;
+            });
+
+            const container = document.getElementById('summaryCardsContainer');
+
+            const cards = [
+                {
+                    status: 'pending',
+                    icon: 'fa-clock',
+                    count: totalPending,
+                    label: 'Pending',
+                    subtitle: isAdmin ? 'Awaiting your approval' : 'Awaiting approval'
+                },
+                {
+                    status: 'approved',
+                    icon: 'fa-check-circle',
+                    count: totalApproved,
+                    label: 'Approved',
+                    subtitle: 'Successfully approved'
+                },
+                {
+                    status: 'declined',
+                    icon: 'fa-times-circle',
+                    count: totalDeclined,
+                    label: 'Declined',
+                    subtitle: 'Not approved'
+                },
+                {
+                    status: 'cancelled',
+                    icon: 'fa-ban',
+                    count: totalCancelled,
+                    label: 'Cancelled',
+                    subtitle: 'Cancelled requests'
+                }
+            ];
+
+            let html = '';
+            cards.forEach(card => {
+                html += `
+                    <div class="col-6 col-sm-3">
+                        <div class="summary-card card ${card.status}">
+                            <div class="summary-card-icon">
+                                <i class="fas ${card.icon}"></i>
+                            </div>
+                            <div class="summary-card-number">${card.count}</div>
+                            <div class="summary-card-label">${card.label}</div>
+                            <div class="summary-card-subtitle">${card.subtitle}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function showError(message) {
+            document.getElementById('summaryCardsContainer').innerHTML = `
+                <div class="col-12">
+                    <div class="alert alert-danger text-center">
+                        <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                        <p class="mb-0">${message}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function loadEmployeeStatistics() {
+            fetch('/Dashboard/GetEmployeeStatistics')
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success && result.data) {
+                        document.getElementById('totalEmployeesCount').textContent =
+                            result.data.totalEmployees.toLocaleString();
+
+                        renderPositionChart(result.data.employeesByPosition);
+                        renderRankChart(result.data.employeesByRank);
+                        renderEmploymentStatusChart(result.data.employeesByEmploymentStatus);
+                        renderDepartmentChart(result.data.employeesByDepartment);
+                    } else {
+                        console.error('Error loading statistics:', result.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching employee statistics:', error);
+                });
+        }
+
+        function renderPositionChart(data) {
+            const ctx = document.getElementById('positionChart');
+            if (!ctx) return;
+
+            if (positionChart) {
+                positionChart.destroy();
+            }
+
+            positionChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.map(item => item.name),
+                    datasets: [{
+                        label: 'Employees',
+                        data: data.map(item => item.value),
+                        backgroundColor: chartColors.primary,
+                        borderWidth: 0,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            callbacks: {
+                                label: (context) => 'Employees: ' + context.parsed.x
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: { precision: 0, font: { size: 10 } },
+                            grid: { display: true, drawBorder: false }
+                        },
+                        y: {
+                            grid: { display: false },
+                            ticks: { font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderRankChart(data) {
+            const container = document.getElementById('rankChart').parentElement;
+            if (!container) return;
+
+            const sortedData = [...data].sort((a, b) => b.value - a.value);
+            const total = sortedData.reduce((sum, item) => sum + item.value, 0);
+
+            let html = '<div style="max-height: 220px; overflow-y: auto; overflow-x: hidden; padding: 0.5rem 0.5rem 0.5rem 0;">';
+
+            const colors = ['#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#54a0ff', '#ee5a6f', '#c8d6e5'];
+
+            sortedData.forEach((item, index) => {
+                const percentage = ((item.value / total) * 100).toFixed(1);
+                const barWidth = percentage;
+
+                html += `
+                    <div style="margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                            <span style="font-size: 0.85rem; font-weight: 600;">${escapeHtml(item.name)}</span>
+                            <span style="font-size: 0.85rem; font-weight: 700; color: ${colors[index % colors.length]};">${item.value}</span>
+                        </div>
+                        <div style="background: var(--bs-gray-300); border-radius: 10px; height: 22px; overflow: hidden; position: relative;">
+                            <div style="background: linear-gradient(90deg, ${colors[index % colors.length]}, ${colors[index % colors.length]}dd); height: 100%; width: ${barWidth}%; border-radius: 10px; transition: width 0.6s ease; display: flex; align-items: center; justify-content: flex-end; padding-right: 0.5rem;">
+                                <span style="color: white; font-size: 0.72rem; font-weight: 600;">${percentage}%</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function renderEmploymentStatusChart(data) {
+            const ctx = document.getElementById('employmentStatusChart');
+            if (!ctx) return;
+
+            if (employmentStatusChart) {
+                employmentStatusChart.destroy();
+            }
+
+            employmentStatusChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.map(item => item.name),
+                    datasets: [{
+                        label: 'Employees',
+                        data: data.map(item => item.value),
+                        backgroundColor: ['#28a745', '#20c997', '#17a2b8'],
+                        borderWidth: 0,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.parsed.y || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0,
+                                font: { size: 10 }
+                            },
+                            grid: {
+                                display: true,
+                                drawBorder: false
+                            }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderDepartmentChart(data) {
+            const container = document.getElementById('departmentChart').parentElement;
+            if (!container) return;
+
+            const sortedData = [...data].sort((a, b) => b.value - a.value);
+            const total = sortedData.reduce((sum, item) => sum + item.value, 0);
+            const maxValue = Math.max(...sortedData.map(item => item.value));
+
+            let html = '<div style="max-height: 220px; overflow-y: auto; overflow-x: hidden; padding: 0.5rem 0.5rem 0.5rem 0;">';
+
+            const colors = chartColors.primary;
+
+            sortedData.forEach((item, index) => {
+                const percentage = ((item.value / total) * 100).toFixed(1);
+
+                html += `
+                    <div style="display: flex; align-items: center; margin-bottom: 0.85rem; gap: 0.75rem;">
+                        <div style="flex: 0 0 115px; text-align: right;">
+                            <div style="font-size: 0.78rem; font-weight: 600; line-height: 1.2;">${escapeHtml(item.name)}</div>
+                        </div>
+                        <div style="flex: 1; display: flex; align-items: center; gap: 0.5rem;">
+                            <div style="flex: 1; background: var(--bs-gray-200); border-radius: 6px; height: 28px; position: relative; overflow: hidden;">
+                                <div style="background: ${colors[index % colors.length]}; height: 100%; width: ${(item.value / maxValue) * 100}%; border-radius: 6px; transition: width 0.6s ease; display: flex; align-items: center; padding: 0 0.5rem;">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem; width: 100%;">
+                                        <div style="background: white; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 700; color: ${colors[index % colors.length]}; flex-shrink: 0;">
+                                            ${item.value}
+                                        </div>
+                                        <span style="color: white; font-size: 0.72rem; font-weight: 600; white-space: nowrap;">${percentage}%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function loadEmployeeSchedule() {
+            fetch('/Dashboard/GetEmployeeSchedule')
+                .then(response => response.json())
+                .then(result => {
+                    const container = document.getElementById('scheduleList');
+                    const effectivityDiv = document.getElementById('scheduleEffectivity');
+
+                    console.log('Schedule Response:', result);
+
+                    if (result.success && result.data && result.data.length > 0) {
+                        const dates = [...new Set(result.data.map(s => s.effectivityDate))];
+
+                        if (dates.length === 1) {
+                            effectivityDiv.textContent = `Effective: ${dates[0]}`;
+                        } else {
+                            effectivityDiv.textContent = `Effective: Multiple schedules`;
+                        }
+
+                        let html = '';
+
+                        const dayOrder = {
+                            'Monday': 1, 'Tuesday': 2, 'Wednesday': 3, 'Thursday': 4,
+                            'Friday': 5, 'Saturday': 6, 'Sunday': 7
+                        };
+
+                        const sortedSchedules = result.data.sort((a, b) => {
+                            return (dayOrder[a.weekdayName] || 999) - (dayOrder[b.weekdayName] || 999);
+                        });
+
+                        sortedSchedules.forEach(schedule => {
+                            const timeIn = schedule.timeIn || 'Rest Day';
+                            const timeOut = schedule.timeOut || '';
+                            const timeDisplay = timeOut ? `${timeIn} - ${timeOut}` : timeIn;
+
+                            html += `
+                                <div class="schedule-item">
+                                    <div class="schedule-day">${escapeHtml(schedule.weekdayName)}</div>
+                                    <div class="schedule-time">
+                                        <i class="far fa-clock"></i>
+                                        ${escapeHtml(timeDisplay)}
+                                    </div>
+                                </div>
+                            `;
+                        });
+
+                        container.innerHTML = html;
+                    } else {
+                        effectivityDiv.textContent = '';
+                        container.innerHTML = `
+                            <div class="no-schedule">
+                                <i class="fas fa-calendar-times"></i>
+                                <p>No schedule assigned yet.</p>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading schedule:', error);
+                    document.getElementById('scheduleList').innerHTML = `
+                        <div class="no-schedule">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <p>Unable to load schedule.</p>
+                        </div>
+                    `;
+                    document.getElementById('scheduleEffectivity').textContent = '';
+                });
+        }
+
+        function loadAnnouncements() {
+            fetch('/AnnouncementList/GetActiveAnnouncements')
+                .then(response => response.json())
+                .then(result => {
+                    const container = document.getElementById('announcementsList');
+
+                    if (result.success && result.data && result.data.length > 0) {
+                        let html = '';
+                        result.data.forEach(announcement => {
+                            const dateAdded = formatDate(announcement.dtAdded);
+                            const dateRange = formatDateRange(announcement.dateStart, announcement.dateEnd);
+
+                            html += `
+                                <div class="announcement-card">
+                                    <div class="announcement-title">${escapeHtml(announcement.announcementTitle)}</div>
+                                    <div class="announcement-content">${escapeHtml(announcement.announcement)}</div>
+                                    <div class="announcement-meta">
+                                        <span class="announcement-date">
+                                            <i class="far fa-calendar"></i>
+                                            ${dateRange}
+                                        </span>
+                                        <span class="announcement-author">
+                                            <i class="far fa-user"></i>
+                                            Posted by ${escapeHtml(announcement.addedByUserName || announcement.addedByUser)} on ${dateAdded}
+                                        </span>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        container.innerHTML = html;
+                    } else {
+                        container.innerHTML = `
+                            <div class="no-announcements">
+                                <i class="fas fa-bullhorn"></i>
+                                <p>No active announcements at this time.</p>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading announcements:', error);
+                    document.getElementById('announcementsList').innerHTML = `
+                        <div class="no-announcements">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <p>Unable to load announcements.</p>
+                        </div>
+                    `;
+                });
+        }
+
+                function loadMyCommendations() {
+            fetch('/Dashboard/GetMyCommendations')
+                .then(response => response.json())
+                .then(result => {
+                    const container = document.getElementById('commendationList');
+                    const countBadge = document.getElementById('commendationCount');
+
+                    if (result.success && result.data && result.data.length > 0) {
+                        countBadge.textContent = result.data.length;
+
+                        let html = '';
+                        result.data.forEach(c => {
+                            html += `
+                                <div class="commendation-item">
+                                    <div class="commendation-type-badge">
+                                        <i class="fas fa-star"></i> ${escapeHtml(c.commendationType || 'Commendation')}
+                                    </div>
+                                    <div class="commendation-activity">${escapeHtml(c.activity || '')}</div>
+                                    <div class="commendation-meta">
+                                        <span><i class="far fa-calendar"></i> ${escapeHtml(c.dateissued || '')}</span>
+                                        <span><i class="far fa-user"></i> ${escapeHtml(c.issuedBy || '')}</span>
+                                    </div>
+                                </div>
+                            `;
+                        });
+
+                        container.innerHTML = html;
+                    } else {
+                        countBadge.textContent = '0';
+                        container.innerHTML = `
+                            <div class="no-commendations">
+                                <i class="fas fa-award"></i>
+                                <p>No commendations yet.</p>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading commendations:', error);
+                    document.getElementById('commendationList').innerHTML = `
+                        <div class="no-commendations">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <p>Unable to load commendations.</p>
+                        </div>
+                    `;
+                });
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            return `${monthNames[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+        }
+
+        function formatDateRange(startDate, endDate) {
+            if (!startDate && !endDate) return 'Ongoing';
+            if (!startDate) return `Until ${formatDate(endDate)}`;
+            if (!endDate) return `From ${formatDate(startDate)}`;
+            return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+        }
+
+        // ── MEMO NOTIFICATION MANAGER ────────────────────────────────────────
+        const memoNotif = (() => {
+            let memos   = [];
+            let current = 0;
+
+            function escHtml(str) {
+                if (!str) return '';
+                const d = document.createElement('div');
+                d.textContent = str;
+                return d.innerHTML;
+            }
+
+            function render(index) {
+                const m = memos[index];
+                if (!m) return;
+
+                document.getElementById('memoNotifTitle').textContent   = m.title    || '(No Title)';
+                document.getElementById('memoNotifSeries').textContent  = m.seriesNo || '—';
+                document.getElementById('memoNotifDate').textContent    = m.effectivityDateFormatted || '—';
+                document.getElementById('memoNotifIssuedDate').textContent = m.dateAdded || '—';
+
+                const remarksWrap = document.getElementById('memoNotifRemarksWrap');
+                if (m.remarks && m.remarks.trim()) {
+                    document.getElementById('memoNotifRemarks').textContent = m.remarks;
+                    remarksWrap.style.display = 'block';
+                } else {
+                    remarksWrap.style.display = 'none';
+                }
+
+                const pager   = document.getElementById('memoNotifPager');
+                const navBtns = document.getElementById('memoNotifNavBtns');
+                const navPh   = document.getElementById('memoNotifNavPlaceholder');
+                if (memos.length > 1) {
+                    pager.textContent     = `${index + 1} / ${memos.length}`;
+                    pager.style.display   = 'block';
+                    navBtns.style.display = 'flex';
+                    navPh.style.display   = 'none';
+                } else {
+                    pager.style.display   = 'none';
+                    navBtns.style.display = 'none';
+                    navPh.style.display   = 'block';
+                }
+            }
+
+            function show() {
+                if (!memos.length) return;
+                current = 0;
+                render(current);
+                document.getElementById('memoNotifOverlay').classList.add('active');
+            }
+
+            function hide() {
+                document.getElementById('memoNotifOverlay').classList.remove('active');
+            }
+
+            return {
+                init(data) {
+                    memos   = data || [];
+                    current = 0;
+                    if (memos.length) show();
+                },
+
+                prev() {
+                    if (current > 0) { current--; render(current); }
+                },
+
+                next() {
+                    if (current < memos.length - 1) { current++; render(current); }
+                },
+
+                closeLater() {
+                    hide();
+                },
+
+                receive() {
+                    const m   = memos[current];
+                    const btn = document.getElementById('btnMemoNotifReceived');
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+                    fetch('/Dashboard/MarkMemoReceived', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: `notificationId=${m.notificationId}`
+                    })
+                    .then(r => r.json())
+                    .then(() => {
+                        memos.splice(current, 1);
+                        populateMemoDetail(m);
+                        hide();
+                        const detailModal = new bootstrap.Modal(
+                            document.getElementById('memoNotifDetailModal'));
+                        detailModal.show();
+
+                        document.getElementById('memoNotifDetailModal')
+                            .addEventListener('hidden.bs.modal', function onHide() {
+                                this.removeEventListener('hidden.bs.modal', onHide);
+                                if (memos.length > 0) {
+                                    current = 0;
+                                    render(current);
+                                    document.getElementById('memoNotifOverlay').classList.add('active');
+                                    const b = document.getElementById('btnMemoNotifReceived');
+                                    b.disabled = false;
+                                    b.innerHTML = '<i class="fas fa-check-circle"></i> Mark as Received';
+                                }
+                            }, { once: true });
+                    })
+                    .catch(() => {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-check-circle"></i> Mark as Received';
+                    });
+                }
+            };
+        })();
+
+        function populateMemoDetail(m) {
+            document.getElementById('memoDetailModalTitle').textContent = m.title || 'Memo';
+            document.getElementById('memoDetailSeriesNo').textContent   = m.seriesNo || '—';
+            document.getElementById('memoDetailEffDate').textContent    = m.effectivityDateFormatted || '—';
+            document.getElementById('memoDetailTitle').textContent      = m.title || '—';
+            document.getElementById('memoDetailCreatedBy').textContent  = m.createdBy || '—';
+
+            const remarksWrap = document.getElementById('memoDetailRemarksWrap');
+            if (m.remarks && m.remarks.trim()) {
+                document.getElementById('memoDetailRemarks').textContent = m.remarks;
+                remarksWrap.style.display = 'block';
+            } else {
+                remarksWrap.style.display = 'none';
+            }
+
+            const attContainer = document.getElementById('memoDetailAttachments');
+            attContainer.innerHTML = '<small class="text-muted"><i class="fas fa-spinner fa-spin me-1"></i>Loading attachments...</small>';
+
+            fetch(`/Dashboard/GetMemoAttachments?memoId=${m.memoId}`)
+                .then(r => r.json())
+                .then(data => {
+                    attContainer.innerHTML = '';
+                    if (data && data.length > 0) {
+                        const label = document.createElement('div');
+                        label.className = 'fw-semibold text-muted mb-2';
+                        label.style.cssText = 'font-size:0.78rem; text-transform:uppercase; letter-spacing:0.5px;';
+                        label.textContent = 'Attachments';
+                        attContainer.appendChild(label);
+
+                        data.forEach(att => {
+                            const fileName = att.attachmentPath.split('/').pop();
+                            const item = document.createElement('div');
+                            item.className = 'attachment-item';
+                            item.innerHTML = `
+                                <i class="fas fa-file"></i>
+                                <a href="${att.attachmentPath}" target="_blank">${fileName}</a>
+                                <small class="text-muted ms-auto">
+                                    ${new Date(att.dtAdded).toLocaleDateString()}
+                                </small>`;
+                            attContainer.appendChild(item);
+                        });
+                    } else {
+                        attContainer.innerHTML = '<small class="text-muted">No attachments.</small>';
+                    }
+                })
+                .catch(() => {
+                    attContainer.innerHTML = '<small class="text-muted">Could not load attachments.</small>';
+                });
+        }
+
+        function loadPendingMemoNotifications() {
+            fetch('/Dashboard/GetPendingMemoNotifications')
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success && res.data && res.data.length > 0) {
+                        memoNotif.init(res.data);
+                    }
+                })
+                .catch(err => console.warn('Memo notifications error:', err));
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            loadDashboardSummary();
+            if (isHrOrAdmin) {
+                loadEmployeeStatistics();
+            }
+            loadEmployeeSchedule();
+            loadAnnouncements();
+            loadMyCommendations();
+            loadPendingMemoNotifications();
+        });
+    </script>
+}

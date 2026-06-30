@@ -1,0 +1,382 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutFillow.cshtml";
+    ViewData["Title"] = "Payslip";
+}
+
+@using KEISAN_HRIS_v2.Helpers
+
+@{
+    var accessLevel = AccessHelper.GetAccess(Context, "FPayslip");
+    var isFull = accessLevel == "FULL";
+}
+
+<div class="col-12">
+    <div class="card">
+
+        <div class="card-header">
+            <div class="row" style="width:100%;">
+                <h4 class="card-title">My Payslip</h4>
+                <br /><br /><br />
+
+                <div class="row" style="margin-left:0px; width:100%;">
+
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <h5>Select CutOff</h5>
+                            <select name="cutOff" id="cutOff" class="form-control"></select>
+                            <input type="hidden" id="cutOffType" />
+                            <input type="hidden" id="dateMonth" />
+                            <input type="hidden" id="dateYear" />
+                            <input type="hidden" id="dateFrom" />
+                            <input type="hidden" id="dateTo" />
+                        </div>
+                    </div>
+
+                    @* FULL ACCESS users get an Export button; READ users keep it simple *@
+                    @if (isFull)
+                    {
+                        <div class="col-md-5"></div>
+                        <div class="col-md-3 d-flex align-items-end justify-content-end">
+                            <div class="form-group" style="width:100%;">
+                                <h5>&nbsp;</h5>
+                                <button type="button" class="btn btn-warning w-100" id="btnExportToExcel">
+                                    <i class="fas fa-file-excel"></i> Export to Excel
+                                </button>
+                            </div>
+                        </div>
+                    }
+
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="row">
+                <div class="table-responsive">
+                    <table id="payslipTable" class="display" style="min-width:845px">
+                        <thead>
+                            <tr>
+                                <th>Print</th>
+                                <th>Action</th>
+                                <th>Employee No</th>
+                                <th>Full Name</th>
+                                <th>Pay Period</th>
+                                <th>Status</th>
+                                <th>Date Accepted</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Fillow_style {
+    <style>
+        /* ── Status badge helpers ──────────────────────────────── */
+        .badge-accepted {
+            background-color: #28a745;
+            color: #fff;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.78rem;
+        }
+
+        .badge-pending {
+            background-color: #ffc107;
+            color: #212529;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.78rem;
+        }
+    </style>
+}
+
+@section Fillow_script {
+    <script>
+        $(document).ready(function () {
+
+            // ── Flags passed from Razor ───────────────────────────────────────────
+            const isFull = @Json.Serialize(isFull);
+
+            // ── Select2: CutOff (Posted cutoffs only) ─────────────────────────────
+            $('#cutOff').select2({
+                placeholder: "Select CutOff",
+                allowClear: true,
+                ajax: {
+                    url: '/Setup/GetPostedCutOff',
+                    dataType: 'json',
+                    delay: 250,
+                    processResults: function (data) {
+                        var results = $.map(data, function (item) {
+                            return {
+                                id:         item.dateYear + '-' + item.dateMonth + '-' + item.cutOffType
+                                            + '-' + item.dateFrom + '-' + item.dateTo,
+                                text:       item.dateYear + '-' + item.dateMonth + '-'
+                                            + (item.cutOffType == '1' ? '1ST CUTOFF' : '2ND CUTOFF')
+                                            + ' (' + item.dateFrom + '-' + item.dateTo + ')',
+                                cutOffType: item.cutOffType,
+                                dateMonth:  item.dateMonth,
+                                dateYear:   item.dateYear,
+                                dateFrom:   item.dateFrom,
+                                dateTo:     item.dateTo
+                            };
+                        });
+                        return { results: results };
+                    }
+                }
+            });
+
+            // ── CutOff change → populate hidden fields + reload table ─────────────
+            $(document).on('change', '#cutOff', function () {
+                const obj = $('#cutOff').select2('data')[0];
+                if (!obj) {
+                    $('#cutOffType, #dateMonth, #dateYear, #dateFrom, #dateTo').val('');
+                    return;
+                }
+                $('#cutOffType').val(obj.cutOffType);
+                $('#dateMonth').val(obj.dateMonth);
+                $('#dateYear').val(obj.dateYear);
+                $('#dateFrom').val(obj.dateFrom);
+                $('#dateTo').val(obj.dateTo);
+
+                payslipTable.ajax.reload(null, true);
+            });
+
+            // ── DataTable ─────────────────────────────────────────────────────────
+            const payslipTable = $('#payslipTable').DataTable({
+                ajax: {
+                    url:      '/Payslip/GetPayslipList',
+                    type:     'GET',
+                    dataType: 'json',
+                    data: function (d) {
+                        d.cutOffType = $('#cutOffType').val();
+                        d.dateYear   = $('#dateYear').val();
+                        d.dateMonth  = $('#dateMonth').val();
+                    }
+                },
+                columns: [
+                    // 0 – Print
+                    {
+                        data:      null,
+                        orderable: false,
+                        width:     '5%',
+                        className: 'dt-center',
+                        render: function (data, type, row) {
+                            if (!row.cutOffType || !row.dateMonth || !row.dateYear) return '';
+                            return `<button class="btn btn-sm btn-warning shadow-sm btnPrintPayslip"
+                                            data-employeeno="${row.employeeNo}"
+                                            data-cutofftype="${row.cutOffType}"
+                                            data-datemonth="${row.dateMonth}"
+                                            data-dateyear="${row.dateYear}"
+                                            title="Print Payslip">
+                                        <i class="fas fa-print"></i>
+                                    </button>`;
+                        }
+                    },
+                    // 1 – Action (Accept)
+                    {
+                        data:      null,
+                        orderable: false,
+                        width:     '8%',
+                        className: 'dt-center',
+                        render: function (data, type, row) {
+                            // Hide accept button if already accepted
+                            if (row.isAccepted == 1) {
+                                return '<span class="text-muted" style="font-size:0.8rem;"><i class="fas fa-check-circle text-success"></i> Accepted</span>';
+                            }
+                            return `<button class="btn btn-sm btn-success shadow-sm btnAcceptPayslip"
+                                            data-employeeno="${row.employeeNo}"
+                                            data-cutofftype="${row.cutOffType}"
+                                            data-datemonth="${row.dateMonth}"
+                                            data-dateyear="${row.dateYear}"
+                                            title="Accept Payslip">Accept</button>`;
+                        }
+                    },
+                    // 2 – Employee No (hidden for READ, visible for FULL)
+                    {
+                        data:      'employeeNo',
+                        className: 'dt-left',
+                        visible:   isFull
+                    },
+                    // 3 – Full Name (hidden for READ)
+                    {
+                        data:      'fullName',
+                        className: 'dt-left',
+                        visible:   isFull
+                    },
+                    // 4 – Pay Period
+                    {
+                        data:      'payPeriod',
+                        className: 'dt-left'
+                    },
+                    // 5 – Acceptance Status badge
+                    {
+                        data:      'isAccepted',
+                        className: 'dt-center',
+                        render: function (data) {
+                            return data == 1
+                                ? '<span class="badge-accepted"><i class="fas fa-check-circle"></i> Accepted</span>'
+                                : '<span class="badge-pending"><i class="fas fa-clock"></i> Pending</span>';
+                        }
+                    },
+                    // 6 – Date Accepted
+                    {
+                        data:      'dateStatus',
+                        className: 'dt-center',
+                        render: function (data) {
+                            if (!data) return '<span class="text-muted">—</span>';
+                            const d = new Date(data);
+                            return d.toLocaleDateString('en-PH', {
+                                year: 'numeric', month: '2-digit', day: '2-digit',
+                                hour: '2-digit', minute: '2-digit'
+                            });
+                        }
+                    }
+                ],
+                language: {
+                    paginate: {
+                        next:     '<i class="fa fa-angle-double-right"></i>',
+                        previous: '<i class="fa fa-angle-double-left"></i>'
+                    },
+                    emptyTable: 'Please select a cutoff period to view payslips.'
+                },
+                order: []
+            });
+
+            // ── EVENT: Print Payslip ──────────────────────────────────────────────
+            $(document).on('click', '.btnPrintPayslip', function (e) {
+                e.preventDefault();
+
+                const employeeNo = $(this).data('employeeno');
+                const cutOffType = $(this).data('cutofftype');
+                const dateMonth  = $(this).data('datemonth');
+                const dateYear   = $(this).data('dateyear');
+                const $btn       = $(this);
+
+                if (!employeeNo || !cutOffType || !dateMonth || !dateYear) {
+                    showNotification('Missing payslip information.', 'warning');
+                    return;
+                }
+
+                const originalHtml = $btn.html();
+                $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+
+                const url = `/PayrollRegisterPdf/PreviewPdf?employeeNo=${encodeURIComponent(employeeNo)}`
+                          + `&cutOffType=${encodeURIComponent(cutOffType)}`
+                          + `&dateMonth=${encodeURIComponent(dateMonth)}`
+                          + `&dateYear=${encodeURIComponent(dateYear)}`
+                          + `&statusName=Posted`;
+                window.open(url, '_blank');
+
+                setTimeout(() => { $btn.prop('disabled', false).html(originalHtml); }, 1000);
+            });
+
+            // ── EVENT: Accept Payslip ─────────────────────────────────────────────
+            $(document).on('click', '.btnAcceptPayslip', function () {
+                const employeeNo = $(this).data('employeeno');
+                const cutOffType = $(this).data('cutofftype');
+                const dateMonth  = $(this).data('datemonth');
+                const dateYear   = $(this).data('dateyear');
+                const $btn       = $(this);
+
+                // Front-end guard — catch missing data before hitting the server
+                if (!employeeNo || !cutOffType || !dateMonth || !dateYear) {
+                    showNotification('Missing payslip information. Please reload the page and try again.', 'warning');
+                    return;
+                }
+
+                Swal.fire({
+                    title:             'Accept this payslip?',
+                    text:              'By accepting, you confirm that you have reviewed your payslip for this period.',
+                    icon:              'question',
+                    showCancelButton:  true,
+                    confirmButtonText: 'Yes, Accept',
+                    cancelButtonText:  'Cancel',
+                    reverseButtons:    false,
+                    allowOutsideClick: false,
+                    allowEscapeKey:    false,
+                    customClass: {
+                        popup:         'swal-custom-popup',
+                        title:         'swal-custom-title',
+                        htmlContainer: 'swal-custom-text',
+                        confirmButton: 'swal-custom-confirm',
+                        cancelButton:  'swal-custom-cancel'
+                    }
+                }).then(function (result) {
+                    if (!result.isConfirmed) return;
+
+                    const originalHtml = $btn.html();
+                    $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+
+                    // Build payload — convert dateYear/dateMonth to string explicitly
+                    const payload = JSON.stringify({
+                        employeeNo: String(employeeNo),
+                        cutOffType: String(cutOffType),
+                        dateMonth:  String(dateMonth),
+                        dateYear:   String(dateYear)
+                    });
+
+                    $.ajax({
+                        url:         '/Payslip/AcceptPayslip',
+                        type:        'POST',
+                        contentType: 'application/json; charset=utf-8',
+                        data:        payload,
+                        headers: {
+                            'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val() || ''
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                showNotification(response.message, 'success');
+                                payslipTable.ajax.reload(null, false);
+                            } else {
+                                showNotification(response.message, 'danger');
+                                $btn.prop('disabled', false).html(originalHtml);
+                            }
+                        },
+                        error: function (xhr) {
+                            console.error('AcceptPayslip error:', xhr.status, xhr.responseText);
+                            showNotification('Unable to accept payslip. Please try again.', 'error');
+                            $btn.prop('disabled', false).html(originalHtml);
+                        }
+                    });
+                });
+            });
+
+            // ── EVENT: Export to Excel (FULL ACCESS only) ─────────────────────────
+            if (isFull) {
+                $('#btnExportToExcel').on('click', function () {
+                    const $btn = $(this);
+
+                    if (payslipTable.rows({ search: 'applied' }).count() === 0) {
+                        showNotification('No data available to export.', 'warning');
+                        return;
+                    }
+
+                    const params = new URLSearchParams({
+                        cutOffType: $('#cutOffType').val() || '',
+                        dateMonth:  $('#dateMonth').val()  || '',
+                        dateYear:   $('#dateYear').val()   || '',
+                        statusName: 'Posted'
+                    });
+
+                    const originalHtml = $btn.html();
+                    $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Exporting...');
+
+                    const link = document.createElement('a');
+                    link.href = `/PayrollRegisterExport/ExportToExcel?${params.toString()}`;
+                    link.download = '';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+
+                    setTimeout(() => { $btn.prop('disabled', false).html(originalHtml); }, 1500);
+                });
+            }
+
+        }); // end ready
+    </script>
+}

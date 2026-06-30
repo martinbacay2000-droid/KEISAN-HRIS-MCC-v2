@@ -1,0 +1,743 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutFillow.cshtml";
+    ViewData["Title"] = "Project List";
+}
+
+<div class="col-12">
+    <div class="card">
+        <div class="card-header">
+            <div class="row" style="width:100%;">
+                <h4 class="card-title">Project List</h4>
+                <br> <br> <br>
+
+                <div class="row" style="margin-left:0px;width:100%;">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Record Status</h5>
+                            <select name="filterRecordStatus" id="filterRecordStatus" class="form-control">
+                                <option value="active" selected>ACTIVE</option>
+                                <option value="inactive">INACTIVE</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                    </div>
+                    <div class="col-md-3 d-flex justify-content-end align-items-end">
+                        <div class="form-group">
+                            <button type="button" class="btn btn-primary" id="btnAddProject">
+                                <i class="fa fa-plus"></i> New Project
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="projectTable" class="display" style="min-width: 845px">
+                    <thead>
+                        <tr>
+                            <th>Action</th>
+                            <th>Project Code</th>
+                            <th>Project Name</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+
+        <!-- Modal for Add -->
+        <div class="modal fade" id="addProjectModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Project Form</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addProjectForm">
+                            <div class="mb-3">
+                                <label for="addProjectCode" class="form-label">Project Code <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control alphanum" id="addProjectCode" name="projectCode" required maxlength="50">
+                                <div class="invalid-feedback">
+                                    Please provide a valid project code.
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="addProjectName" class="form-label">Project Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="addProjectName" name="projectName" required maxlength="255">
+                                <div class="invalid-feedback">
+                                    Please provide a valid project name.
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="btnSaveNewProject">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for View/Edit -->
+        <div class="modal fade" id="viewProjectModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="viewModalTitle">View Project Form</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="viewProjectForm">
+                            <input type="hidden" id="viewProjectId" name="id">
+
+                            <div class="mb-3">
+                                <label for="viewProjectCode" class="form-label">Project Code <span class="text-danger edit-required d-none">*</span></label>
+                                <input type="text" class="form-control alphanum" id="viewProjectCode" name="projectCode" readonly maxlength="50">
+                                <div class="invalid-feedback">
+                                    Please provide a valid project code.
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="viewProjectName" class="form-label">Project Name <span class="text-danger edit-required d-none">*</span></label>
+                                <input type="text" class="form-control" id="viewProjectName" name="projectName" readonly maxlength="255">
+                                <div class="invalid-feedback">
+                                    Please provide a valid project name.
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="btnEditProject">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button type="button" class="btn btn-success d-none" id="btnSaveProject">Save</button>
+                        <button type="button" class="btn btn-danger d-none" id="btnCancelEdit">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Fillow_style
+{
+
+    <style>
+        .table-responsive {
+            border-radius: 0.375rem;
+        }
+
+        #projectTable_wrapper .dataTables_length,
+        #projectTable_wrapper .dataTables_filter {
+            margin-bottom: 1rem;
+        }
+
+        #projectTable_wrapper .dataTables_info,
+        #projectTable_wrapper .dataTables_paginate {
+            margin-top: 1rem;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .modal-content {
+            border-radius: 0.5rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        .invalid-feedback {
+            display: none;
+        }
+
+        .form-control.is-invalid,
+        .form-select.is-invalid {
+            border-color: #dc3545;
+        }
+
+            .form-control.is-invalid ~ .invalid-feedback,
+            .form-select.is-invalid ~ .invalid-feedback {
+                display: block;
+            }
+
+        /* Readonly/disabled field styling */
+        .form-control[readonly] {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        .form-select[disabled] {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        /* Edit mode styling */
+        .edit-mode .form-control[readonly] {
+            background-color: #ffffff;
+            border-color: #ced4da;
+        }
+
+        .edit-mode .form-select[disabled] {
+            background-color: #ffffff;
+            border-color: #ced4da;
+        }
+
+        /* Custom SweetAlert2 styling */
+        .swal2-popup {
+            border-radius: 15px !important;
+            padding: 2rem !important;
+        }
+
+        .swal2-icon.swal2-error {
+            border-color: #f27474 !important;
+            color: #f27474 !important;
+        }
+
+            .swal2-icon.swal2-error .swal2-x-mark {
+                display: none !important;
+            }
+
+            .swal2-icon.swal2-error::before {
+                content: "\f2ed" !important;
+                font-family: "Font Awesome 5 Free" !important;
+                font-weight: 900 !important;
+                font-size: 2.5rem !important;
+                color: #f27474 !important;
+                display: block !important;
+            }
+
+        .swal2-title {
+            font-size: 1.875rem !important;
+            font-weight: 600 !important;
+            color: #545454 !important;
+            margin: 1rem 0 0.5rem 0 !important;
+        }
+
+        .swal2-html-container {
+            font-size: 1rem !important;
+            color: #737373 !important;
+            margin: 0 0 2rem 0 !important;
+        }
+
+        .swal2-actions {
+            gap: 0.5rem !important;
+        }
+
+        .swal2-confirm {
+            background-color: #7c3aed !important;
+            border-color: #7c3aed !important;
+            color: white !important;
+            font-weight: 500 !important;
+            padding: 0.75rem 2rem !important;
+            border-radius: 8px !important;
+            font-size: 0.875rem !important;
+        }
+
+        .swal2-cancel {
+            background-color: #6b7280 !important;
+            border-color: #6b7280 !important;
+            color: white !important;
+            font-weight: 500 !important;
+            padding: 0.75rem 2rem !important;
+            border-radius: 8px !important;
+            font-size: 0.875rem !important;
+        }
+
+        .swal2-confirm:hover {
+            background-color: #6d28d9 !important;
+            border-color: #6d28d9 !important;
+        }
+
+        .swal2-cancel:hover {
+            background-color: #4b5563 !important;
+            border-color: #4b5563 !important;
+        }
+
+        /* Restore button styling */
+        .btn-success.shadow-sm:hover {
+            background-color: #1e7e34;
+            border-color: #1c7430;
+        }
+
+        .card-header {
+            border-bottom: none !important;
+        }
+
+        #filterRecordStatus {
+            width: 100%;
+        }
+    </style>
+}
+
+@section Fillow_script
+{
+
+    <script>
+        $(document).ready(function () {
+
+            MODULE = 'SprojectM';
+            access = ROLE_ACCESS?.[MODULE];
+
+            if (access != 'READWRITE' && access != 'FULL') {
+                $('#btnAddProject').hide();
+                $('#btnEditProject').hide();
+            }
+
+            // Initialize toastr options
+            toastr.options = {
+                positionClass: "toast-top-right",
+                timeOut: 5000,
+                closeButton: true,
+                debug: false,
+                newestOnTop: true,
+                progressBar: true,
+                preventDuplicates: true,
+                onclick: null,
+                showDuration: "300",
+                hideDuration: "1000",
+                extendedTimeOut: "1000",
+                showEasing: "swing",
+                hideEasing: "linear",
+                showMethod: "fadeIn",
+                hideMethod: "fadeOut",
+                tapToDismiss: false
+            };
+
+            // View state management
+            let isViewingDeleted = false;
+
+            // Initialize Select2 for the filter
+            $('#filterRecordStatus').select2({
+                selectOnClose: true,
+                minimumResultsForSearch: Infinity
+            });
+
+            // Handle filter change
+            $('#filterRecordStatus').on('change', function () {
+                isViewingDeleted = $(this).val() === 'inactive';
+                updateTableView();
+            });
+
+            var table = $('#projectTable').DataTable({
+                processing: true,
+                serverSide: false,
+                ajax: {
+                    url: "/ProjectList/GetProjectList",
+                    type: "GET",
+                    datatype: "json",
+                    error: function(xhr, error, code) {
+                        console.log('Error loading data:', error);
+                        showNotification('Error loading project data. Please refresh the page.', 'error');
+                    }
+                },
+                columns: [
+                    {
+                        data: "id",
+                        width: "20%",
+                        orderable: false,
+                        render: function (data) {
+                            if (isViewingDeleted) {
+                                return `
+                                    <div class="d-flex gap-1">
+                                        <button type="button" class="btn btn-sm btn-success shadow-sm restoreProject" data-id="${data}" title="Restore">
+                                            <i class="fas fa-undo"></i>
+                                        </button>
+                                    </div>`;
+                            } else {
+                                return `
+                                    <div class="d-flex gap-1">
+                                        <button type="button" class="btn btn-sm btn-primary shadow-sm viewProject" data-id="${data}" title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-danger shadow-sm deleteProject" data-id="${data}" title="Delete">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                    </div>`;
+                            }
+                        }
+                    },
+                    {
+                        data: "projectCode",
+                        width: "25%"
+                    },
+                    {
+                        data: "projectName",
+                        width: "55%"
+                    }                   
+                ],
+                order: [],
+                pageLength: 25,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                language: {
+                    processing: "Loading...",
+                    emptyTable: "No projects found",
+                    zeroRecords: "No matching projects found",
+                    paginate: {
+                        next: '<i class="fa fa-angle-double-right" aria-hidden="true"></i>',
+                        previous: '<i class="fa fa-angle-double-left" aria-hidden="true"></i>'
+                    }
+                }
+            });
+
+            // Add New Project
+            $('#btnAddProject').click(function () {
+                resetAddForm();
+                $('#addProjectModal').modal('show');
+
+                // Focus on first input after modal is shown
+                $('#addProjectModal').on('shown.bs.modal', function () {
+                    $('#addProjectCode').focus();
+                });
+            });
+
+            // View Project
+            $(document).on('click', '.viewProject', function (e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+                var $btn = $(this);
+
+                // Disable button and show loading
+                $btn.prop('disabled', true);
+                $btn.html('<i class="fas fa-spinner fa-spin"></i>');
+
+                $.get('/ProjectList/GetProject', { id: id }, function (data) {
+                    if (data) {
+                        resetViewForm();
+                        setViewMode();
+
+                        $('#viewProjectId').val(data.id);
+                        $('#viewProjectCode').val(data.projectCode);
+                        $('#viewProjectName').val(data.projectName);
+
+                        $('#viewProjectModal').modal('show');
+                    } else {
+                        showNotification('Unable to load project data', 'error');
+                    }
+                }).fail(function(xhr, status, error) {
+                    console.log('Error loading project:', error);
+                    showNotification('Unable to load project data', 'error');
+                }).always(function() {
+                    // Re-enable button
+                    $btn.prop('disabled', false);
+                    $btn.html('<i class="fas fa-eye"></i>');
+                });
+            });
+
+            // Edit button in view modal
+            $('#btnEditProject').click(function () {
+                setEditMode();
+                $('#viewProjectCode').focus();
+            });
+
+            // Cancel edit button
+            $('#btnCancelEdit').click(function () {
+                // Reload the original data
+                var id = $('#viewProjectId').val();
+                $.get('/ProjectList/GetProject', { id: id }, function (data) {
+                    if (data) {
+                        $('#viewProjectCode').val(data.projectCode);
+                        $('#viewProjectName').val(data.projectName);
+                        setViewMode();
+                        clearValidation('#viewProjectForm');
+                    }
+                });
+            });
+
+            // Save Project (from view/edit modal)
+            $('#btnSaveProject').click(function () {
+                // Clear previous validation states
+                clearValidation('#viewProjectForm');
+
+                // Validate form
+                if (!validateViewForm()) {
+                    return;
+                }
+
+                var formData = {
+                    id: parseInt($('#viewProjectId').val()),
+                    projectCode: $('#viewProjectCode').val().trim(),
+                    projectName: $('#viewProjectName').val().trim()
+                };
+
+                // Disable the save button to prevent double submission
+                var $saveBtn = $('#btnSaveProject');
+                $saveBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+
+                $.post('/ProjectList/UpdateProject', formData, function (response) {
+                    if (response.success) {
+                        setViewMode();
+                        table.ajax.reload(null, false); // Keep current page
+                        showNotification(response.message, 'success');
+                    } else {
+                        showNotification(response.message, 'error');
+                    }
+                }).fail(function(xhr, status, error) {
+                    console.log('Error saving project:', error);
+                    showNotification('Unable to save project. Please try again.', 'error');
+                }).always(function() {
+                    // Re-enable the save button
+                    $saveBtn.prop('disabled', false).html('Save');
+                });
+            });
+
+            // Save New Project (from add modal)
+            $('#btnSaveNewProject').click(function () {
+                // Clear previous validation states
+                clearValidation('#addProjectForm');
+
+                // Validate form
+                if (!validateAddForm()) {
+                    return;
+                }
+
+                var formData = {
+                    projectCode: $('#addProjectCode').val().trim(),
+                    projectName: $('#addProjectName').val().trim()
+                };
+
+                // Disable the save button to prevent double submission
+                var $saveBtn = $('#btnSaveNewProject');
+                $saveBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+
+                $.post('/ProjectList/AddProject', formData, function (response) {
+                    if (response.success) {
+                        $('#addProjectModal').modal('hide');
+                        table.ajax.reload(null, false); // Keep current page
+                        showNotification(response.message, 'success');
+                    } else {
+                        showNotification(response.message, 'error');
+                    }
+                }).fail(function(xhr, status, error) {
+                    console.log('Error saving project:', error);
+                    showNotification('Unable to save project. Please try again.', 'error');
+                }).always(function() {
+                    // Re-enable the save button
+                    $saveBtn.prop('disabled', false).html('Save');
+                });
+            });
+
+            // Delete Project with reason - REUSABLE ALREADY IN THE GLOBAL
+            $(document).on('click', '.deleteProject', function (e) {
+                e.preventDefault();
+                deleteWithReason({
+                    title: 'Inactive Project',
+                    text: 'Are you sure you want to inactive this project?',
+                    url: '/ProjectList/DeleteProject',
+                    id: $(this).data('id'),
+                    button: $(this),
+                    table: table
+                });
+            });
+
+            // Restore Project with SweetAlert2
+            $(document).on('click', '.restoreProject', function (e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+                var $btn = $(this);
+
+                Swal.fire({
+                    title: 'Restore Record',
+                    text: 'Are you sure you want to restore this project?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, Restore',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d',
+                    reverseButtons: false,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Disable button and show loading
+                        $btn.prop('disabled', true);
+                        $btn.html('<i class="fas fa-spinner fa-spin"></i>');
+
+                        $.post('/ProjectList/RestoreProject', { id: id }, function (response) {
+                            if (response.success) {
+                                table.ajax.reload(null, false); // Keep current page
+                                showNotification(response.message, 'success');
+                            } else {
+                                showNotification(response.message, 'error');
+                            }
+                        }).fail(function(xhr, status, error) {
+                            console.log('Error restoring project:', error);
+                            showNotification('Unable to restore project. Please try again.', 'error');
+                        }).always(function() {
+                            // Re-enable button
+                            $btn.prop('disabled', false);
+                            $btn.html('<i class="fas fa-undo"></i>');
+                        });
+                    }
+                });
+            });
+
+            // Reset forms when modals are hidden
+            $('#addProjectModal').on('hidden.bs.modal', function () {
+                resetAddForm();
+            });
+
+            $('#viewProjectModal').on('hidden.bs.modal', function () {
+                resetViewForm();
+                setViewMode();
+            });
+
+            // Enter key handling for forms
+            $('#addProjectForm').on('keypress', function(e) {
+                if (e.which === 13) { // Enter key
+                    e.preventDefault();
+                    $('#btnSaveNewProject').click();
+                }
+            });
+
+            $('#viewProjectForm').on('keypress', function(e) {
+                if (e.which === 13 && $('#viewProjectModal .modal-body').hasClass('edit-mode')) { // Enter key in edit mode
+                    e.preventDefault();
+                    $('#btnSaveProject').click();
+                }
+            });
+
+            // Helper Functions
+            function updateTableView() {
+                if (isViewingDeleted) {
+                    // Update for deleted records view
+                    table.ajax.url('/ProjectList/GetDeletedProject').load();
+                    $('#btnAddProject').hide();
+                } else {
+                    // Update for active records view
+                    table.ajax.url('/ProjectList/GetProjectList').load();
+                    $('#btnAddProject').show();
+                }
+            }
+
+            function resetAddForm() {
+                $('#addProjectForm')[0].reset();
+                clearValidation('#addProjectForm');
+                $('#btnSaveNewProject').prop('disabled', false).html('Save');
+            }
+
+            function resetViewForm() {
+                $('#viewProjectForm')[0].reset();
+                clearValidation('#viewProjectForm');
+                $('#btnSaveProject').prop('disabled', false).html('Save');
+            }
+
+            function setViewMode() {
+                $('#viewModalTitle').text('View Project');
+                $('#viewProjectModal .modal-body').removeClass('edit-mode');
+
+                // Make fields readonly/disabled
+                $('#viewProjectCode').prop('readonly', true);
+                $('#viewProjectName').prop('readonly', true);
+
+                // Hide required asterisks
+                $('.edit-required').addClass('d-none');
+
+                // Show/hide buttons
+                $('#btnEditProject').removeClass('d-none');
+                $('#btnSaveProject').addClass('d-none');
+                $('#btnCancelEdit').addClass('d-none');
+
+                clearValidation('#viewProjectForm');
+            }
+
+            function setEditMode() {
+                $('#viewModalTitle').text('Edit Project');
+                $('#viewProjectModal .modal-body').addClass('edit-mode');
+
+                // Make fields editable
+                $('#viewProjectCode').prop('readonly', false);
+                $('#viewProjectName').prop('readonly', false);
+
+                // Show required asterisks
+                $('.edit-required').removeClass('d-none');
+
+                // Show/hide buttons
+                $('#btnEditProject').addClass('d-none');
+                $('#btnSaveProject').removeClass('d-none');
+                $('#btnCancelEdit').removeClass('d-none');
+            }
+
+            function clearValidation(formSelector) {
+                $(formSelector + ' .form-control, ' + formSelector + ' .form-select').removeClass('is-invalid');
+                $(formSelector + ' .invalid-feedback').hide();
+            }
+
+            function validateAddForm() {
+                var isValid = true;
+
+                // Validate project code
+                var projectCode = $('#addProjectCode').val().trim();
+                if (!projectCode) {
+                    $('#addProjectCode').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                // Validate project name
+                var projectName = $('#addProjectName').val().trim();
+                if (!projectName) {
+                    $('#addProjectName').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                return isValid;
+            }
+
+            function validateViewForm() {
+                var isValid = true;
+
+                // Validate project code
+                var projectCode = $('#viewProjectCode').val().trim();
+                if (!projectCode) {
+                    $('#viewProjectCode').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                // Validate project name
+                var projectName = $('#viewProjectName').val().trim();
+                if (!projectName) {
+                    $('#viewProjectName').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                return isValid;
+            }
+
+            // Updated notification function using toastr
+            function showNotification(message, type) {
+                if (type === 'success') {
+                    toastr.success(message, "Success");
+                } else if (type === 'error') {
+                    toastr.error(message, "Error");
+                } else if (type === 'warning') {
+                    toastr.warning(message, "Warning");
+                } else if (type === 'info') {
+                    toastr.info(message, "Information");
+                } else {
+                    toastr.info(message, "Notification");
+                }
+            }
+
+            // Remove validation classes when user starts typing (Add form)
+            $('#addProjectCode, #addProjectName').on('input', function() {
+                $(this).removeClass('is-invalid');
+            });
+
+            // Remove validation classes when user starts typing (View/Edit form)
+            $('#viewProjectCode, #viewProjectName').on('input', function() {
+                $(this).removeClass('is-invalid');
+            });
+        });
+    </script>
+}

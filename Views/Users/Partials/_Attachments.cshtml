@@ -1,0 +1,808 @@
+﻿@model List<KEISAN_HRIS_v2.Models.Users.AttachmentsInfo>
+
+<div class="card-header">
+    <div class="row" style="width:100%;">
+        <div class="row" style="margin-left:0px;width:100%;">
+            <div class="col-md-3">
+                <div class="form-group">
+                    <h5>Record Status</h5>
+                    <select name="filterRecordStatus" id="filterRecordStatus" class="form-control">
+                        <option value="active" selected>ACTIVE</option>
+                        <option value="inactive">INACTIVE</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-6"></div>
+            <div class="col-md-3 d-flex justify-content-end align-items-end">
+                <div class="form-group">
+                    <button type="button" class="btn btn-primary" id="btnAddAttachment">
+                        <i class="fa fa-plus"></i> New Attachment
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card-body">
+    <div class="table-responsive">
+        <table id="attachmentsTable" class="display" style="min-width: 900px">
+            <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>Description</th>
+                    <th>Type</th>
+                    <th>File</th>
+                    <th>Attachment</th>
+                    <th>Date Uploaded</th>
+                    <th>Added By</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<!-- Add Attachment Modal -->
+<div class="modal fade" id="addAttachmentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">New Attachment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addAttachmentForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Description <span class="text-danger">*</span></label>
+                            <input type="text" id="addAttachmentDescription" name="AttachmentDescription" class="form-control" maxlength="255" required />
+                            <div class="invalid-feedback">Please enter description.</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Attachment Type <span class="text-danger">*</span></label>
+                            <select id="addAttachmentTypeCode" name="AttachmentTypeCode" class="form-select" style="width:100%" required>
+                                <option value="">-- Select Type --</option>
+                            </select>
+                            <div class="invalid-feedback">Please select attachment type.</div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Upload File <span class="text-danger">*</span></label>
+                            <input type="file" id="addAttachment" name="attachment" class="form-control" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" required />
+                            <small class="text-muted">Allowed formats: PDF, JPG, PNG, DOC, DOCX (Max: 5MB)</small>
+                            <div class="invalid-feedback">Please select a file to upload.</div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btnSaveNewAttachment" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View/Edit Attachment Modal -->
+<div class="modal fade" id="viewAttachmentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewModalTitle">View Attachment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="viewAttachmentForm">
+                    <input type="hidden" id="viewAttachmentId" name="Id" />
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Description <span class="text-danger edit-required d-none">*</span></label>
+                            <input type="text" id="viewAttachmentDescription" name="AttachmentDescription" class="form-control" maxlength="255" readonly />
+                            <div class="invalid-feedback">Please enter description.</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Attachment Type <span class="text-danger edit-required d-none">*</span></label>
+                            <select id="viewAttachmentTypeCode" name="AttachmentTypeCode" class="form-select" style="width:100%" disabled>
+                                <option value="">-- Select Type --</option>
+                            </select>
+                            <div class="invalid-feedback">Please select attachment type.</div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Current File</label>
+                            <div id="currentAttachments" class="mb-2"></div>
+                        </div>
+                    </div>
+
+                    <div class="row d-none" id="viewFileUploadRow">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Replace File (Optional)</label>
+                            <input type="file" id="viewAttachment" name="attachment" class="form-control" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" />
+                            <small class="text-muted">Allowed formats: PDF, JPG, PNG, DOC, DOCX (Max: 5MB)</small>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="btnEditAttachment">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+                <button type="button" class="btn btn-success d-none" id="btnSaveAttachment">Save</button>
+                <button type="button" class="btn btn-danger d-none" id="btnCancelEdit">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Attachment View Modal -->
+<div class="modal fade" id="attachmentListModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">View Attachments</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="attachmentList"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .table-responsive {
+        border-radius: 0.375rem;
+    }
+
+    #attachmentsTable_wrapper .dataTables_length,
+    #attachmentsTable_wrapper .dataTables_filter {
+        margin-bottom: 1rem;
+    }
+
+    #attachmentsTable_wrapper .dataTables_info,
+    #attachmentsTable_wrapper .dataTables_paginate {
+        margin-top: 1rem;
+    }
+
+    #attachmentsTable .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .modal-content {
+        border-radius: 0.5rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+
+    .invalid-feedback {
+        display: none;
+    }
+
+    .form-control.is-invalid,
+    .form-select.is-invalid {
+        border-color: #dc3545;
+    }
+
+        .form-control.is-invalid ~ .invalid-feedback,
+        .form-select.is-invalid ~ .invalid-feedback {
+            display: block;
+        }
+
+    .text-danger {
+        color: #dc3545 !important;
+    }
+
+    .form-control[readonly] {
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+    }
+
+    .form-control[disabled],
+    select[disabled] {
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+    }
+
+    .edit-mode .form-control[readonly] {
+        background-color: #ffffff;
+        border-color: #ced4da;
+    }
+
+    .edit-mode select[disabled] {
+        background-color: #ffffff;
+        border-color: #ced4da;
+    }
+
+    .select2-container .select2-selection--single {
+        height: 38px;
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 36px;
+        padding-left: 12px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 36px;
+    }
+
+    .select2-container--default.select2-container--focus .select2-selection--single {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+
+    .select2-container--default .select2-selection--single.select2-selection--disabled {
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+    }
+
+    .is-invalid + .select2-container .select2-selection--single {
+        border-color: #dc3545;
+    }
+
+    .swal2-popup {
+        border-radius: 15px !important;
+        padding: 2rem !important;
+    }
+
+    .swal2-icon.swal2-error {
+        border-color: #f27474 !important;
+        color: #f27474 !important;
+    }
+
+        .swal2-icon.swal2-error .swal2-x-mark {
+            display: none !important;
+        }
+
+        .swal2-icon.swal2-error::before {
+            content: "\f2ed" !important;
+            font-family: "Font Awesome 5 Free" !important;
+            font-weight: 900 !important;
+            font-size: 2.5rem !important;
+            color: #f27474 !important;
+            display: block !important;
+        }
+
+    .swal2-title {
+        font-size: 1.875rem !important;
+        font-weight: 600 !important;
+        color: #545454 !important;
+        margin: 1rem 0 0.5rem 0 !important;
+    }
+
+    .swal2-html-container {
+        font-size: 1rem !important;
+        color: #737373 !important;
+        margin: 0 0 2rem 0 !important;
+    }
+
+    .swal2-actions {
+        gap: 0.5rem !important;
+    }
+
+    .swal2-confirm {
+        background-color: #7c3aed !important;
+        border-color: #7c3aed !important;
+        color: white !important;
+        font-weight: 500 !important;
+        padding: 0.75rem 2rem !important;
+        border-radius: 8px !important;
+        font-size: 0.875rem !important;
+    }
+
+    .swal2-cancel {
+        background-color: #6b7280 !important;
+        border-color: #6b7280 !important;
+        color: white !important;
+        font-weight: 500 !important;
+        padding: 0.75rem 2rem !important;
+        border-radius: 8px !important;
+        font-size: 0.875rem !important;
+    }
+
+    .swal2-confirm:hover {
+        background-color: #6d28d9 !important;
+        border-color: #6d28d9 !important;
+    }
+
+    .swal2-cancel:hover {
+        background-color: #4b5563 !important;
+        border-color: #4b5563 !important;
+    }
+
+    .btn-success.shadow-sm:hover {
+        background-color: #1e7e34;
+        border-color: #1c7430;
+    }
+
+    .table th,
+    .table td {
+        vertical-align: middle;
+    }
+
+    #attachmentsTable .btn-sm i {
+        font-size: 0.875rem;
+    }
+
+    #attachmentsTable .d-flex.gap-1 {
+        gap: 0.25rem !important;
+    }
+
+    .card-header {
+        border-bottom: none !important;
+    }
+
+    .btn-outline-primary {
+        color: #0d6efd;
+        border-color: #0d6efd;
+    }
+
+        .btn-outline-primary:hover {
+            color: #fff;
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+
+    /* Attachments */
+    .attachment-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        margin-bottom: 5px;
+        background-color: #f8f9fa;
+    }
+
+        .attachment-item a {
+            text-decoration: none;
+            color: #0d6efd;
+        }
+
+            .attachment-item a:hover {
+                text-decoration: underline;
+            }
+
+    /* Text Truncation */
+    .truncate {
+        max-width: 150px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>
+
+<script>
+    $(document).ready(function () {
+
+        MODULE = 'FSAttachmentsM';
+         access = ROLE_ACCESS?.[MODULE];
+
+        if (access != 'READWRITE' && access != 'FULL') {
+            $('#btnAddAttachment, #btnEditAttachment').hide();
+        }
+
+        const config = {
+            toastr: { positionClass: "toast-top-right", timeOut: 5000, closeButton: true, progressBar: true, preventDuplicates: true },
+            endpoints: {
+                list: "/Attachments/GetAttachmentsList",
+                get: "/Attachments/GetAttachmentById",
+                types: "/Attachments/GetAttachmentTypes",
+                employeeAttachments: "/Attachments/GetEmployeeAttachments",
+                add: "/Attachments/AddAttachment",
+                update: "/Attachments/UpdateAttachment",
+                delete: "/Attachments/InactiveAttachment",
+                restore: "/Attachments/RestoreAttachment"
+            },
+            employeeNo: '@ViewBag.EmployeeNo'
+        };
+
+        toastr.options = config.toastr;
+        let isViewingDeleted = false;
+
+        // INITIALIZATION
+        initializeSelect2();
+        $('#filterRecordStatus').select2({ selectOnClose: true, minimumResultsForSearch: Infinity });
+        $('#filterRecordStatus').on('change', function () {
+            isViewingDeleted = $(this).val() === 'inactive';
+            updateTableView();
+        });
+
+        // DATATABLE CONFIGURATION
+        const table = $('#attachmentsTable').DataTable({
+            processing: true,
+            serverSide: false,
+            ajax: {
+                url: config.endpoints.list,
+                type: "GET",
+                data: d => ({ employeeNo: config.employeeNo, status: isViewingDeleted ? 'inactive' : 'active' }),
+                error: () => showNotification('Error loading data. Please refresh the page.', 'error')
+            },
+            columns: [
+                {
+                    data: "id", width: "12%", orderable: false,
+                    render: (data, type, row) => {
+                        if (isViewingDeleted) {
+                            return access === 'FULL' ? `<div class="d-flex gap-1"><button type="button" class="btn btn-sm btn-success shadow-sm restoreAttachment" data-id="${data}" title="Restore"><i class="fas fa-undo"></i></button></div>` : '';
+                        }
+                        const viewbtn = `<button type="button" class="btn btn-sm btn-primary shadow-sm viewAttachment" data-id="${data}" title="View"><i class="fas fa-eye"></i></button>`;
+                        const deletebtn = access === 'FULL' ? `<button type="button" class="btn btn-sm btn-danger shadow-sm deleteAttachment" data-id="${data}" title="Delete"><i class="fa fa-trash"></i></button>` : '';
+                        return `<div class="d-flex gap-1">${viewbtn}${deletebtn}</div>`;
+                    }
+                },
+                { data: "attachmentDescription", width: "20%" },
+                { data: "attachmentTypeName", width: "15%" },
+                {
+                    data: "attachmentPath", width: "15%",
+                    render: (data) => {
+                        const fileName = data.split('/').pop();
+                        return `<span class="text-muted small truncate" title="${fileName}">${fileName}</span>`;
+                    }
+                },
+                {
+                    data: null, width: "10%", orderable: false,
+                    render: (data, type, row) => `<button class="btn btn-sm btn-outline-primary viewAttachmentList" data-employee="${row.employeeNo}" title="View Attachments"><i class="fas fa-paperclip"></i></button>`
+                },
+                { data: "dtAdded", width: "12%" },
+                { data: "addedByUser", width: "15%" }
+            ],
+            order: [[5, 'desc']],
+            pageLength: 25,
+            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+            language: {
+                processing: "Loading...",
+                emptyTable: "No attachment records found",
+                zeroRecords: "No matching attachment records found",
+                paginate: { next: '<i class="fa fa-angle-double-right"></i>', previous: '<i class="fa fa-angle-double-left"></i>' }
+            }
+        });
+
+        setInterval(() => { if (table && !$('.modal').is(':visible')) table.ajax.reload(null, false); }, 3600000);
+
+        // BUTTON CLICK HANDLERS
+        $('#btnAddAttachment').click(() => {
+            resetAddForm();
+            loadAttachmentTypes('#addAttachmentTypeCode');
+            $('#addAttachmentModal').modal('show');
+        });
+
+        $('#btnSaveNewAttachment').click(() => {
+            if (!validateForm('#addAttachmentForm', ['addAttachmentDescription', 'addAttachmentTypeCode', 'addAttachment'])) return;
+
+            const formData = new FormData();
+            formData.append('employeeNo', config.employeeNo);
+            formData.append('attachmentDescription', $('#addAttachmentDescription').val().trim());
+            formData.append('attachmentTypeCode', $('#addAttachmentTypeCode').val());
+
+            const file = $('#addAttachment')[0].files[0];
+            if (file) {
+                if (file.size > 5 * 1024 * 1024) {
+                    showNotification('File size exceeds 5MB limit', 'error');
+                    return;
+                }
+                formData.append('attachment', file);
+            }
+
+            saveRequest(config.endpoints.add, formData, '#btnSaveNewAttachment', true);
+        });
+
+        $(document).on('click', '.viewAttachment', function (e) {
+            e.preventDefault();
+            const id = $(this).data('id'), $btn = $(this);
+            toggleButtonLoading($btn, true);
+
+            $.get(config.endpoints.get, { id })
+                .done(r => {
+                    if (r.success) {
+                        resetViewForm();
+                        setViewMode();
+                        loadAttachmentTypes('#viewAttachmentTypeCode');
+                        populateViewForm(r.data);
+                        loadCurrentAttachments(r.data.employeeNo);
+                        $('#viewAttachmentModal').modal('show');
+                    } else showNotification(r.message, 'error');
+                })
+                .fail(() => showNotification('Unable to load attachment data', 'error'))
+                .always(() => toggleButtonLoading($btn, false));
+        });
+
+        $('#btnEditAttachment').click(() => {
+            setEditMode();
+            $('#viewAttachmentDescription').focus();
+        });
+
+        $('#btnCancelEdit').click(() => {
+            $.get(config.endpoints.get, { id: $('#viewAttachmentId').val() })
+                .done(r => { if (r.success) { populateViewForm(r.data); setViewMode(); clearValidation('#viewAttachmentForm'); } });
+        });
+
+        $('#btnSaveAttachment').click(() => {
+            if (!validateForm('#viewAttachmentForm', ['viewAttachmentDescription', 'viewAttachmentTypeCode'])) return;
+
+            const formData = new FormData();
+            formData.append('id', $('#viewAttachmentId').val());
+            formData.append('employeeNo', config.employeeNo);
+            formData.append('attachmentDescription', $('#viewAttachmentDescription').val().trim());
+            formData.append('attachmentTypeCode', $('#viewAttachmentTypeCode').val());
+
+            const file = $('#viewAttachment')[0].files[0];
+            if (file) {
+                if (file.size > 5 * 1024 * 1024) {
+                    showNotification('File size exceeds 5MB limit', 'error');
+                    return;
+                }
+                formData.append('attachment', file);
+            }
+
+            saveRequest(config.endpoints.update, formData, '#btnSaveAttachment', false);
+        });
+
+        // EVENT HANDLERS - DELETE/RESTORE
+        $(document).on('click', '.deleteAttachment', function (e) {
+            e.preventDefault();
+            deleteWithReason({
+                title: 'Inactive Attachment',
+                text: 'Are you sure you want to inactive this attachment record?',
+                url: config.endpoints.delete,
+                id: $(this).data('id'),
+                button: $(this),
+                table: table 
+            });
+        });
+
+        $(document).on('click', '.restoreAttachment', function (e) {
+            e.preventDefault();
+            const id = $(this).data('id'), $btn = $(this);
+            Swal.fire({
+                title: 'Restore Record',
+                text: 'Are you sure you want to restore this attachment record?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Restore',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#6c757d',
+                allowOutsideClick: false,
+                allowEscapeKey: false
+            }).then(result => {
+                if (result.isConfirmed) {
+                    toggleButtonLoading($btn, true);
+                    $.post(config.endpoints.restore, { id })
+                        .done(r => {
+                            if (r.success) { table.ajax.reload(null, false); showNotification(r.message, 'success'); }
+                            else showNotification(r.message, 'error');
+                        })
+                        .fail(() => showNotification('Unable to restore attachment. Please try again.', 'error'))
+                        .always(() => toggleButtonLoading($btn, false));
+                }
+            });
+        });
+
+        // EVENT HANDLERS - ATTACHMENTS
+        $(document).on('click', '.viewAttachmentList', function(e) {
+            e.preventDefault();
+            const employeeNo = $(this).data('employee');
+            loadAttachmentsList(employeeNo);
+            $('#attachmentListModal').modal('show');
+        });
+
+        // MODAL EVENTS
+        $('#addAttachmentModal, #viewAttachmentModal').on('hidden.bs.modal', function () {
+            resetAddForm();
+            if ($(this).attr('id').includes('view')) setViewMode();
+        });
+
+        // FORM INPUT HANDLERS
+        $('#addAttachmentDescription, #viewAttachmentDescription, #addAttachmentTypeCode, #viewAttachmentTypeCode, #addAttachment').on('input change', function () {
+            $(this).removeClass('is-invalid');
+        });
+
+        // HELPER FUNCTIONS
+        function initializeSelect2() {
+            $('#addAttachmentTypeCode').select2({
+                placeholder: "Select Attachment Type",
+                allowClear: true,
+                dropdownParent: $('#addAttachmentModal'),
+                minimumResultsForSearch: Infinity
+            });
+
+            $('#viewAttachmentTypeCode').select2({
+                placeholder: "Select Attachment Type",
+                allowClear: true,
+                dropdownParent: $('#viewAttachmentModal'),
+                minimumResultsForSearch: Infinity
+            });
+        }
+
+        function loadAttachmentTypes(selector) {
+            $.get(config.endpoints.types, data => {
+                const $select = $(selector);
+                $select.empty().append('<option value="">-- Select Type --</option>');
+                data.forEach(item => $select.append(`<option value="${item.attachmentTypeCode}">${item.attachmentTypeName}</option>`));
+            });
+        }
+
+        function populateViewForm(data) {
+            $('#viewAttachmentId').val(data.id);
+            $('#viewAttachmentDescription').val(data.attachmentDescription);
+            $('#viewAttachmentTypeCode').val(data.attachmentTypeCode).trigger('change');
+        }
+
+        function loadCurrentAttachments(employeeNo) {
+            $.get(config.endpoints.employeeAttachments, { employeeNo }, data => {
+                const container = $('#currentAttachments');
+                container.empty();
+                if (data && data.length > 0) {
+                    data.forEach(attachment => {
+                        const fileName = attachment.attachmentPath.split('/').pop();
+                        container.append(`
+                            <div class="attachment-item">
+                                <i class="fas fa-file"></i>
+                                <a href="${attachment.attachmentPath}" target="_blank">${fileName}</a>
+                                <small class="text-muted ms-auto">${new Date(attachment.dtAdded).toLocaleDateString()}</small>
+                            </div>
+                        `);
+                    });
+                } else {
+                    container.append('<small class="text-muted">No attachments found</small>');
+                }
+            });
+        }
+
+        function loadAttachmentsList(employeeNo) {
+            $.get(config.endpoints.employeeAttachments, { employeeNo }, data => {
+                const container = $('#attachmentList');
+                container.empty();
+                if (data && data.length > 0) {
+                    data.forEach(attachment => {
+                        const fileName = attachment.attachmentPath.split('/').pop();
+                        container.append(`
+                            <div class="attachment-item mb-3">
+                                <i class="fas fa-file-alt fa-2x me-3"></i>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1"><a href="${attachment.attachmentPath}" target="_blank" class="text-decoration-none">${fileName}</a></h6>
+                                    <small class="text-muted">Added: ${new Date(attachment.dtAdded).toLocaleDateString()}</small>
+                                </div>
+                                <a href="${attachment.attachmentPath}" target="_blank" class="btn btn-sm btn-outline-primary ms-2"><i class="fas fa-download"></i> View</a>
+                            </div>
+                        `);
+                    });
+                } else {
+                    container.append('<p class="text-muted text-center">No attachments found for this employee.</p>');
+                }
+            });
+        }
+
+        function resetAddForm() {
+            $('#addAttachmentForm')[0].reset();
+            $('#addAttachmentTypeCode').val(null).trigger('change');
+            clearValidation('#addAttachmentForm');
+            $('#btnSaveNewAttachment').prop('disabled', false).html('Save');
+        }
+
+        function resetViewForm() {
+            $('#viewAttachmentForm')[0].reset();
+            $('#viewAttachmentTypeCode').val(null).trigger('change');
+            $('#currentAttachments').empty();
+            clearValidation('#viewAttachmentForm');
+            $('#btnSaveAttachment').prop('disabled', false).html('Save');
+            $('#viewFileUploadRow').addClass('d-none');
+        }
+
+        function setViewMode() {
+            $('#viewModalTitle').text('View Attachment');
+            $('#viewAttachmentModal .modal-body').removeClass('edit-mode');
+            $('#viewAttachmentDescription').prop('readonly', true);
+            $('#viewAttachmentTypeCode').prop('disabled', true);
+            $('#viewFileUploadRow').addClass('d-none');
+            $('.edit-required').addClass('d-none');
+            $('#btnEditAttachment').removeClass('d-none');
+            $('#btnSaveAttachment, #btnCancelEdit').addClass('d-none');
+            clearValidation('#viewAttachmentForm');
+        }
+
+        function setEditMode() {
+            $('#viewModalTitle').text('Edit Attachment');
+            $('#viewAttachmentModal .modal-body').addClass('edit-mode');
+            $('#viewAttachmentDescription').prop('readonly', false);
+            $('#viewAttachmentTypeCode').prop('disabled', false);
+            $('#viewFileUploadRow').removeClass('d-none');
+            $('.edit-required').removeClass('d-none');
+            $('#btnEditAttachment').addClass('d-none');
+            $('#btnSaveAttachment, #btnCancelEdit').removeClass('d-none');
+        }
+
+        function validateForm(formSelector, fields) {
+            clearValidation(formSelector);
+            let isValid = true;
+
+            fields.forEach(field => {
+                const $field = $(`#${field}`);
+                if (field === 'addAttachment') {
+                    if (!$field[0].files || !$field[0].files[0]) {
+                        $field.addClass('is-invalid');
+                        isValid = false;
+                    }
+                } else {
+                    if (!$field.val()) {
+                        $field.addClass('is-invalid');
+                        isValid = false;
+                    }
+                }
+            });
+
+            return isValid;
+        }
+
+        function clearValidation(formSelector) {
+            $(`${formSelector} .form-control, ${formSelector} .form-select`).removeClass('is-invalid');
+        }
+
+        function updateTableView() {
+            table.ajax.reload(null, false);
+            $('#btnAddAttachment').toggle(!isViewingDeleted);
+        }
+
+        function saveRequest(url, data, buttonSelector, closeModal) {
+            const $btn = $(buttonSelector);
+            toggleButtonLoading($btn, true, 'Saving...');
+
+            $.ajax({
+                url,
+                type: 'POST',
+                data,
+                processData: false,
+                contentType: false,
+                success: response => {
+                    if (response.success) {
+                        if (closeModal) $('#addAttachmentModal').modal('hide');
+                        else setViewMode();
+                        table.ajax.reload(null, false);
+                        showNotification(response.message, 'success');
+                    } else {
+                        showNotification(response.message, 'error');
+                    }
+                },
+                error: () => showNotification('Unable to save. Please try again.', 'error'),
+                complete: () => toggleButtonLoading($btn, false)
+            });
+        }
+
+        function toggleButtonLoading($btn, loading, text = '') {
+            const iconMap = {
+                'viewAttachment': '<i class="fas fa-eye"></i>',
+                'deleteAttachment': '<i class="fa fa-trash"></i>',
+                'restoreAttachment': '<i class="fas fa-undo"></i>'
+            };
+
+            if (loading) {
+                $btn.data('original-html', $btn.html())
+                    .prop('disabled', true)
+                    .html((text ? '<i class="fas fa-spinner fa-spin"></i> ' : '<i class="fas fa-spinner fa-spin"></i>') + text);
+            } else {
+                const btnClass = Object.keys(iconMap).find(cls => $btn.hasClass(cls));
+                $btn.prop('disabled', false)
+                    .html($btn.data('original-html') || iconMap[btnClass] || 'Save')
+                    .removeData('original-html');
+            }
+        }
+
+        function showNotification(message, type) {
+            const types = { success: 'Success', error: 'Error', warning: 'Warning', info: 'Information' };
+            toastr[type](message, types[type] || 'Notification');
+        }
+    });
+</script>

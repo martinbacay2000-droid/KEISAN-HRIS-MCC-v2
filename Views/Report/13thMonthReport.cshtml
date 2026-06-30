@@ -1,0 +1,93 @@
+﻿﻿@{
+Layout = "~/Views/Shared/_LayoutFillow.cshtml";
+ViewData["Title"] = "13th Month Report";
+}
+
+<div class="col-12">
+    <div class="card">
+        <div class="card-header">
+
+            <div class="row" style="width:100%;">
+                <h4 class="card-title">13th Month Report</h4>
+                <br> <br> <br>
+
+                <div class="row" style="margin-left:0px;width:100%;">
+                   
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Company</h5>
+                            <select name="branch" id="filterBranch" class="form-control"></select>
+                        </div>
+                    </div>
+                    
+                </div>
+
+                <div class="row align-items-end mt-2" style="margin-left:0px;width:100%;">
+                    
+
+                    <div class="col-md-3">
+                        <label>Year</label>
+                        <div class="input-hasicon">
+                            <input name="dateYear" id="dateYear" class="form-control formInput year-picker ">
+                            <div class="icon"><i class="far fa-calendar"></i></div>
+                        </div>
+                    </div>
+                    
+
+                    <div class="col-md-3">
+                    </div>
+                    <div class="col-md-3 d-flex justify-content-end">
+                        <div class="form-group">
+                            <input type="button" class="btn btn-warning" id="btnNewRequest" value="Print Report">
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+
+
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="13thMonth" class="display" style="min-width: 845px">
+                    <thead>
+                        <tr>
+                            <th>Employee No</th>
+                            <th>Employee Name</th>
+                            <th>SSS Number</th>
+                            <th>Total Pay</th>
+
+                            <th>Contribution Employee</th>
+                            <th>Contribution Employer</th>
+                            <th>EC</th>
+                            <th>Total Contribution</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+
+
+
+
+    </div>
+</div>
+@section Fillow_style
+{
+
+
+}
+
+@section Fillow_script
+{
+
+
+    <script>
+        $(document).ready(function () {
+            
+        });
+
+    </script>
+
+}

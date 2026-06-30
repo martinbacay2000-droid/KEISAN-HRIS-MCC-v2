@@ -1,0 +1,1541 @@
+﻿<div class="card-body">
+
+    <!-- ============================================================
+         EXPORT BUTTON ROW
+         ============================================================ -->
+    <div class="d-flex align-items-center mb-3">
+        <button type="button" class="btn btn-warning btn-sm" id="btnExportEmployeeDetail">
+            <i class="fas fa-file-excel me-1"></i> Export to Excel
+        </button>
+        <span id="dtrAccessBadge" class="ms-3 badge"></span>
+    </div>
+
+    <div class="table-responsive">
+        <table id="employeeDetailsTable" class="display" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Weekday</th>
+                    <th>Sched In</th>
+                    <th>Sched Out</th>
+                    <th>Time In</th>
+                    <th>Time Out</th>
+                    <th>Remarks</th>
+                    <th>Late (Min)</th>
+                    <th>Undertime (Min)</th>
+                    <th>Night Differential</th>
+
+                    <th>Overtime In</th>
+                    <th>Overtime Out</th>
+                    <th>Overtime Reason</th>
+                    <th>Overtime (Hrs)</th>
+
+                    <th>Rest Day</th>
+                    <th>Rest Day OT</th>
+                    <th>Rest Day ND OT</th>
+
+                    <th>Holiday Name</th>
+                    <th>Special Holiday (Hours)</th>
+                    <th>Special Holiday OT (Hours)</th>
+                    <th>Special Holiday ND (Hours)</th>
+                    <th>Special Holiday ND OT (Hours)</th>
+
+                    <th>Special Holiday Rest Day (Hours)</th>
+                    <th>Special Holiday Rest Day OT (Hours)</th>
+                    <th>Special Holiday Rest Day ND (Hours)</th>
+                    <th>Special Holiday Rest Day ND OT (Hours)</th>
+
+                    <th>Regular Holiday (Hours)</th>
+                    <th>Regular Holiday OT (Hours)</th>
+                    <th>Regular Holiday ND (Hours)</th>
+                    <th>Regular Holiday ND OT (Hours)</th>
+
+                    <th>Regular Holiday Rest Day (Hours)</th>
+                    <th>Regular Holiday Rest Day OT (Hours)</th>
+                    <th>Regular Holiday Rest Day ND (Hours)</th>
+                    <th>Regular Holiday Rest Day ND OT (Hours)</th>
+
+                    <th>Leave Type</th>
+                    <th>Leave Reason</th>
+                    <th>OB Reason</th>
+                    <th>WFH Reason</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<!-- ============================================================
+     COMBINED TIME IN / TIME OUT EDITOR MODAL
+     Opens on double-click of either cell.
+     ============================================================ -->
+<div class="modal fade" id="combinedTimeModal" tabindex="-1"
+     data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:520px;">
+        <div class="modal-content"
+             style="border-radius:12px;border:none;
+                    box-shadow:0 8px 32px rgba(136,108,192,0.18);">
+
+            <div class="modal-header"
+                 style="background:linear-gradient(135deg,#886cc0 0%,#6b5b95 100%);
+                        border-radius:12px 12px 0 0;border:none;">
+                <div class="d-flex align-items-center gap-2">
+                    <div style="background:rgba(255,255,255,0.2);border-radius:8px;
+                                width:36px;height:36px;display:flex;
+                                align-items:center;justify-content:center;">
+                        <i class="fas fa-clock" style="color:#fff;font-size:1rem;"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0 fw-bold text-white" id="combinedModalTitle">
+                            Edit Time Record
+                        </h6>
+                        <small class="text-white-50" id="combinedModalSubtitle"></small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white"
+                        id="btnCloseCombinedModal"></button>
+            </div>
+
+            <div class="modal-body p-4">
+
+                <!-- Info banner for EDIT/READWRITE users -->
+                <div id="combinedRequestBanner"
+                     class="d-flex align-items-start gap-2 p-3 mb-3"
+                     style="background:#f8f4ff;border:1px solid #d4c8f0;
+                            border-radius:8px;border-left:4px solid #886cc0;display:none!important;">
+                    <i class="fas fa-info-circle mt-1"
+                       style="color:#886cc0;font-size:0.9rem;flex-shrink:0;"></i>
+                    <div style="font-size:0.83rem;color:#5d4f82;line-height:1.5;">
+                        Your changes will be submitted as a <strong>Pending Request</strong>
+                        and must be approved before taking effect.
+                    </div>
+                </div>
+
+                <!-- Work Date (read-only) -->
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" style="font-size:0.85rem;">Work Date</label>
+                    <input type="text" id="combinedWorkDate" class="form-control form-control-sm"
+                           readonly style="background:#e9ecef;cursor:not-allowed;">
+                </div>
+
+                <!-- TIME IN row -->
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" style="font-size:0.85rem;">
+                        Time In
+                        <small class="text-muted fw-normal ms-1">(leave unchanged to keep original)</small>
+                    </label>
+                    <div id="combinedTIPickerWrap"></div>
+                    <input type="hidden" id="combinedTIHidden">
+                    <!-- shows original value for reference -->
+                    <small class="text-muted" id="combinedTIOrigLabel" style="font-size:0.75rem;"></small>
+                </div>
+
+                <!-- TIME OUT row -->
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" style="font-size:0.85rem;">
+                        Time Out
+                        <small class="text-muted fw-normal ms-1">(leave unchanged to keep original)</small>
+                    </label>
+                    <!-- Date out selector (for overnight shifts) -->
+                    <div class="mb-2">
+                        <label class="form-label" style="font-size:0.78rem;color:#666;">Date Out</label>
+                        <input type="text" id="combinedTODate"
+                               class="form-control form-control-sm bt-datepicker-combined"
+                               placeholder="yyyy-mm-dd">
+                    </div>
+                    <div id="combinedTOPickerWrap"></div>
+                    <input type="hidden" id="combinedTOHidden">
+                    <small class="text-muted" id="combinedTOOrigLabel" style="font-size:0.75rem;"></small>
+                </div>
+
+                <!-- Reason (only shown for EDIT/READWRITE request flow) -->
+                <div id="combinedReasonWrap" style="display:none;">
+                    <label class="form-label fw-semibold"
+                           style="font-size:0.85rem;color:#444;">
+                        Reason for Modification <span class="text-danger">*</span>
+                    </label>
+                    <textarea id="combinedReasonInput" class="form-control" rows="3"
+                              maxlength="500"
+                              placeholder="Please explain why you are requesting this time modification..."
+                              style="border-color:#d4c8f0;border-radius:8px;
+                                     font-size:0.875rem;resize:none;"></textarea>
+                    <div class="d-flex justify-content-between mt-1">
+                        <small class="text-danger d-none" id="combinedReasonError">
+                            Reason is required.
+                        </small>
+                        <small class="ms-auto text-muted" id="combinedReasonCount"
+                               style="font-size:0.75rem;">0 / 500</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer border-0 px-4 pb-4 pt-0 gap-2">
+                <button type="button" class="btn btn-danger flex-fill"
+                        id="btnCancelCombinedModal" style="border-radius:8px;font-size:0.875rem;">
+                    <i class="fas fa-times me-1"></i> Cancel
+                </button>
+                <button type="button" class="btn flex-fill fw-semibold"
+                        id="btnSaveCombined"
+                        style="background:linear-gradient(135deg,#886cc0,#6b5b95);
+                               color:#fff;border:none;border-radius:8px;font-size:0.875rem;">
+                    <i class="fas fa-save me-1" id="btnSaveCombinedIcon"></i>
+                    <span id="btnSaveCombinedLabel">Save</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+     CANCEL PENDING REQUEST CONFIRMATION MODAL
+     ============================================================ -->
+<div class="modal fade" id="cancelPendingModal" tabindex="-1"
+     data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:400px;">
+        <div class="modal-content"
+             style="border-radius:12px;border:none;
+                    box-shadow:0 8px 32px rgba(0,0,0,0.12);">
+            <div class="modal-header border-0 pb-0">
+                <div class="w-100 text-center pt-2">
+                    <div style="width:56px;height:56px;background:#fff3cd;border-radius:50%;
+                                display:flex;align-items:center;justify-content:center;
+                                margin:0 auto 10px;">
+                        <i class="fas fa-undo" style="color:#f59e0b;font-size:1.4rem;"></i>
+                    </div>
+                    <h6 class="fw-bold mb-1">Cancel Pending Request?</h6>
+                    <p class="text-muted mb-0" style="font-size:0.83rem;">
+                        This will remove your pending time modification request
+                        and restore the original record.
+                    </p>
+                </div>
+            </div>
+            <div class="modal-footer border-0 justify-content-center gap-2 pt-3 pb-4">
+                <button type="button" class="btn btn-primary px-4"
+                        data-bs-dismiss="modal" style="border-radius:8px;">
+                    Keep It
+                </button>
+                <button type="button" class="btn btn-danger px-4 fw-semibold"
+                        id="btnConfirmCancelPending" style="border-radius:8px;">
+                    <i class="fas fa-undo me-1"></i> Yes, Cancel Request
+                </button>
+            </div>
+            <input type="hidden" id="cancelPendingEmployeeNo">
+            <input type="hidden" id="cancelPendingWorkDate">
+            <input type="hidden" id="cancelPendingUBioId">
+        </div>
+    </div>
+</div>
+
+<style>
+    /* ── EDITABLE CELL BASE ─────────────────────────────────────────── */
+    .timein-cell,
+    .timeout-cell {
+        display: inline-block;
+        min-width: 130px;
+        min-height: 36px;
+        padding: 7px 7px;
+        border: 1.5px dashed #886cc0;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: border-color 0.2s, background 0.2s;
+        font-size: 0.875rem;
+        background: #faf8ff;
+        position: relative;
+        vertical-align: middle;
+    }
+
+        .timein-cell:hover, .timeout-cell:hover {
+            border-color: #5d2d91;
+            background: #f0eaff;
+        }
+
+        .timein-cell::after, .timeout-cell::after {
+            content: "✎ double-click to edit";
+            position: absolute;
+            bottom: calc(100% + 4px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: #5d2d91;
+            color: #fff;
+            font-size: 0.68rem;
+            white-space: nowrap;
+            padding: 2px 7px;
+            border-radius: 4px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.15s;
+            z-index: 99;
+        }
+
+        .timein-cell:hover::after, .timeout-cell:hover::after {
+            opacity: 1;
+        }
+
+        /* Approved / FULL-access saved — solid purple */
+        .timein-cell.edited-manually, .timeout-cell.edited-manually {
+            color: #6b21a8;
+            font-weight: 600;
+            border-style: solid;
+            border-color: #6b21a8;
+        }
+
+        /* ── PENDING STATE ───────────────────────────────────────────────── */
+        .timein-cell.pending-request,
+        .timeout-cell.pending-request {
+            border-style: solid !important;
+            border-color: #f59e0b !important;
+            background: #fffbeb !important;
+            color: inherit !important;
+            font-weight: normal !important;
+        }
+
+            .timein-cell.pending-request::after,
+            .timeout-cell.pending-request::after {
+                display: none;
+            }
+
+            .timein-cell.pending-request:hover,
+            .timeout-cell.pending-request:hover {
+                border-color: #d97706 !important;
+                background: #fef3c7 !important;
+            }
+
+        /* READ-ONLY — no dashed border, no tooltip */
+        .timein-cell.readonly-cell,
+        .timeout-cell.readonly-cell {
+            border-style: none !important;
+            background: transparent !important;
+            cursor: default !important;
+        }
+
+        .timein-cell.readonly-cell::after,
+        .timeout-cell.readonly-cell::after {
+            display: none !important;
+        }
+
+        /* ── LOCKED CELL — payroll posted, no interaction allowed ────── */
+        .timein-cell.locked-cell,
+        .timeout-cell.locked-cell {
+            border-style: solid !important;
+            border-color: #adb5bd !important;
+            background: #f8f9fa !important;
+            color: #6c757d !important;
+            cursor: not-allowed !important;
+            font-weight: normal !important;
+        }
+
+            .timein-cell.locked-cell::after,
+            .timeout-cell.locked-cell::after {
+                display: none !important;
+            }
+
+            .timein-cell.locked-cell:hover,
+            .timeout-cell.locked-cell:hover {
+                border-color: #adb5bd !important;
+                background: #f8f9fa !important;
+            }
+
+    .pending-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: #92400e;
+        background: #fde68a;
+        border-radius: 4px;
+        padding: 1px 6px;
+        margin-top: 3px;
+    }
+
+    .cancel-pending-link {
+        display: block;
+        font-size: 0.7rem;
+        color: #dc2626;
+        text-decoration: none;
+        margin-top: 2px;
+        cursor: pointer;
+        transition: color 0.15s;
+    }
+
+        .cancel-pending-link:hover {
+            color: #b91c1c;
+            text-decoration: underline;
+        }
+
+    .undo-edit-link {
+        display: block;
+        font-size: 0.7rem;
+        color: #d97706;
+        text-decoration: none;
+        margin-top: 2px;
+        cursor: pointer;
+        transition: color 0.15s;
+    }
+
+        .undo-edit-link:hover {
+            color: #b45309;
+            text-decoration: underline;
+        }
+
+    /* ── SEGMENTED TIME PICKER ────────────────────────────────────────── */
+    .seg-time-picker {
+        display: inline-block;
+        width: 100%;
+    }
+
+    .seg-time-inner {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        background: #fff;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        padding: 4px 6px;
+    }
+
+    .seg-block {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+    }
+
+    .seg-block-ampm {
+        margin-left: 4px;
+    }
+
+    .seg-btn {
+        background: none;
+        border: none;
+        padding: 0 2px;
+        font-size: 0.65rem;
+        color: #6c757d;
+        line-height: 1;
+        cursor: pointer;
+        transition: color 0.15s;
+    }
+
+        .seg-btn:hover {
+            color: #198754;
+        }
+
+    .seg-input {
+        width: 32px;
+        text-align: center;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        padding: 2px 0;
+        background: #f8f9fa;
+        color: #212529;
+        outline: none;
+    }
+
+        .seg-input:focus {
+            border-color: #86b7fe;
+            background: #fff;
+        }
+
+    .seg-ampm {
+        width: 36px;
+        cursor: default;
+        background: #e9ecef;
+        font-size: 0.75rem;
+    }
+
+    .seg-sep {
+        font-weight: 700;
+        color: #495057;
+        font-size: 1rem;
+        padding-bottom: 2px;
+        align-self: center;
+    }
+
+    #combinedReasonInput:focus {
+        border-color: #886cc0;
+        box-shadow: 0 0 0 0.2rem rgba(136,108,192,0.2);
+        outline: none;
+    }
+</style>
+
+<script>
+    // ================================================================
+    // UTILITIES
+    // ================================================================
+    function formatDateTime(value) {
+        if (!value) return '';
+        const d = new Date(value);
+        if (isNaN(d)) return '';
+        return d.toLocaleString('en-US', {
+            year:'numeric', month:'2-digit', day:'2-digit',
+            hour:'2-digit', minute:'2-digit'
+        });
+    }
+
+    // ── Context tracking ─────────────────────────────────────────────
+    var _currentDetailEmpNo   = '';
+    var _currentDetailEmpName = '';
+    var _currentDetailFrom    = '';
+    var _currentDetailTo      = '';
+    var _currentDetailBranch  = '';
+
+    // State for the open combined editor
+    var _combinedCtx = {};
+
+    // Whether the currently loaded date range overlaps a posted payroll period.
+    // When true, ALL cells render as locked regardless of access level.
+    var _dtrIsPosted = false;
+
+    // Renders a fully locked time cell for posted payroll periods.
+    // No hover tooltip, no double-click handler, lock icon + grey styling.
+    function _renderLockedCell(cssClass, empNo, workDate, originalData, uBioId, displayValue) {
+        return `<span class="${cssClass} locked-cell"
+                      data-employee="${empNo}"
+                      data-workdate="${workDate}"
+                      data-original="${originalData || ''}"
+                      data-ubio-id="${uBioId}"
+                      title="Payroll posted — this record is locked">
+                    <i class="fas fa-lock"
+                       style="font-size:0.65rem;color:#adb5bd;margin-right:3px;"></i>${displayValue}
+                </span>`;
+    }
+
+    // ── RBAC helpers ─────────────────────────────────────────────────
+
+    // function canEditBiometrics() { return window._dtrCanEdit === true; }
+
+    function canEditBiometrics() {
+        // Posted payroll period overrides ALL access levels — nobody can edit
+        if (_dtrIsPosted) return false;
+        return window._dtrCanEdit === true;
+    }
+    function isFullAccess()      { return window._dtrIsFull  === true; }
+
+    // function renderAccessBadge() {
+    //     const $b = $('#dtrAccessBadge');
+    //     if (isFullAccess()) {
+    //         $b.text('Full Access').css({ background:'#886cc0', color:'#fff' });
+    //     } else if (canEditBiometrics()) {
+    //         $b.text('Edit — Request Required').css({ background:'#f59e0b', color:'#fff' });
+    //     } else {
+    //         $b.text('View Only').css({ background:'#6c757d', color:'#fff' });
+    //     }
+    // }
+
+    function renderAccessBadge() {
+        const $b = $('#dtrAccessBadge');
+        // Posted lock takes priority and is shown before any access-level badge
+        if (_dtrIsPosted) {
+            $b.html('<i class="fas fa-lock me-1"></i> Payroll Posted — Locked')
+              .css({ background: '#dc3545', color: '#fff' });
+            return;
+        }
+        if (isFullAccess()) {
+            $b.text('Full Access').css({ background:'#886cc0', color:'#fff' });
+        } else if (canEditBiometrics()) {
+            $b.text('Edit — Request Required').css({ background:'#f59e0b', color:'#fff' });
+        } else {
+            $b.text('View Only').css({ background:'#6c757d', color:'#fff' });
+        }
+    }
+
+    // ================================================================
+    // SEGMENTED TIME PICKER
+    // (BUG 1 already fixed in original — bind to editor div, not cell)
+    // ================================================================
+    function buildSegmentedTimePicker(existingTime24, hiddenClass) {
+        let hh = '08', mm = '00', ampm = 'AM';
+        if (existingTime24) {
+            const parts = existingTime24.split(':');
+            let hours = parseInt(parts[0], 10);
+            mm   = parts[1] ? String(parseInt(parts[1], 10)).padStart(2, '0') : '00';
+            ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12;
+            hh   = String(hours).padStart(2, '0');
+        }
+        return `
+            <div class="seg-time-picker">
+                <div class="seg-time-inner">
+                    <div class="seg-block">
+                        <button type="button" class="seg-btn seg-up" data-target="hh"
+                                tabindex="-1">▲</button>
+                        <input type="text" class="seg-input seg-hh alphanum"
+                               maxlength="2" value="${hh}"
+                               inputmode="numeric"
+                               autocomplete="off"
+                               placeholder="hh"
+                               title="Hour (1–12)">
+                        <button type="button" class="seg-btn seg-down" data-target="hh"
+                                tabindex="-1">▼</button>
+                    </div>
+                    <div class="seg-sep">:</div>
+                    <div class="seg-block">
+                        <button type="button" class="seg-btn seg-up" data-target="mm"
+                                tabindex="-1">▲</button>
+                        <input type="text" class="seg-input seg-mm alphanum"
+                               maxlength="2" value="${mm}"
+                               inputmode="numeric"
+                               autocomplete="off"
+                               placeholder="mm"
+                               title="Minute (00–59)">
+                        <button type="button" class="seg-btn seg-down" data-target="mm"
+                                tabindex="-1">▼</button>
+                    </div>
+                    <div class="seg-block seg-block-ampm">
+                        <button type="button" class="seg-btn seg-up" data-target="ampm"
+                                tabindex="-1">▲</button>
+                        <input type="text" class="seg-input seg-ampm"
+                               readonly value="${ampm}"
+                               title="Press A for AM, P for PM, or Space/arrows to toggle">
+                        <button type="button" class="seg-btn seg-down" data-target="ampm"
+                                tabindex="-1">▼</button>
+                    </div>
+                </div>
+                <input type="hidden" class="${hiddenClass} seg-time-value">
+            </div>`;
+    }
+
+    function syncSegmentedValue($picker) {
+        let hh = parseInt($picker.find('.seg-hh').val(), 10);
+        let mm = parseInt($picker.find('.seg-mm').val(), 10);
+        const ampm = $picker.find('.seg-ampm').val();
+        if (isNaN(hh) || isNaN(mm)) return;
+        hh = Math.min(Math.max(hh, 1), 12);
+        mm = Math.min(Math.max(mm, 0), 59);
+        const h24 = ampm === 'PM' ? (hh === 12 ? 12 : hh + 12) : (hh === 12 ? 0 : hh);
+        $picker.find('.seg-time-value').val(
+            String(h24).padStart(2, '0') + ':' + String(mm).padStart(2, '0') + ':00');
+    }
+
+    function finalizeSegmentedValue($picker) {
+        let hh = parseInt($picker.find('.seg-hh').val(), 10);
+        let mm = parseInt($picker.find('.seg-mm').val(), 10);
+        const ampm = $picker.find('.seg-ampm').val();
+        if (isNaN(hh) || hh < 1) hh = 1;
+        if (hh > 12) hh = 12;
+        if (isNaN(mm) || mm < 0) mm = 0;
+        if (mm > 59) mm = 59;
+        $picker.find('.seg-hh').val(String(hh).padStart(2, '0'));
+        $picker.find('.seg-mm').val(String(mm).padStart(2, '0'));
+        const h24 = ampm === 'PM' ? (hh === 12 ? 12 : hh + 12) : (hh === 12 ? 0 : hh);
+        $picker.find('.seg-time-value').val(
+            String(h24).padStart(2, '0') + ':' + String(mm).padStart(2, '0') + ':00');
+    }
+
+    function bindSegmentedPicker($container) {
+
+        // ── arrow buttons ────────────────────────────────────────────────
+        $container.find('.seg-up').on('click', function (e) {
+            e.preventDefault(); e.stopPropagation();
+            const $p = $(this).closest('.seg-time-picker');
+            const t  = $(this).data('target');
+            if (t === 'hh') {
+                let v = parseInt($p.find('.seg-hh').val(), 10);
+                if (isNaN(v)) v = 8;
+                v = v >= 12 ? 1 : v + 1;
+                $p.find('.seg-hh').val(String(v).padStart(2, '0'));
+            } else if (t === 'mm') {
+                let v = parseInt($p.find('.seg-mm').val(), 10);
+                if (isNaN(v)) v = 0;
+                v = v >= 59 ? 0 : v + 1;
+                $p.find('.seg-mm').val(String(v).padStart(2, '0'));
+            } else {
+                const $a = $p.find('.seg-ampm');
+                $a.val($a.val() === 'AM' ? 'PM' : 'AM');
+            }
+            syncSegmentedValue($p);
+        });
+
+        $container.find('.seg-down').on('click', function (e) {
+            e.preventDefault(); e.stopPropagation();
+            const $p = $(this).closest('.seg-time-picker');
+            const t  = $(this).data('target');
+            if (t === 'hh') {
+                let v = parseInt($p.find('.seg-hh').val(), 10);
+                if (isNaN(v)) v = 8;
+                v = v <= 1 ? 12 : v - 1;
+                $p.find('.seg-hh').val(String(v).padStart(2, '0'));
+            } else if (t === 'mm') {
+                let v = parseInt($p.find('.seg-mm').val(), 10);
+                if (isNaN(v)) v = 0;
+                v = v <= 0 ? 59 : v - 1;
+                $p.find('.seg-mm').val(String(v).padStart(2, '0'));
+            } else {
+                const $a = $p.find('.seg-ampm');
+                $a.val($a.val() === 'AM' ? 'PM' : 'AM');
+            }
+            syncSegmentedValue($p);
+        });
+
+        // ── select-all on focus ──────────────────────────────────────────
+        $container.find('.seg-hh, .seg-mm').on('focus', function () {
+            $(this).select();
+        });
+
+        // ── keydown: HH ─────────────────────────────────────────────────
+        $container.find('.seg-hh').on('keydown', function (e) {
+            const $p  = $(this).closest('.seg-time-picker');
+            const key = e.key;
+
+            if (['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(key)) return;
+
+            if (key === 'ArrowUp') {
+                e.preventDefault();
+                let v = parseInt($(this).val(), 10);
+                if (isNaN(v)) v = 8;
+                v = v >= 12 ? 1 : v + 1;
+                $(this).val(String(v).padStart(2, '0'));
+                syncSegmentedValue($p);
+                return;
+            }
+            if (key === 'ArrowDown') {
+                e.preventDefault();
+                let v = parseInt($(this).val(), 10);
+                if (isNaN(v)) v = 8;
+                v = v <= 1 ? 12 : v - 1;
+                $(this).val(String(v).padStart(2, '0'));
+                syncSegmentedValue($p);
+                return;
+            }
+
+            if (key < '0' || key > '9') { e.preventDefault(); return; }
+
+            // Auto-advance to MM after second digit
+            const isAllSelected = this.selectionStart === 0 && this.selectionEnd === this.value.length;
+            if (!isAllSelected) {
+                setTimeout(function () {
+                    $p.find('.seg-mm').focus().select();
+                }, 0);
+            }
+        });
+
+        // ── keydown: MM ─────────────────────────────────────────────────
+        $container.find('.seg-mm').on('keydown', function (e) {
+            const $p  = $(this).closest('.seg-time-picker');
+            const key = e.key;
+
+            if (['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(key)) return;
+
+            if (key === 'ArrowUp') {
+                e.preventDefault();
+                let v = parseInt($(this).val(), 10);
+                if (isNaN(v)) v = 0;
+                v = v >= 59 ? 0 : v + 1;
+                $(this).val(String(v).padStart(2, '0'));
+                syncSegmentedValue($p);
+                return;
+            }
+            if (key === 'ArrowDown') {
+                e.preventDefault();
+                let v = parseInt($(this).val(), 10);
+                if (isNaN(v)) v = 0;
+                v = v <= 0 ? 59 : v - 1;
+                $(this).val(String(v).padStart(2, '0'));
+                syncSegmentedValue($p);
+                return;
+            }
+
+            if (key < '0' || key > '9') { e.preventDefault(); return; }
+
+            // Auto-advance to AM/PM after second digit
+            const isAllSelected = this.selectionStart === 0 && this.selectionEnd === this.value.length;
+            if (!isAllSelected) {
+                setTimeout(function () {
+                    $p.find('.seg-ampm').focus().select();
+                }, 0);
+            }
+        });
+
+        // ── keydown: AM/PM — A/P/Space/arrows to toggle ─────────────────
+        $container.find('.seg-ampm').on('keydown', function (e) {
+            const $p  = $(this).closest('.seg-time-picker');
+            const key = e.key;
+
+            if (key === 'Tab') return;
+
+            e.preventDefault();
+
+            if (key === 'a' || key === 'A') {
+                $(this).val('AM');
+            } else if (key === 'p' || key === 'P') {
+                $(this).val('PM');
+            } else if (key === ' ' || key === 'ArrowUp' || key === 'ArrowDown') {
+                $(this).val($(this).val() === 'AM' ? 'PM' : 'AM');
+            }
+
+            syncSegmentedValue($p);
+        });
+
+        // ── input: digits-only scrub + live sync ─────────────────────────
+        $container.find('.seg-hh').on('input', function () {
+            const $p = $(this).closest('.seg-time-picker');
+            $(this).val($(this).val().replace(/[^0-9]/g, ''));
+            syncSegmentedValue($p);
+        });
+
+        $container.find('.seg-mm').on('input', function () {
+            const $p = $(this).closest('.seg-time-picker');
+            $(this).val($(this).val().replace(/[^0-9]/g, ''));
+            syncSegmentedValue($p);
+        });
+
+        // ── blur: clamp + zero-pad ───────────────────────────────────────
+        $container.find('.seg-hh').on('blur', function () {
+            finalizeSegmentedValue($(this).closest('.seg-time-picker'));
+        });
+
+        $container.find('.seg-mm').on('blur', function () {
+            finalizeSegmentedValue($(this).closest('.seg-time-picker'));
+        });
+
+        // ── mouse wheel: HH ──────────────────────────────────────────────
+        $container.find('.seg-hh').on('wheel', function (e) {
+            e.preventDefault(); e.stopPropagation();
+            const $p = $(this).closest('.seg-time-picker');
+            let v = parseInt($p.find('.seg-hh').val(), 10);
+            if (isNaN(v)) v = 8;
+            v = e.originalEvent.deltaY < 0 ? (v >= 12 ? 1 : v + 1) : (v <= 1 ? 12 : v - 1);
+            $p.find('.seg-hh').val(String(v).padStart(2, '0'));
+            syncSegmentedValue($p);
+        });
+
+        // ── mouse wheel: MM ──────────────────────────────────────────────
+        $container.find('.seg-mm').on('wheel', function (e) {
+            e.preventDefault(); e.stopPropagation();
+            const $p = $(this).closest('.seg-time-picker');
+            let v = parseInt($p.find('.seg-mm').val(), 10);
+            if (isNaN(v)) v = 0;
+            v = e.originalEvent.deltaY < 0 ? (v >= 59 ? 0 : v + 1) : (v <= 0 ? 59 : v - 1);
+            $p.find('.seg-mm').val(String(v).padStart(2, '0'));
+            syncSegmentedValue($p);
+        });
+
+        // ── sync on init ─────────────────────────────────────────────────
+        $container.find('.seg-time-picker').each(function () {
+            finalizeSegmentedValue($(this));
+        });
+    }
+
+    // Convert a full DateTime string to HH:mm:ss (24h)
+    function toTime24(dtString) {
+        if (!dtString) return null;
+        const d = new Date(dtString);
+        if (isNaN(d)) return null;
+        return d.toTimeString().substring(0, 8);
+    }
+
+    // Convert a full DateTime string to yyyy-mm-dd
+    function toDateStr(dtString) {
+        if (!dtString) return null;
+        const d = new Date(dtString);
+        if (isNaN(d)) return null;
+        return d.toISOString().split('T')[0];
+    }
+
+    // ================================================================
+    // COMBINED EDITOR — open
+    // ================================================================
+    function openCombinedEditor($tiCell, $toCell) {
+        if (!canEditBiometrics()) return;
+
+        // If either cell has a pending request, block editing
+        if ($tiCell.hasClass('pending-request') || $toCell.hasClass('pending-request')) {
+            Swal.fire({
+                icon: 'info', title: 'Pending Request Exists',
+                text: 'Cancel your pending request before making a new one.',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+
+        const employeeNo = $tiCell.data('employee');
+        const workDate   = $tiCell.data('workdate');
+        const origTI     = $tiCell.data('original') || null;
+        const origTO     = $toCell.data('original') || null;
+
+        // Pre-fill time values from originals
+        const tiTime24 = toTime24(origTI);
+        const toTime24val = toTime24(origTO);
+        const toDateVal   = toDateStr(origTO) || workDate;
+
+        _combinedCtx = {
+            employeeNo,
+            workDate,
+            $tiCell,
+            $toCell,
+            origTI,
+            origTO,
+            origTITime24: tiTime24,
+            origTOTime24: toTime24val,
+            origTODate:   toDateStr(origTO) || workDate
+        };
+
+        // Set modal header
+        $('#combinedModalTitle').text('Edit Time Record');
+        $('#combinedModalSubtitle').text(employeeNo + ' — ' + workDate);
+        $('#combinedWorkDate').val(workDate);
+
+        // Show/hide request banner & reason for non-full users
+        const isFull = isFullAccess();
+        if (isFull) {
+            $('#combinedRequestBanner').hide();
+            $('#combinedReasonWrap').hide();
+            $('#btnSaveCombinedIcon').attr('class', 'fas fa-save me-1');
+            $('#btnSaveCombinedLabel').text('Save');
+        } else {
+            $('#combinedRequestBanner').css('display','flex');
+            $('#combinedReasonWrap').show();
+            $('#combinedReasonInput').val('');
+            $('#combinedReasonError').addClass('d-none');
+            $('#combinedReasonCount').text('0 / 500');
+            $('#btnSaveCombinedIcon').attr('class', 'fas fa-paper-plane me-1');
+            $('#btnSaveCombinedLabel').text('Submit Request');
+        }
+
+        // Build Time In picker
+        $('#combinedTIPickerWrap').html(buildSegmentedTimePicker(tiTime24, 'seg-ti-val'));
+        bindSegmentedPicker($('#combinedTIPickerWrap'));
+        $('#combinedTIOrigLabel').text(origTI ? 'Original: ' + formatDateTime(origTI) : 'Original: (none)');
+
+        // Build Time Out picker
+        $('#combinedTODate').val(toDateVal);
+        $('#combinedTOPickerWrap').html(buildSegmentedTimePicker(toTime24val, 'seg-to-val'));
+        bindSegmentedPicker($('#combinedTOPickerWrap'));
+        $('#combinedTOOrigLabel').text(origTO ? 'Original: ' + formatDateTime(origTO) : 'Original: (none)');
+
+        // Init datepicker on Date Out field (fresh each time)
+        $('#combinedTODate').datepicker('destroy').datepicker({
+            format: 'yyyy-mm-dd', autoclose: true, todayHighlight: true
+        });
+
+        $('#combinedTimeModal').modal('show');
+    }
+
+    // ================================================================
+    // COMBINED EDITOR — save/submit
+    // ================================================================
+    $(document).on('click', '#btnSaveCombined', function () {
+        const ctx = _combinedCtx;
+        if (!ctx.employeeNo) return;
+
+        // Finalize pickers
+        $('#combinedTIPickerWrap .seg-time-picker').each(function () {
+            finalizeSegmentedValue($(this));
+        });
+        $('#combinedTOPickerWrap .seg-time-picker').each(function () {
+            finalizeSegmentedValue($(this));
+        });
+
+        const newTI     = $('#combinedTIPickerWrap .seg-ti-val').val();  // e.g. "08:15:00"
+        const newTO     = $('#combinedTOPickerWrap .seg-to-val').val();  // e.g. "17:13:00"
+        const newTODate = $('#combinedTODate').val();                     // e.g. "2026-01-26"
+
+        // Determine what actually changed
+        // A field is "changed" if its new value differs from the original
+        const tiChanged = newTI && newTI !== ctx.origTITime24;
+        const toChanged = newTO && (newTO !== ctx.origTOTime24 || newTODate !== ctx.origTODate);
+
+        if (!tiChanged && !toChanged) {
+            Swal.fire({ icon:'info', title:'No Changes', text:'No time values were changed.' });
+            return;
+        }
+
+        const $btn = $(this);
+
+        if (isFullAccess()) {
+            // ── FULL ACCESS: save via single unified endpoint ─────────────
+            // Sends only the sides that changed — NULL sides fall back to
+            // original u_biometrics in the SQL CASE (same as pending request)
+            $btn.prop('disabled', true)
+                .html('<i class="fas fa-spinner fa-spin me-1"></i> Saving...');
+
+            $.post('/ReviewDTR/SaveBiometricsEdit', {
+                employeeNo:    ctx.employeeNo,
+                workDate:      ctx.workDate,
+                newTimeIn:     tiChanged ? newTI    : '',
+                newTimeOut:    toChanged ? newTO    : '',
+                newTimeOutDate: toChanged ? newTODate : ''
+            }, function (res) {
+                $btn.prop('disabled', false)
+                    .html('<i class="fas fa-save me-1"></i> Save');
+
+                if (!res.success) {
+                    Swal.fire({ icon: 'error', title: 'Error', text: res.message });
+                    $('#combinedTimeModal').modal('hide');
+                    return;
+                }
+
+                const uBioId = res.uBiometricsId || '';
+
+                $('#combinedTimeModal').modal('hide');
+
+                // Update only the cells that actually changed
+                if (tiChanged) {
+                    const combined = ctx.workDate + 'T' + newTI;
+                    ctx.$tiCell
+                        .data('original', combined)
+                        .data('ubio-id', uBioId)
+                        .removeClass('pending-request')
+                        .addClass('edited-manually')
+                        .html(formatDateTime(combined) +
+                            `<a class="undo-edit-link"
+                                data-employee="${ctx.employeeNo}"
+                                data-workdate="${ctx.workDate}"
+                                data-ubio-id="${uBioId}">
+                                <i class="fas fa-undo"></i> Undo Edit
+                             </a>`);
+                }
+
+                if (toChanged) {
+                    const combined = newTODate + 'T' + newTO;
+                    ctx.$toCell
+                        .data('original', combined)
+                        .data('ubio-id', uBioId)
+                        .removeClass('pending-request')
+                        .addClass('edited-manually')
+                        .html(formatDateTime(combined) +
+                            `<a class="undo-edit-link"
+                                data-employee="${ctx.employeeNo}"
+                                data-workdate="${ctx.workDate}"
+                                data-ubio-id="${uBioId}">
+                                <i class="fas fa-undo"></i> Undo Edit
+                             </a>`);
+                }
+
+                Swal.fire({ icon: 'success', title: 'Saved', timer: 1800, showConfirmButton: false });
+            }).fail(function () {
+                $btn.prop('disabled', false)
+                    .html('<i class="fas fa-save me-1"></i> Save');
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to save.' });
+            });
+
+        } else {
+            // ── EDIT / READWRITE: submit as pending request ───────────────
+            const reason = $('#combinedReasonInput').val().trim();
+            if (!reason) {
+                $('#combinedReasonInput').addClass('is-invalid');
+                $('#combinedReasonError').removeClass('d-none');
+                return;
+            }
+
+            $btn.prop('disabled', true)
+                .html('<i class="fas fa-spinner fa-spin me-1"></i> Submitting...');
+
+            $.post('/ReviewDTR/SubmitBiometricsRequest', {
+                employeeNo:          ctx.employeeNo,
+                workDate:            ctx.workDate,
+                // Send both sides; backend saves whichever are non-empty
+                requestType:         'both',
+                timeIn:              tiChanged ? newTI   : '',
+                timeOut:             toChanged ? newTO   : '',
+                timeOutDate:         toChanged ? newTODate : '',
+                existingTimeIn:      ctx.origTITime24  || '',
+                existingTimeOut:     ctx.origTOTime24  || '',
+                existingTimeOutDate: ctx.origTODate    || '',
+                reason:              reason
+            }, function (res) {
+                $btn.prop('disabled', false)
+                    .html('<i class="fas fa-paper-plane me-1"></i> Submit Request');
+
+                if (!res.success) {
+                    Swal.fire({ icon:'error', title:'Error', text: res.message });
+                    $('#combinedTimeModal').modal('hide');
+                    return;
+                }
+
+                $('#combinedTimeModal').modal('hide');
+
+                // ── Apply pending state to the correct cells ─────────────
+                // Cancel link ONLY on cells whose value was actually requested.
+                const empNo  = ctx.employeeNo;
+                const wkDate = ctx.workDate;
+                const uBioId = ctx.$tiCell.data('ubio-id') || '';
+
+                if (tiChanged) {
+                    const display = formatDateTime(ctx.workDate + 'T' + newTI);
+                    ctx.$tiCell
+                        .removeClass('edited-manually')
+                        .addClass('pending-request')
+                        .html(
+                            display +
+                            `<span class="pending-badge">
+                                 <i class="fas fa-hourglass-half"
+                                    style="font-size:0.65rem;"></i> Pending
+                             </span>
+                             <a class="cancel-pending-link"
+                                data-employee="${empNo}"
+                                data-workdate="${wkDate}"
+                                data-ubio-id="${uBioId}">
+                                 <i class="fas fa-times-circle"></i> Cancel Request
+                             </a>`
+                        );
+                }
+
+                if (toChanged) {
+                    const display = formatDateTime(newTODate + 'T' + newTO);
+                    ctx.$toCell
+                        .removeClass('edited-manually')
+                        .addClass('pending-request')
+                        .html(
+                            display +
+                            `<span class="pending-badge">
+                                 <i class="fas fa-hourglass-half"
+                                    style="font-size:0.65rem;"></i> Pending
+                             </span>
+                             <a class="cancel-pending-link"
+                                data-employee="${empNo}"
+                                data-workdate="${wkDate}"
+                                data-ubio-id="${uBioId}">
+                                 <i class="fas fa-times-circle"></i> Cancel Request
+                             </a>`
+                        );
+                }
+
+                Swal.fire({
+                    icon:'success', title:'Request Submitted',
+                    text:'Your time modification request is pending approval.',
+                    timer:2500, showConfirmButton:false
+                });
+            }).fail(function () {
+                $btn.prop('disabled', false)
+                    .html('<i class="fas fa-paper-plane me-1"></i> Submit Request');
+                Swal.fire({ icon:'error', title:'Error', text:'Failed to submit request.' });
+            });
+        }
+    });
+
+    // Close / cancel combined modal
+    $(document).on('click', '#btnCloseCombinedModal, #btnCancelCombinedModal', function () {
+        $('#combinedTimeModal').modal('hide');
+    });
+
+    // Reason char counter
+    $(document).on('input', '#combinedReasonInput', function () {
+        const len = $(this).val().length;
+        $('#combinedReasonCount').text(len + ' / 500');
+        if (len > 0) {
+            $(this).removeClass('is-invalid');
+            $('#combinedReasonError').addClass('d-none');
+        }
+    });
+
+    // ================================================================
+    // DOUBLE-CLICK on EITHER cell → open combined editor
+    // ================================================================
+    $(document).on('dblclick', '.timein-cell, .timeout-cell', function () {
+        if (!canEditBiometrics()) return;
+
+        const $clicked = $(this);
+        const $row     = $clicked.closest('tr');
+        const $tiCell  = $row.find('.timein-cell');
+        const $toCell  = $row.find('.timeout-cell');
+
+        openCombinedEditor($tiCell, $toCell);
+    });
+
+    // ================================================================
+    // CANCEL PENDING REQUEST
+    // ================================================================
+    $(document).on('click', '.cancel-pending-link', function (e) {
+        e.stopPropagation();
+        $('#cancelPendingEmployeeNo').val($(this).data('employee'));
+        $('#cancelPendingWorkDate').val($(this).data('workdate'));
+        $('#cancelPendingUBioId').val($(this).data('ubio-id') || '');
+        $('#cancelPendingModal').modal('show');
+    });
+
+    $(document).on('click', '#btnConfirmCancelPending', function () {
+        const $btn   = $(this);
+        const empNo  = $('#cancelPendingEmployeeNo').val();
+        const wkDate = $('#cancelPendingWorkDate').val();
+        const uBioId = $('#cancelPendingUBioId').val();
+
+        $btn.prop('disabled', true)
+            .html('<i class="fas fa-spinner fa-spin me-1"></i> Cancelling...');
+
+        $.post('/ReviewDTR/CancelBiometricsRequest', {
+            employeeNo:    empNo,
+            workDate:      wkDate,
+            uBiometricsId: uBioId || null
+        }, function (res) {
+            $btn.prop('disabled', false)
+                .html('<i class="fas fa-undo me-1"></i> Yes, Cancel Request');
+            $('#cancelPendingModal').modal('hide');
+
+            if (!res.success) {
+                Swal.fire({ icon:'error', title:'Error', text:res.message });
+                return;
+            }
+
+            // Restore both cells in the matching row
+            $('#employeeDetailsTable tbody tr').each(function () {
+                const $tiCell = $(this).find('.timein-cell');
+                if (!$tiCell.length || $tiCell.data('workdate') !== wkDate) return;
+
+                $tiCell.removeClass('pending-request editing edited-manually');
+                $tiCell.data('original', res.originalTimeIn || '');
+                $tiCell.html(res.originalTimeIn ? formatDateTime(res.originalTimeIn) : '');
+
+                const $toCell = $(this).find('.timeout-cell');
+                $toCell.removeClass('pending-request editing edited-manually');
+                $toCell.data('original', res.originalTimeOut || '');
+                $toCell.html(res.originalTimeOut ? formatDateTime(res.originalTimeOut) : '');
+            });
+
+            Swal.fire({
+                icon:'success', title:'Request Cancelled',
+                text:'The pending request has been removed.',
+                timer:2000, showConfirmButton:false
+            });
+        }).fail(function () {
+            $btn.prop('disabled', false)
+                .html('<i class="fas fa-undo me-1"></i> Yes, Cancel Request');
+            Swal.fire({ icon:'error', title:'Error', text:'Failed to cancel the request.' });
+        });
+    });
+
+    // ================================================================
+    // UNDO BIOMETRICS EDIT (Full Access only)
+    // ================================================================
+    $(document).on('click', '.undo-edit-link', function (e) {
+        e.stopPropagation();
+
+        const empNo  = $(this).data('employee');
+        const wkDate = $(this).data('workdate');
+        const uBioId = $(this).data('ubio-id');
+
+        const doUndo = function () {
+            Swal.fire({
+                title: 'Undo Edit?',
+                html: `This will restore the <strong>original device time</strong> for
+                       <strong>${empNo}</strong> on <strong>${wkDate}</strong>.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Undo',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#d97706',
+                cancelButtonColor: '#6c757d'
+            }).then(function (result) {
+                if (!result.isConfirmed) return;
+
+                $.post('/ReviewDTR/UndoBiometricsEdit', {
+                    employeeNo:    empNo,
+                    workDate:      wkDate,
+                    uBiometricsId: uBioId || null
+                }, function (res) {
+                    if (!res.success) {
+                        Swal.fire({ icon: 'error', title: 'Error', text: res.message });
+                        return;
+                    }
+
+                    // Restore BOTH cells in the matching row (same as cancel request)
+                    $('#employeeDetailsTable tbody tr').each(function () {
+                        const $tiCell = $(this).find('.timein-cell');
+                        if (!$tiCell.length || $tiCell.data('workdate') !== wkDate) return;
+
+                        $tiCell.removeClass('edited-manually pending-request');
+                        $tiCell.data('original', res.originalTimeIn || '');
+                        $tiCell.html(res.originalTimeIn ? formatDateTime(res.originalTimeIn) : '');
+
+                        const $toCell = $(this).find('.timeout-cell');
+                        $toCell.removeClass('edited-manually pending-request');
+                        $toCell.data('original', res.originalTimeOut || '');
+                        $toCell.html(res.originalTimeOut ? formatDateTime(res.originalTimeOut) : '');
+                    });
+
+                    Swal.fire({
+                        icon: 'success', title: 'Edit Undone',
+                        text: 'Original time record has been restored.',
+                        timer: 2000, showConfirmButton: false
+                    });
+                }).fail(function () {
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to undo edit.' });
+                });
+            });
+        };
+
+        // Warn if DTR already processed for this period
+        const cutOffType = window._currentCutOffType || '';
+        const dateMonth  = window._currentDateMonth  || '';
+        const dateYear   = window._currentDateYear   || '';
+
+        if (cutOffType && dateMonth && dateYear) {
+            $.get('/ReviewDTR/IsDtrPosted', { cutOffType, dateMonth, dateYear }, function (res) {
+                if (res.posted) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'DTR Already Processed',
+                        html: `DTR for this cutoff is already posted.<br>
+                               <strong>You will need to re-process after undoing.</strong>`,
+                        showCancelButton: true,
+                        confirmButtonText: 'Continue Anyway',
+                        cancelButtonText: 'Cancel',
+                        confirmButtonColor: '#d97706',
+                        cancelButtonColor: '#6c757d'
+                    }).then(function (r) { if (r.isConfirmed) doUndo(); });
+                } else {
+                    doUndo();
+                }
+            }).fail(doUndo);
+        } else {
+            doUndo();
+        }
+    });
+
+    // ================================================================
+    // EXPORT
+    // ================================================================
+    $(document).on('click', '#btnExportEmployeeDetail', function () {
+        var $btn = $(this);
+        if (!_currentDetailEmpNo) {
+            Swal.fire({ icon:'warning', title:'No Data', text:'No employee data loaded yet.' });
+            return;
+        }
+        var params = new URLSearchParams({
+            employeeNo:   _currentDetailEmpNo,
+            employeeName: _currentDetailEmpName,
+            dateFrom:     _currentDetailFrom,
+            dateTo:       _currentDetailTo,
+            branchCode:   _currentDetailBranch || ''
+        });
+        var originalHtml = $btn.html();
+        $btn.prop('disabled', true)
+            .html('<i class="fas fa-spinner fa-spin me-1"></i> Exporting...');
+        var link = document.createElement('a');
+        link.href = '/ReviewDTREmployeeDetailExport/ExportToExcel?' + params.toString();
+        link.download = '';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(function () { $btn.prop('disabled', false).html(originalHtml); }, 1500);
+    });
+
+    // ================================================================
+    // initEmployeeDetailsTable
+    // ================================================================
+    function initEmployeeDetailsTable(empNo, dateFrom, dateTo, branchCode) {
+       _currentDetailEmpNo  = empNo;
+        _currentDetailFrom   = dateFrom;
+        _currentDetailTo     = dateTo;
+        _currentDetailBranch = branchCode;
+
+        window._currentCutOffType = $('#cutOffType').val()  || '';
+        window._currentDateMonth  = $('#dateMonth').val()   || '';
+        window._currentDateYear   = $('#dateYear').val()    || '';
+
+        var empRow = $('#reviewDTRTable').DataTable().rows().data().toArray()
+                         .find(function(r) { return r.employeeNo === empNo; });
+        _currentDetailEmpName = empRow ? (empRow.fullName || '') : '';
+
+        _dtrIsPosted = false;
+        renderAccessBadge();
+
+        $.get('/ReviewDTR/IsDateRangePosted', { dateFrom: dateFrom, dateTo: dateTo, branchCode: branchCode })
+            .always(function (res) {
+                _dtrIsPosted = !!(res && res.posted);
+                renderAccessBadge();
+
+                if ($.fn.DataTable.isDataTable('#employeeDetailsTable')) {
+                    $('#employeeDetailsTable').DataTable().destroy();
+                }
+
+                $('#employeeDetailsTable').DataTable({
+                    paginate: false,
+                    processing: true,
+                    ajax: {
+                        url: '/ReviewDTR/GetEmployeeDailyData',
+                        type: 'GET',
+                        data: { employeeNo: empNo, dateFrom, dateTo, branchCode }
+                    },
+                    columns: [
+                        { data: 'workDate' },
+                        { data: 'weekDayName' },
+                        { data: 'scheduleTimeIn',  render: formatDateTime },
+                        { data: 'scheduleTimeOut', render: formatDateTime },
+
+                        // ── TIME IN CELL ──────────────────────────────────────────────
+                        // FIX 3: tstatusName and tTimeIn now come correctly from the server.
+                        // 'pending'  → yellow cell + cancel link (if tTimeIn is set)
+                        // 'modified' → purple/bold cell (admin saved directly, no pending)
+                        // null       → normal dashed purple cell (unedited)
+                        {
+                            data: 'biometricsDateIn',
+                            render: function (data, type, row) {
+                                // A cell is "pending" only if THIS side was part of the request
+                                const isPendingTI = row.tstatusName === 'pending' && !!row.tTimeIn;
+                                const isModified  = row.tstatusName === 'modified';
+                                const uBioId      = row.tid || '';
+                                const workDate    = row.workDate;
+                                const empNo       = row.employeeNo;
+
+                                const displayValue = isPendingTI
+                                    ? formatDateTime(row.tTimeIn)
+                                    : (data ? formatDateTime(data) : '');
+
+                                // ── POSTED LOCK ───────────────────────────────────────
+                                if (_dtrIsPosted) {
+                                    return _renderLockedCell('timein-cell', empNo, workDate, data, uBioId, displayValue);
+                                }
+
+                                if (!canEditBiometrics()) {
+                                    return `<span class="timein-cell readonly-cell"
+                                                  data-employee="${empNo}"
+                                                  data-workdate="${workDate}"
+                                                  data-original="${data || ''}"
+                                                  data-ubio-id="${uBioId}">
+                                                ${displayValue}
+                                            </span>`;
+                                }
+
+                                if (isPendingTI) {
+                                    return `
+                                        <span class="timein-cell pending-request"
+                                              data-employee="${empNo}"
+                                              data-workdate="${workDate}"
+                                              data-original="${data || ''}"
+                                              data-ubio-id="${uBioId}">
+                                            ${displayValue || '(no time)'}
+                                            <span class="pending-badge">
+                                                <i class="fas fa-hourglass-half"
+                                                   style="font-size:0.65rem;"></i> Pending
+                                            </span>
+                                            <a class="cancel-pending-link"
+                                               data-employee="${empNo}"
+                                               data-workdate="${workDate}"
+                                               data-ubio-id="${uBioId}">
+                                                <i class="fas fa-times-circle"></i> Cancel Request
+                                            </a>
+                                        </span>`;
+                                }
+
+                                const editedCls = (isModified && row.isTimeInManuallyEdited) ? 'edited-manually' : '';
+                                const showUndoTI = isFullAccess() && isModified && row.isTimeInManuallyEdited;
+                                return `
+                                    <span class="timein-cell ${editedCls}"
+                                          data-employee="${empNo}"
+                                          data-workdate="${workDate}"
+                                          data-original="${data || ''}"
+                                          data-ubio-id="${uBioId}">
+                                        ${displayValue}
+                                        ${showUndoTI ? `<a class="undo-edit-link"
+                                                           data-employee="${empNo}"
+                                                           data-workdate="${workDate}"
+                                                           data-ubio-id="${uBioId}">
+                                                           <i class="fas fa-undo"></i> Undo Edit
+                                                        </a>` : ''}
+                                    </span>`;
+                            }
+                        },
+
+                        // ── TIME OUT CELL ─────────────────────────────────────────────
+                        // FIX 2 + 3: Cancel link only appears here if tTimeOut was set
+                        // (meaning Time Out was part of the pending request).
+                            // TIME OUT CELL:
+                        {
+                            data: 'biometricsDateOut',
+                            render: function (data, type, row) {
+                                // Only pending if THIS side was part of the request
+                                const isPendingTO = row.tstatusName === 'pending' && !!row.tTimeOut;
+                                const isModified  = row.tstatusName === 'modified';
+                                const uBioId      = row.tid || '';
+                                const workDate    = row.workDate;
+                                const empNo       = row.employeeNo;
+
+                                const displayValue = isPendingTO
+                                    ? formatDateTime(row.tTimeOut)
+                                    : (data ? formatDateTime(data) : '');
+
+                                // ── POSTED LOCK ───────────────────────────────────────
+                                if (_dtrIsPosted) {
+                                    return _renderLockedCell('timeout-cell', empNo, workDate, data, uBioId, displayValue);
+                                }
+
+                                if (!canEditBiometrics()) {
+                                    return `<span class="timeout-cell readonly-cell"
+                                                  data-employee="${empNo}"
+                                                  data-workdate="${workDate}"
+                                                  data-original="${data || ''}"
+                                                  data-ubio-id="${uBioId}">
+                                                ${displayValue}
+                                            </span>`;
+                                }
+
+                                if (isPendingTO) {
+                                    return `
+                                        <span class="timeout-cell pending-request"
+                                              data-employee="${empNo}"
+                                              data-workdate="${workDate}"
+                                              data-original="${data || ''}"
+                                              data-ubio-id="${uBioId}">
+                                            ${displayValue || '(no time)'}
+                                            <span class="pending-badge">
+                                                <i class="fas fa-hourglass-half"
+                                                   style="font-size:0.65rem;"></i> Pending
+                                            </span>
+                                            <a class="cancel-pending-link"
+                                               data-employee="${empNo}"
+                                               data-workdate="${workDate}"
+                                               data-ubio-id="${uBioId}">
+                                                <i class="fas fa-times-circle"></i> Cancel Request
+                                            </a>
+                                        </span>`;
+                                }
+
+                                const editedCls = (isModified && row.isTimeOutManuallyEdited) ? 'edited-manually' : '';
+                                const showUndoTO = isFullAccess() && isModified && row.isTimeOutManuallyEdited;
+                                return `
+                                    <span class="timeout-cell ${editedCls}"
+                                          data-employee="${empNo}"
+                                          data-workdate="${workDate}"
+                                          data-original="${data || ''}"
+                                          data-ubio-id="${uBioId}">
+                                        ${displayValue}
+                                        ${showUndoTO ? `<a class="undo-edit-link"
+                                                           data-employee="${empNo}"
+                                                           data-workdate="${workDate}"
+                                                           data-ubio-id="${uBioId}">
+                                                           <i class="fas fa-undo"></i> Undo Edit
+                                                        </a>` : ''}
+                                    </span>`;
+                            }
+                        },
+
+                        { data: 'remarks' },
+                        { data: 'lateMinutesFormatted',      defaultContent: '0 min' },
+                        { data: 'underTimeMinutesFormatted', defaultContent: '0 min' },
+                        { data: 'ndHoursFormatted',            defaultContent: '0 hrs' },
+                        { data: 'overtimeDateTimeIn',          render: formatDateTime },
+                        { data: 'overTimeDateTimeOUT',         render: formatDateTime },
+                        { data: 'otReason' },
+                        { data: 'otHoursFormatted',            defaultContent: '0 hrs' },
+                        { data: 'rdHoursFormatted',              defaultContent: '0 hrs' },
+                        { data: 'rdotHoursFormatted',            defaultContent: '0 hrs' },
+                        { data: 'rdndotHoursFormatted',          defaultContent: '0 hrs' },
+                        { data: 'holidayName' },
+                        { data: 'splHolidayHoursFormatted',      defaultContent: '0 hrs' },
+                        { data: 'splHolidayOTHoursFormatted',    defaultContent: '0 hrs' },
+                        { data: 'splHolidayNDHoursFormatted',    defaultContent: '0 hrs' },
+                        { data: 'splHolidayNDOTHoursFormatted',  defaultContent: '0 hrs' },
+                        { data: 'splHolidayRESTHoursFormatted',      defaultContent: '0 hrs' },
+                        { data: 'splHolidayRESTOTHoursFormatted',    defaultContent: '0 hrs' },
+                        { data: 'splHolidayRESTNDHoursFormatted',    defaultContent: '0 hrs' },
+                        { data: 'splHolidayRESTNDOTHoursFormatted',  defaultContent: '0 hrs' },
+                        { data: 'regHolidayHoursFormatted',      defaultContent: '0 hrs' },
+                        { data: 'regHolidayOTHoursFormatted',    defaultContent: '0 hrs' },
+                        { data: 'regHolidayNDHoursFormatted',    defaultContent: '0 hrs' },
+                        { data: 'regHolidayNDOTHoursFormatted',  defaultContent: '0 hrs' },
+                        { data: 'regHolidayRESTHoursFormatted',      defaultContent: '0 hrs' },
+                        { data: 'regHolidayRESTOTHoursFormatted',    defaultContent: '0 hrs' },
+                        { data: 'regHolidayRESTNDHoursFormatted',    defaultContent: '0 hrs' },
+                        { data: 'regHolidayRESTNDOTHoursFormatted',  defaultContent: '0 hrs' },
+                        { data: 'leaveName' },
+                        { data: 'leaveReason' },
+                        { data: 'obReason' },
+                        { data: 'wfhReason' }
+                    ]
+                });
+            }); // closes .always()
+    }
+</script>

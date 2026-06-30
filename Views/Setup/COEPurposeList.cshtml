@@ -1,0 +1,743 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutFillow.cshtml";
+    ViewData["Title"] = "COE Purpose List";
+}
+
+<div class="col-12">
+    <div class="card">
+        <div class="card-header">
+            <div class="row" style="width:100%;">
+                <h4 class="card-title">COE Purpose List</h4>
+                <br> <br> <br>
+
+                <div class="row" style="margin-left:0px;width:100%;">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Record Status</h5>
+                            <select name="filterRecordStatus" id="filterRecordStatus" class="form-control">
+                                <option value="active" selected>ACTIVE</option>
+                                <option value="inactive">INACTIVE</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                    </div>
+                    <div class="col-md-3 d-flex justify-content-end align-items-end">
+                        <div class="form-group">
+                            <button type="button" class="btn btn-primary" id="btnAddCOEPurpose">
+                                <i class="fa fa-plus"></i> New COE Purpose
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="coePurposeTable" class="display" style="min-width: 845px">
+                    <thead>
+                        <tr>
+                            <th>Action</th>
+                            <th>COE Code</th>
+                            <th>COE Name</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+
+        <!-- Modal for Add -->
+        <div class="modal fade" id="addCOEPurposeModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">COE Purpose Form</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addCOEPurposeForm">
+                            <div class="mb-3">
+                                <label for="addCOECode" class="form-label">COE Code <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control alphanum" id="addCOECode" name="coeCode" required maxlength="50">
+                                <div class="invalid-feedback">
+                                    Please provide a valid COE code.
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="addCOEName" class="form-label">COE Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="addCOEName" name="coeName" required maxlength="255">
+                                <div class="invalid-feedback">
+                                    Please provide a valid COE name.
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="btnSaveNewCOEPurpose">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for View/Edit -->
+        <div class="modal fade" id="viewCOEPurposeModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="viewModalTitle">View COE Purpose Form</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="viewCOEPurposeForm">
+                            <input type="hidden" id="viewCOEPurposeId" name="id">
+
+                            <div class="mb-3">
+                                <label for="viewCOECode" class="form-label">COE Code <span class="text-danger edit-required d-none">*</span></label>
+                                <input type="text" class="form-control alphanum" id="viewCOECode" name="coeCode" readonly maxlength="50">
+                                <div class="invalid-feedback">
+                                    Please provide a valid COE code.
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="viewCOEName" class="form-label">COE Name <span class="text-danger edit-required d-none">*</span></label>
+                                <input type="text" class="form-control" id="viewCOEName" name="coeName" readonly maxlength="255">
+                                <div class="invalid-feedback">
+                                    Please provide a valid COE name.
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="btnEditCOEPurpose">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button type="button" class="btn btn-success d-none" id="btnSaveCOEPurpose">Save</button>
+                        <button type="button" class="btn btn-danger d-none" id="btnCancelEdit">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Fillow_style
+{
+
+    <style>
+        .table-responsive {
+            border-radius: 0.375rem;
+        }
+
+        #coePurposeTable_wrapper .dataTables_length,
+        #coePurposeTable_wrapper .dataTables_filter {
+            margin-bottom: 1rem;
+        }
+
+        #coePurposeTable_wrapper .dataTables_info,
+        #coePurposeTable_wrapper .dataTables_paginate {
+            margin-top: 1rem;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .modal-content {
+            border-radius: 0.5rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        .invalid-feedback {
+            display: none;
+        }
+
+        .form-control.is-invalid,
+        .form-select.is-invalid {
+            border-color: #dc3545;
+        }
+
+            .form-control.is-invalid ~ .invalid-feedback,
+            .form-select.is-invalid ~ .invalid-feedback {
+                display: block;
+            }
+
+        /* Readonly/disabled field styling */
+        .form-control[readonly] {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        .form-select[disabled] {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        /* Edit mode styling */
+        .edit-mode .form-control[readonly] {
+            background-color: #ffffff;
+            border-color: #ced4da;
+        }
+
+        .edit-mode .form-select[disabled] {
+            background-color: #ffffff;
+            border-color: #ced4da;
+        }
+
+        /* Custom SweetAlert2 styling */
+        .swal2-popup {
+            border-radius: 15px !important;
+            padding: 2rem !important;
+        }
+
+        .swal2-icon.swal2-error {
+            border-color: #f27474 !important;
+            color: #f27474 !important;
+        }
+
+            .swal2-icon.swal2-error .swal2-x-mark {
+                display: none !important;
+            }
+
+            .swal2-icon.swal2-error::before {
+                content: "\f2ed" !important;
+                font-family: "Font Awesome 5 Free" !important;
+                font-weight: 900 !important;
+                font-size: 2.5rem !important;
+                color: #f27474 !important;
+                display: block !important;
+            }
+
+        .swal2-title {
+            font-size: 1.875rem !important;
+            font-weight: 600 !important;
+            color: #545454 !important;
+            margin: 1rem 0 0.5rem 0 !important;
+        }
+
+        .swal2-html-container {
+            font-size: 1rem !important;
+            color: #737373 !important;
+            margin: 0 0 2rem 0 !important;
+        }
+
+        .swal2-actions {
+            gap: 0.5rem !important;
+        }
+
+        .swal2-confirm {
+            background-color: #7c3aed !important;
+            border-color: #7c3aed !important;
+            color: white !important;
+            font-weight: 500 !important;
+            padding: 0.75rem 2rem !important;
+            border-radius: 8px !important;
+            font-size: 0.875rem !important;
+        }
+
+        .swal2-cancel {
+            background-color: #6b7280 !important;
+            border-color: #6b7280 !important;
+            color: white !important;
+            font-weight: 500 !important;
+            padding: 0.75rem 2rem !important;
+            border-radius: 8px !important;
+            font-size: 0.875rem !important;
+        }
+
+        .swal2-confirm:hover {
+            background-color: #6d28d9 !important;
+            border-color: #6d28d9 !important;
+        }
+
+        .swal2-cancel:hover {
+            background-color: #4b5563 !important;
+            border-color: #4b5563 !important;
+        }
+
+        /* Restore button styling */
+        .btn-success.shadow-sm:hover {
+            background-color: #1e7e34;
+            border-color: #1c7430;
+        }
+
+        .card-header {
+            border-bottom: none !important;
+        }
+
+        #filterRecordStatus {
+            width: 100%;
+        }
+    </style>
+}
+
+@section Fillow_script
+{
+
+    <script>
+        $(document).ready(function () {
+
+            MODULE = 'SCOEPurposeListM';
+            access = ROLE_ACCESS?.[MODULE];
+
+            if (access != 'READWRITE' && access != 'FULL') {
+                $('#btnAddCOEPurpose').hide();
+                $('#btnEditCOEPurpose').hide();
+            }
+
+            // Initialize toastr options
+            toastr.options = {
+                positionClass: "toast-top-right",
+                timeOut: 5000,
+                closeButton: true,
+                debug: false,
+                newestOnTop: true,
+                progressBar: true,
+                preventDuplicates: true,
+                onclick: null,
+                showDuration: "300",
+                hideDuration: "1000",
+                extendedTimeOut: "1000",
+                showEasing: "swing",
+                hideEasing: "linear",
+                showMethod: "fadeIn",
+                hideMethod: "fadeOut",
+                tapToDismiss: false
+            };
+
+            // View state management
+            let isViewingDeleted = false;
+
+            // Initialize Select2 for the filter
+            $('#filterRecordStatus').select2({
+                selectOnClose: true,
+                minimumResultsForSearch: Infinity
+            });
+
+            // Handle filter change
+            $('#filterRecordStatus').on('change', function () {
+                isViewingDeleted = $(this).val() === 'inactive';
+                updateTableView();
+            });
+
+            var table = $('#coePurposeTable').DataTable({
+                processing: true,
+                serverSide: false,
+                ajax: {
+                    url: "/COEPurposeList/GetCOEPurposeList",
+                    type: "GET",
+                    datatype: "json",
+                    error: function(xhr, error, code) {
+                        console.log('Error loading data:', error);
+                        showNotification('Error loading COE purpose data. Please refresh the page.', 'error');
+                    }
+                },
+                columns: [
+                    {
+                        data: "id",
+                        width: "20%",
+                        orderable: false,
+                        render: function (data) {
+                            if (isViewingDeleted) {
+                                return `
+                                    <div class="d-flex gap-1">
+                                        <button type="button" class="btn btn-sm btn-success shadow-sm restoreCOEPurpose" data-id="${data}" title="Restore">
+                                            <i class="fas fa-undo"></i>
+                                        </button>
+                                    </div>`;
+                            } else {
+                                return `
+                                    <div class="d-flex gap-1">
+                                        <button type="button" class="btn btn-sm btn-primary shadow-sm viewCOEPurpose" data-id="${data}" title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-danger shadow-sm deleteCOEPurpose" data-id="${data}" title="Delete">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                    </div>`;
+                            }
+                        }
+                    },
+                    {
+                        data: "coeCode",
+                        width: "25%"
+                    },
+                    {
+                        data: "coeName",
+                        width: "55%"
+                    }                    
+                ],
+                order: [],
+                pageLength: 25,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                language: {
+                    processing: "Loading...",
+                    emptyTable: "No COE purposes found",
+                    zeroRecords: "No matching COE purposes found",
+                    paginate: {
+                        next: '<i class="fa fa-angle-double-right" aria-hidden="true"></i>',
+                        previous: '<i class="fa fa-angle-double-left" aria-hidden="true"></i>'
+                    }
+                }
+            });
+
+            // Add New COE Purpose
+            $('#btnAddCOEPurpose').click(function () {
+                resetAddForm();
+                $('#addCOEPurposeModal').modal('show');
+
+                // Focus on first input after modal is shown
+                $('#addCOEPurposeModal').on('shown.bs.modal', function () {
+                    $('#addCOECode').focus();
+                });
+            });
+
+            // View COE Purpose
+            $(document).on('click', '.viewCOEPurpose', function (e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+                var $btn = $(this);
+
+                // Disable button and show loading
+                $btn.prop('disabled', true);
+                $btn.html('<i class="fas fa-spinner fa-spin"></i>');
+
+                $.get('/COEPurposeList/GetCOEPurpose', { id: id }, function (data) {
+                    if (data) {
+                        resetViewForm();
+                        setViewMode();
+
+                        $('#viewCOEPurposeId').val(data.id);
+                        $('#viewCOECode').val(data.coeCode);
+                        $('#viewCOEName').val(data.coeName);
+
+                        $('#viewCOEPurposeModal').modal('show');
+                    } else {
+                        showNotification('Unable to load COE purpose data', 'error');
+                    }
+                }).fail(function(xhr, status, error) {
+                    console.log('Error loading COE purpose:', error);
+                    showNotification('Unable to load COE purpose data', 'error');
+                }).always(function() {
+                    // Re-enable button
+                    $btn.prop('disabled', false);
+                    $btn.html('<i class="fas fa-eye"></i>');
+                });
+            });
+
+            // Edit button in view modal
+            $('#btnEditCOEPurpose').click(function () {
+                setEditMode();
+                $('#viewCOECode').focus();
+            });
+
+            // Cancel edit button
+            $('#btnCancelEdit').click(function () {
+                // Reload the original data
+                var id = $('#viewCOEPurposeId').val();
+                $.get('/COEPurposeList/GetCOEPurpose', { id: id }, function (data) {
+                    if (data) {
+                        $('#viewCOECode').val(data.coeCode);
+                        $('#viewCOEName').val(data.coeName);
+                        setViewMode();
+                        clearValidation('#viewCOEPurposeForm');
+                    }
+                });
+            });
+
+            // Save COE Purpose (from view/edit modal)
+            $('#btnSaveCOEPurpose').click(function () {
+                // Clear previous validation states
+                clearValidation('#viewCOEPurposeForm');
+
+                // Validate form
+                if (!validateViewForm()) {
+                    return;
+                }
+
+                var formData = {
+                    id: parseInt($('#viewCOEPurposeId').val()),
+                    coeCode: $('#viewCOECode').val().trim(),
+                    coeName: $('#viewCOEName').val().trim()
+                };
+
+                // Disable the save button to prevent double submission
+                var $saveBtn = $('#btnSaveCOEPurpose');
+                $saveBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+
+                $.post('/COEPurposeList/UpdateCOEPurpose', formData, function (response) {
+                    if (response.success) {
+                        setViewMode();
+                        table.ajax.reload(null, false); // Keep current page
+                        showNotification(response.message, 'success');
+                    } else {
+                        showNotification(response.message, 'error');
+                    }
+                }).fail(function(xhr, status, error) {
+                    console.log('Error saving COE purpose:', error);
+                    showNotification('Unable to save COE purpose. Please try again.', 'error');
+                }).always(function() {
+                    // Re-enable the save button
+                    $saveBtn.prop('disabled', false).html('Save');
+                });
+            });
+
+            // Save New COE Purpose (from add modal)
+            $('#btnSaveNewCOEPurpose').click(function () {
+                // Clear previous validation states
+                clearValidation('#addCOEPurposeForm');
+
+                // Validate form
+                if (!validateAddForm()) {
+                    return;
+                }
+
+                var formData = {
+                    coeCode: $('#addCOECode').val().trim(),
+                    coeName: $('#addCOEName').val().trim()
+                };
+
+                // Disable the save button to prevent double submission
+                var $saveBtn = $('#btnSaveNewCOEPurpose');
+                $saveBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+
+                $.post('/COEPurposeList/AddCOEPurpose', formData, function (response) {
+                    if (response.success) {
+                        $('#addCOEPurposeModal').modal('hide');
+                        table.ajax.reload(null, false); // Keep current page
+                        showNotification(response.message, 'success');
+                    } else {
+                        showNotification(response.message, 'error');
+                    }
+                }).fail(function(xhr, status, error) {
+                    console.log('Error saving COE purpose:', error);
+                    showNotification('Unable to save COE purpose. Please try again.', 'error');
+                }).always(function() {
+                    // Re-enable the save button
+                    $saveBtn.prop('disabled', false).html('Save');
+                });
+            });
+
+            // Delete COE Purpose with reason - REUSABLE ALREADY IN THE GLOBAL
+            $(document).on('click', '.deleteCOEPurpose', function (e) {
+                e.preventDefault();
+                deleteWithReason({
+                    title: 'Inactive COE Purpose',
+                    text: 'Are you sure you want to inactive this COE purpose?',
+                    url: '/COEPurposeList/DeleteCOEPurpose',
+                    id: $(this).data('id'),
+                    button: $(this),
+                    table: table
+                });
+            });
+
+            // Restore COE Purpose with SweetAlert2
+            $(document).on('click', '.restoreCOEPurpose', function (e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+                var $btn = $(this);
+
+                Swal.fire({
+                    title: 'Restore Record',
+                    text: 'Are you sure you want to restore this COE purpose?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, Restore',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d',
+                    reverseButtons: false,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Disable button and show loading
+                        $btn.prop('disabled', true);
+                        $btn.html('<i class="fas fa-spinner fa-spin"></i>');
+
+                        $.post('/COEPurposeList/RestoreCOEPurpose', { id: id }, function (response) {
+                            if (response.success) {
+                                table.ajax.reload(null, false); // Keep current page
+                                showNotification(response.message, 'success');
+                            } else {
+                                showNotification(response.message, 'error');
+                            }
+                        }).fail(function(xhr, status, error) {
+                            console.log('Error restoring COE purpose:', error);
+                            showNotification('Unable to restore COE purpose. Please try again.', 'error');
+                        }).always(function() {
+                            // Re-enable button
+                            $btn.prop('disabled', false);
+                            $btn.html('<i class="fas fa-undo"></i>');
+                        });
+                    }
+                });
+            });
+
+            // Reset forms when modals are hidden
+            $('#addCOEPurposeModal').on('hidden.bs.modal', function () {
+                resetAddForm();
+            });
+
+            $('#viewCOEPurposeModal').on('hidden.bs.modal', function () {
+                resetViewForm();
+                setViewMode();
+            });
+
+            // Enter key handling for forms
+            $('#addCOEPurposeForm').on('keypress', function(e) {
+                if (e.which === 13) { // Enter key
+                    e.preventDefault();
+                    $('#btnSaveNewCOEPurpose').click();
+                }
+            });
+
+            $('#viewCOEPurposeForm').on('keypress', function(e) {
+                if (e.which === 13 && $('#viewCOEPurposeModal .modal-body').hasClass('edit-mode')) { // Enter key in edit mode
+                    e.preventDefault();
+                    $('#btnSaveCOEPurpose').click();
+                }
+            });
+
+            // Helper Functions
+            function updateTableView() {
+                if (isViewingDeleted) {
+                    // Update for deleted records view
+                    table.ajax.url('/COEPurposeList/GetDeletedCOEPurpose').load();
+                    $('#btnAddCOEPurpose').hide();
+                } else {
+                    // Update for active records view
+                    table.ajax.url('/COEPurposeList/GetCOEPurposeList').load();
+                    $('#btnAddCOEPurpose').show();
+                }
+            }
+
+            function resetAddForm() {
+                $('#addCOEPurposeForm')[0].reset();
+                clearValidation('#addCOEPurposeForm');
+                $('#btnSaveNewCOEPurpose').prop('disabled', false).html('Save');
+            }
+
+            function resetViewForm() {
+                $('#viewCOEPurposeForm')[0].reset();
+                clearValidation('#viewCOEPurposeForm');
+                $('#btnSaveCOEPurpose').prop('disabled', false).html('Save');
+            }
+
+            function setViewMode() {
+                $('#viewModalTitle').text('View COE Purpose');
+                $('#viewCOEPurposeModal .modal-body').removeClass('edit-mode');
+
+                // Make fields readonly/disabled
+                $('#viewCOECode').prop('readonly', true);
+                $('#viewCOEName').prop('readonly', true);
+
+                // Hide required asterisks
+                $('.edit-required').addClass('d-none');
+
+                // Show/hide buttons
+                $('#btnEditCOEPurpose').removeClass('d-none');
+                $('#btnSaveCOEPurpose').addClass('d-none');
+                $('#btnCancelEdit').addClass('d-none');
+
+                clearValidation('#viewCOEPurposeForm');
+            }
+
+            function setEditMode() {
+                $('#viewModalTitle').text('Edit COE Purpose');
+                $('#viewCOEPurposeModal .modal-body').addClass('edit-mode');
+
+                // Make fields editable
+                $('#viewCOECode').prop('readonly', false);
+                $('#viewCOEName').prop('readonly', false);
+
+                // Show required asterisks
+                $('.edit-required').removeClass('d-none');
+
+                // Show/hide buttons
+                $('#btnEditCOEPurpose').addClass('d-none');
+                $('#btnSaveCOEPurpose').removeClass('d-none');
+                $('#btnCancelEdit').removeClass('d-none');
+            }
+
+            function clearValidation(formSelector) {
+                $(formSelector + ' .form-control, ' + formSelector + ' .form-select').removeClass('is-invalid');
+                $(formSelector + ' .invalid-feedback').hide();
+            }
+
+            function validateAddForm() {
+                var isValid = true;
+
+                // Validate COE code
+                var coeCode = $('#addCOECode').val().trim();
+                if (!coeCode) {
+                    $('#addCOECode').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                // Validate COE name
+                var coeName = $('#addCOEName').val().trim();
+                if (!coeName) {
+                    $('#addCOEName').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                return isValid;
+            }
+
+            function validateViewForm() {
+                var isValid = true;
+
+                // Validate COE code
+                var coeCode = $('#viewCOECode').val().trim();
+                if (!coeCode) {
+                    $('#viewCOECode').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                // Validate COE name
+                var coeName = $('#viewCOEName').val().trim();
+                if (!coeName) {
+                    $('#viewCOEName').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                return isValid;
+            }
+
+            // Updated notification function using toastr
+            function showNotification(message, type) {
+                if (type === 'success') {
+                    toastr.success(message, "Success");
+                } else if (type === 'error') {
+                    toastr.error(message, "Error");
+                } else if (type === 'warning') {
+                    toastr.warning(message, "Warning");
+                } else if (type === 'info') {
+                    toastr.info(message, "Information");
+                } else {
+                    toastr.info(message, "Notification");
+                }
+            }
+
+            // Remove validation classes when user starts typing (Add form)
+            $('#addCOECode, #addCOEName').on('input', function() {
+                $(this).removeClass('is-invalid');
+            });
+
+            // Remove validation classes when user starts typing (View/Edit form)
+            $('#viewCOECode, #viewCOEName').on('input', function() {
+                $(this).removeClass('is-invalid');
+            });
+        });
+    </script>
+}

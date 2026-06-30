@@ -1,0 +1,1347 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutFillow.cshtml";
+    ViewData["Title"] = "Adjustment Request List";
+
+    // Access flags passed from controller
+    bool canWrite = ViewBag.CanWrite ?? false;
+    bool canViewRates = ViewBag.CanViewRates ?? false;
+    bool canViewAllowance = ViewBag.CanViewAllowance ?? false;
+    bool canApprove = ViewBag.CanApprove ?? false;
+}
+
+<div class="col-12">
+    <div class="card">
+        <div class="card-header">
+            <div class="row" style="width:100%;">
+                <h4 class="card-title">Adjustment Request List</h4>
+                <br> <br> <br>
+
+                <div class="row date-range" style="margin-left:0px;width:100%;margin-bottom:20px;">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Select Status</h5>
+                            <select name="filterStatusName" id="filterStatusName" class="form-control">
+                                <option value="All">ALL</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Approved">Approved</option>
+                                <option value="Cancelled">Cancelled</option>
+                                <option value="Declined">Declined</option>
+                                <option value="Processed">Processed</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label>Effectivity Date From </label>
+                        <div class="input-hasicon">
+                            <input name="dateFrom" id="dateFrom" class="form-control formInput date-from" placeholder="mm/dd/yyyy">
+                            <div class="icon"><i class="far fa-calendar"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label>Effectivity Date To </label>
+                        <div class="input-hasicon">
+                            <input name="dateTo" id="dateTo" class="form-control formInput date-to" placeholder="mm/dd/yyyy">
+                            <div class="icon"><i class="far fa-calendar"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Adjustment Type</h5>
+                            <select name="filterAdjustmentType" id="filterAdjustmentType" class="form-control"></select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12 d-flex justify-content-end" style="margin-top:15px;gap:10px;">
+                    <div class="form-group">
+                        <button type="button" class="btn btn-warning" id="btnExportToExcel">
+                            <i class="fas fa-file-excel"></i> Export to Excel
+                        </button>
+                    </div>
+                    @if (canWrite)
+                    {
+                        <div class="form-group">
+                            <button type="button" class="btn btn-primary" id="btnAddAdjustmentRequest">
+                                <i class="fa fa-plus"></i> New Adjustment Request
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="adjustmentRequestTable" class="display" style="min-width: 845px">
+                    <thead>
+                        <tr>
+                            <th>Action</th>
+                            <th>Employee Name</th>
+                            <th>Adjustment Type</th>
+                            <th>Day Type</th>
+                            <th>Value</th>
+                            <th>Unit</th>
+                            <th>Requested Amount</th>
+                            <th>Effectivity Date</th>
+                            <th>Remarks</th>
+                            <th>Status</th>
+                            <th>Requested By</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+
+        <!-- Modal for Add -->
+        @if (canWrite)
+        {
+            <div class="modal fade" id="addAdjustmentRequestModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Add Adjustment Request</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="addAdjustmentRequestForm">
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <label for="addEmployeeName" class="form-label">Employee Name <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="addEmployeeName" name="employeeNo" style="width:100%" required>
+                                            <option value="">Select Employee...</option>
+                                        </select>
+                                        <div class="invalid-feedback">Please select an employee.</div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <label for="addAdjustmentType" class="form-label">Adjustment Type <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="addAdjustmentType" name="adjustmentCode" style="width:100%" required>
+                                            <option value="">Select Adjustment Type...</option>
+                                        </select>
+                                        <div class="invalid-feedback">Please select an adjustment type.</div>
+                                    </div>
+                                </div>
+
+                                <!-- Rate Display - only shown for FULL / Admin -->
+                                @if (canViewRates)
+                                {
+                                    <div id="addDailyRateDisplay" style="display: none;">
+                                        <div class="alert alert-success mb-3">
+                                            <strong>Employee Daily Rate:</strong> ₱<span id="addEmployeeDailyRate">0.00</span><br>
+                                            @* Allowance row — shown by JS only when showAllowance = true (FULL only) *@
+                                            <span id="addAllowanceRow" style="display:none;">
+                                                <strong>Employee Daily Allowance:</strong> ₱<span id="addEmployeeDailyAllowance">0.00</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                }
+
+                                <!-- Time Keeping Adjustment Fields -->
+                                <div id="addTimeKeepingFields" style="display: none;">
+                                    <div class="row">
+                                        <div class="col-md-12 mb-3">
+                                            <label for="addDayType" class="form-label">Day Type <span class="text-danger">*</span></label>
+                                            <select class="form-select" id="addDayType" name="dayType" style="width:100%">
+                                                <option value="">Select Day Type...</option>
+                                            </select>
+                                            <div class="invalid-feedback">Please select a day type.</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="addValue" class="form-label">Value <span class="text-danger">*</span></label>
+                                            <input type="number" step="0.01" class="form-control" id="addValue" name="value" placeholder="Enter value">
+                                            <div class="invalid-feedback">Please enter a value.</div>
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label for="addUnit" class="form-label">Unit <span class="text-danger">*</span></label>
+                                            <select class="form-select" id="addUnit" name="unit">
+                                                <option value="">Select Unit...</option>
+                                            </select>
+                                            <div class="invalid-feedback">Please select a unit.</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="addRequestedAmount" class="form-label">Requested Amount <span class="text-danger">*</span></label>
+                                        <input type="number" step="0.01" class="form-control" id="addRequestedAmount" name="amount" required placeholder="Enter amount (e.g., 1000.00 or -500.00)">
+                                        <small class="text-muted">Auto-calculated for Time Keeping Adjustments</small>
+                                        <div class="invalid-feedback">Please enter a valid amount.</div>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="addEffectivityDate" class="form-label">Effectivity Date <span class="text-danger">*</span></label>
+                                        <div class="input-hasicon">
+                                            <input name="addEffectivityDate" id="addEffectivityDate" class="form-control formInput" placeholder="mm/dd/yyyy" required>
+                                            <div class="icon"><i class="far fa-calendar"></i></div>
+                                        </div>
+                                        <div class="invalid-feedback">Please select effectivity date.</div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="addRemarks" class="form-label">Remarks</label>
+                                    <textarea class="form-control" id="addRemarks" name="reason" rows="3" maxlength="1000" placeholder="Enter remarks or reason for adjustment..."></textarea>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" id="btnSaveNewAdjustmentRequest">Save</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Modal for View/Edit -->
+        <div class="modal fade" id="viewAdjustmentRequestModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="viewModalTitle">View Adjustment Request</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="viewAdjustmentRequestForm">
+                            <input type="hidden" id="viewAdjustmentRequestId" name="id">
+                            <input type="hidden" id="viewAdjustmentRequestStatus" name="statusName">
+
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="viewEmployeeName" class="form-label">Employee Name <span class="text-danger edit-required d-none">*</span></label>
+                                    <select class="form-select" id="viewEmployeeName" name="employeeNo" style="width:100%" disabled>
+                                        <option value="">Select Employee...</option>
+                                    </select>
+                                    <div class="invalid-feedback">Please select an employee.</div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="viewAdjustmentType" class="form-label">Adjustment Type <span class="text-danger edit-required d-none">*</span></label>
+                                    <select class="form-select" id="viewAdjustmentType" name="adjustmentCode" style="width:100%" disabled>
+                                        <option value="">Select Adjustment Type...</option>
+                                    </select>
+                                    <div class="invalid-feedback">Please select an adjustment type.</div>
+                                </div>
+                            </div>
+
+                            <!-- Rate Display - only shown for FULL / Admin -->
+                            @if (canViewRates)
+                            {
+                                <div id="viewDailyRateDisplay" style="display: none;">
+                                    <div class="alert alert-success mb-3">
+                                        <strong>Employee Daily Rate:</strong> ₱<span id="viewEmployeeDailyRate">0.00</span><br>
+                                        @* Allowance row — shown by JS only when showAllowance = true (FULL only) *@
+                                        <span id="viewAllowanceRow" style="display:none;">
+                                            <strong>Employee Daily Allowance:</strong> ₱<span id="viewEmployeeDailyAllowance">0.00</span>
+                                        </span>
+                                    </div>
+                                </div>
+                            }
+
+                            <!-- Time Keeping Adjustment Fields -->
+                            <div id="viewTimeKeepingFields" style="display: none;">
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <label for="viewDayType" class="form-label">Day Type <span class="text-danger edit-required d-none">*</span></label>
+                                        <select class="form-select" id="viewDayType" name="dayType" style="width:100%" disabled>
+                                            <option value="">Select Day Type...</option>
+                                        </select>
+                                        <div class="invalid-feedback">Please select a day type.</div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="viewValue" class="form-label">Value <span class="text-danger edit-required d-none">*</span></label>
+                                        <input type="number" step="0.01" class="form-control" id="viewValue" name="value" readonly>
+                                        <div class="invalid-feedback">Please enter a value.</div>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label for="viewUnit" class="form-label">Unit <span class="text-danger edit-required d-none">*</span></label>
+                                        <select class="form-select" id="viewUnit" name="unit" disabled>
+                                            <option value="">Select Unit...</option>
+                                        </select>
+                                        <div class="invalid-feedback">Please select a unit.</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="viewRequestedAmount" class="form-label">Requested Amount <span class="text-danger edit-required d-none">*</span></label>
+                                    <input type="number" step="0.01" class="form-control" id="viewRequestedAmount" name="amount" readonly>
+                                    <small class="text-muted">Note: Positive for addition, negative for deduction</small>
+                                    <div class="invalid-feedback">Please enter a valid amount.</div>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="viewEffectivityDate" class="form-label">Effectivity Date <span class="text-danger edit-required d-none">*</span></label>
+                                    <div class="input-hasicon">
+                                        <input name="viewEffectivityDate" id="viewEffectivityDate" class="form-control formInput" placeholder="mm/dd/yyyy" readonly>
+                                        <div class="icon"><i class="far fa-calendar"></i></div>
+                                    </div>
+                                    <div class="invalid-feedback">Please select effectivity date.</div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="viewRemarks" class="form-label">Remarks</label>
+                                <textarea class="form-control" id="viewRemarks" name="reason" rows="3" maxlength="1000" readonly></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        @* Approve — FULL only *@
+                        @if (canApprove)
+                        {
+                            <button type="button" class="btn btn-success d-none" id="btnApproveAdjustmentRequest">
+                                <i class="fas fa-check"></i> Approve
+                            </button>
+                        }
+                        @* Edit / Save / Cancel — READWRITE or FULL *@
+                        @if (canWrite)
+                        {
+                            <button type="button" class="btn btn-primary d-none" id="btnEditAdjustmentRequest">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button type="button" class="btn btn-success d-none" id="btnSaveAdjustmentRequest">Save</button>
+                            <button type="button" class="btn btn-danger d-none" id="btnCancelEdit">Cancel</button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Fillow_style
+{
+    <style>
+        .table-responsive {
+            border-radius: 0.375rem;
+        }
+
+        /* DataTable spacing */
+        #adjustmentRequestTable_wrapper .dataTables_length,
+        #adjustmentRequestTable_wrapper .dataTables_filter {
+            margin-bottom: 1rem;
+        }
+
+        #adjustmentRequestTable_wrapper .dataTables_info,
+        #adjustmentRequestTable_wrapper .dataTables_paginate {
+            margin-top: 1rem;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .modal-content {
+            border-radius: 0.5rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        /* Readonly/disabled field styling */
+        .form-control[readonly],
+        .form-select[disabled] {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        /* Edit mode styling - restore normal appearance */
+        .edit-mode .form-control[readonly],
+        .edit-mode .form-select[disabled] {
+            background-color: #ffffff;
+            border-color: #ced4da;
+        }
+
+        .invalid-feedback {
+            display: none;
+        }
+
+        .form-control.is-invalid,
+        .form-select.is-invalid {
+            border-color: #dc3545;
+        }
+
+            .form-control.is-invalid ~ .invalid-feedback,
+            .form-select.is-invalid ~ .invalid-feedback {
+                display: block;
+            }
+
+        /* Validation for Select2 */
+        .is-invalid + .select2-container .select2-selection--single {
+            border-color: #dc3545;
+        }
+
+        .select2-container .select2-selection--single {
+            height: 38px;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 36px;
+            padding-left: 12px;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 36px;
+        }
+
+        /* Select2 focus state */
+        .select2-container--default.select2-container--focus .select2-selection--single {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        /* Select2 disabled state */
+        .select2-container--default .select2-selection--single.select2-selection--disabled {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.35rem 0.65rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 0.25rem;
+        }
+
+        /* Status color variants */
+        .status-pending {
+            background-color: #ffc107;
+            color: #000;
+        }
+
+        .status-approved {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .status-declined {
+            background-color: #dc3545;
+            color: #fff;
+        }
+
+        .status-cancelled {
+            background-color: #6c757d;
+            color: #fff;
+        }
+
+        .status-processed {
+            background-color: #17a2b8;
+            color: #fff;
+        }
+
+        /* Amount Color Coding - Green for Earnings, Red for Deductions */
+        .amount-positive {
+            color: #28a745 !important;
+            font-weight: 500;
+        }
+
+        .amount-negative {
+            color: #dc3545 !important;
+            font-weight: 500;
+        }
+
+        .amount-positive:hover {
+            color: #218838 !important;
+        }
+
+        .amount-negative:hover {
+            color: #c82333 !important;
+        }
+
+        .card-header {
+            border-bottom: none !important;
+        }
+
+        /* Daily Rate Display Styling */
+        .alert-success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+
+        #adjustmentRequestTable td:first-child {
+            white-space: nowrap;
+            min-width: 100px;
+        }
+
+        #adjustmentRequestTable .btn-sm {
+            display: inline-block;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+    </style>
+}
+
+@section Fillow_script
+{
+    <script>
+        $(document).ready(function () {
+            // CONFIGURATION
+                const config = {
+                    canViewRates:     @Json.Serialize(canViewRates),
+                    canViewAllowance: @Json.Serialize(canViewAllowance),
+                    canWrite:         @Json.Serialize(canWrite),
+                    canApprove:       @Json.Serialize(canApprove),
+                toastr: {
+                    positionClass: "toast-top-right",
+                    timeOut: 5000,
+                    closeButton: true,
+                    progressBar: true,
+                    preventDuplicates: true
+                },
+                endpoints: {
+                    list: "/AdjustmentRequestList/GetAdjustmentRequestList",
+                    get: "/AdjustmentRequestList/GetAdjustmentRequest",
+                    employees: "/AdjustmentRequestList/GetEmployeeList",
+                    types: "/AdjustmentRequestList/GetAdjustmentTypes",
+                    timeKeepingDropdowns: "/AdjustmentRequestList/GetTimeKeepingDropdowns",
+                    employeeDailyRate: "/AdjustmentRequestList/GetEmployeeDailyRate",
+                    calculateAmount: "/AdjustmentRequestList/CalculateAdjustmentAmount",
+                    add: "/AdjustmentRequestList/AddAdjustmentRequest",
+                    update: "/AdjustmentRequestList/UpdateAdjustmentRequest",
+                    approve: "/AdjustmentRequestList/ApproveAdjustmentRequest",
+                    decline: "/AdjustmentRequestList/DeclineAdjustmentRequest"
+                },
+                timeKeepingCode: null // Will be set dynamically
+            };
+
+            toastr.options = config.toastr;
+            let isInitialLoad = true;
+            let currentEmployeeDailyRate = { add: 0, view: 0 };
+
+            // INITIALIZATION
+
+            // Initialize date pickers
+            $('#dateFrom, #dateTo, #addEffectivityDate, #viewEffectivityDate').datepicker({ format: 'mm/dd/yyyy', autoclose: true, todayHighlight: true });
+
+            // Set default status filter to Pending
+            $('#filterStatusName').val('Pending');
+
+            // Initialize Select2 dropdowns for modals
+            initializeSelect2();
+
+            // Initialize Select2 dropdowns for filters
+            initializeFilterSelect2();
+
+            // Load Time Keeping dropdowns
+            loadTimeKeepingDropdowns();
+
+            // Get Time Keeping Adjustment Code
+            getTimeKeepingAdjustmentCode();
+
+            // DATATABLE CONFIGURATION
+
+            // Initialize DataTable with server-side filtering
+            const table = $('#adjustmentRequestTable').DataTable({
+                processing: true,
+                serverSide: false,
+                ajax: {
+                    url: config.endpoints.list,
+                    type: "GET",
+                    data: d => ({
+                        status: isInitialLoad ? 'Default' : $('#filterStatusName').val(),
+                        adjustmentType: $('#filterAdjustmentType').val(),
+                        dateFrom: $('#dateFrom').val(),
+                        dateTo: $('#dateTo').val()
+                    }),
+                    dataSrc: function(json) {
+                        isInitialLoad = false;
+                        return json.data;
+                    },
+                    error: (xhr, error) => showNotification('Error loading data. Please refresh the page.', 'error')
+                },
+                columns: [
+                    {
+                        data: 'id',
+                        orderable: false,
+                        className: 'no-export',
+                        render: (data, type, row) => {
+                            const viewBtn = `<button class="btn btn-primary btn-sm viewAdjustmentRequest" data-id="${data}" title="View Details"><i class="fas fa-eye"></i></button>`;
+                            const declineBtn = (config.canApprove && (row.statusName === 'Pending' || row.statusName === 'Approved'))
+                            ? ` <button class="btn btn-danger btn-sm declineAdjustmentRequest" data-id="${data}" title="Decline"><i class="fas fa-times"></i></button>`
+                            : '';
+
+                            return viewBtn + declineBtn;
+                        }
+                    },
+                    { data: 'employeeName' },
+                    { data: 'adjustmentType' },
+                    {
+                        data: 'DayType',
+                        defaultContent: '-',
+                        render: data => data || '-'
+                    },
+                    {
+                        data: 'Value',
+                        defaultContent: '-',
+                        render: data => data ? parseFloat(data).toFixed(2) : '-'
+                    },
+                    {
+                        data: 'Units',
+                        defaultContent: '-',
+                        render: data => data || '-'
+                    },
+                    {
+                        data: 'requestedAmount',
+                        render: data => {
+                            if (!data || data === 0) return '₱0.00';
+                            const value = parseFloat(data);
+                            const className = value >= 0 ? 'amount-positive' : 'amount-negative';
+                            const formattedValue = Math.abs(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                            const sign = value >= 0 ? '+' : '-';
+                            return `<span class="${className}">${sign}₱${formattedValue}</span>`;
+                        }
+                    },
+                    { data: 'effectivityDate' },
+                    {
+                        data: 'remarks',
+                        defaultContent: '-',
+                        render: data => data || '-'
+                    },
+                    {
+                        data: 'statusName',
+                        render: data => {
+                            const statusClass = {
+                                'Pending': 'status-pending',
+                                'Approved': 'status-approved',
+                                'Declined': 'status-declined',
+                                'Cancelled': 'status-cancelled',
+                                'Processed': 'status-processed'
+                            };
+                            return `<span class="status-badge ${statusClass[data] || ''}">${data}</span>`;
+                        }
+                    },
+                    {
+                        data: 'requestedByUser',
+                        defaultContent: '-',
+                        render: data => data || '-'
+                    }
+                ],
+                order: [],
+                pageLength: 25,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                language: {
+                    processing: "Loading...",
+                    emptyTable: "No Adjustment requests found",
+                    zeroRecords: "No matching Adjustment requests found",
+                    paginate: {
+                        next: '<i class="fa fa-angle-double-right"></i>',
+                        previous: '<i class="fa fa-angle-double-left"></i>'
+                    }
+                }
+            });
+
+            // EVENT HANDLERS - FILTERS
+
+            // Reload table when any filter changes
+            $('#filterStatusName, #filterAdjustmentType, #dateFrom, #dateTo').on('change', () => table.ajax.reload(null, false));
+
+            // EVENT HANDLERS - ADD MODAL
+
+            // Open Add Adjustment Request modal
+            $('#btnAddAdjustmentRequest').click(() => {
+                resetAddForm();
+                loadDropdownOptions('#addEmployeeName', '#addAdjustmentType');
+                $('#addAdjustmentRequestModal').modal('show');
+            });
+
+            // Save new Adjustment Request
+            $('#btnSaveNewAdjustmentRequest').click(() => {
+                if (!validateForm('#addAdjustmentRequestForm', ['addEmployeeName', 'addAdjustmentType', 'addRequestedAmount', 'addEffectivityDate'])) return;
+
+                const formData = getFormData('#addAdjustmentRequestForm');
+                saveRequest(config.endpoints.add, formData, '#btnSaveNewAdjustmentRequest', true);
+            });
+
+            // Handle Adjustment Type change in Add Modal
+            $('#addAdjustmentType').on('change', function() {
+                toggleTimeKeepingFields('add', $(this).val());
+            });
+
+            // Handle Employee Name change in Add Modal
+            $('#addEmployeeName').on('change', function() {
+                const employeeNo = $(this).val();
+                const adjustmentCode = $('#addAdjustmentType').val();
+
+                if (adjustmentCode === config.timeKeepingCode && employeeNo) {
+                    if (config.canViewRates) loadEmployeeDailyRate('add', employeeNo);
+                    if (config.canViewRates && $('#addDayType').val() && $('#addValue').val() && $('#addUnit').val())
+                        calculateAdjustmentAmount('add');
+                }
+            });
+
+            // Add event listeners for auto-calculation on ADD modal
+            $('#addDayType, #addValue, #addUnit').on('change input', function() {
+                if (config.canViewRates && $('#addAdjustmentType').val() === config.timeKeepingCode) {
+                    calculateAdjustmentAmount('add');
+                }
+            });
+
+            // EVENT HANDLERS - VIEW/EDIT MODAL
+
+            // Open View Adjustment Request modal
+            $(document).on('click', '.viewAdjustmentRequest', function(e) {
+                e.preventDefault();
+                const id = $(this).data('id');
+                const $btn = $(this);
+
+                toggleButtonLoading($btn, true);
+
+                $.get(config.endpoints.get, { id })
+                    .done(data => {
+                        if (data) {
+                            resetViewForm();
+                            setViewMode();
+
+                            $.when(
+                                loadDropdownOptionsAsync('#viewEmployeeName', '#viewAdjustmentType')
+                            ).done(() => {
+                                populateViewForm(data);
+                                toggleTimeKeepingFields('view', data.adjustmentCode);
+                                updateViewButtons(data.statusName);
+                                $('#viewAdjustmentRequestModal').modal('show');
+                            });
+                        } else {
+                            showNotification('Unable to load Adjustment Request data', 'error');
+                        }
+                    })
+                    .fail(() => showNotification('Unable to load Adjustment Request data', 'error'))
+                    .always(() => toggleButtonLoading($btn, false));
+            });
+
+            // Approve Adjustment Request
+            $('#btnApproveAdjustmentRequest').click(() => {
+                const id = $('#viewAdjustmentRequestId').val();
+
+                Swal.fire({
+                    title: 'Approve Request',
+                    text: 'Are you sure you want to approve this Adjustment Request?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, Approve',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d'
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        const $btn = $('#btnApproveAdjustmentRequest');
+                        toggleButtonLoading($btn, true, 'Approving...');
+
+                        $.post(config.endpoints.approve, { id, approvedByUser: 'CURRENT_USER' })
+                            .done(response => {
+                                if (response.success) {
+                                    $('#viewAdjustmentRequestModal').modal('hide');
+                                    table.ajax.reload(null, false);
+                                    showNotification(response.message, 'success');
+                                } else {
+                                    showNotification(response.message, 'error');
+                                    toggleButtonLoading($btn, false);
+                                }
+                            })
+                            .fail(() => {
+                                showNotification('Unable to approve. Please try again.', 'error');
+                                toggleButtonLoading($btn, false);
+                            });
+                    }
+                });
+            });
+
+            // Switch to edit mode
+            $('#btnEditAdjustmentRequest').click(() => {
+                setEditMode();
+                $('#viewEmployeeName').focus();
+            });
+
+            // Cancel edit and revert to view mode
+            $('#btnCancelEdit').click(() => {
+                const id = $('#viewAdjustmentRequestId').val();
+                $.get(config.endpoints.get, { id }).done(data => {
+                    if (data) {
+                        populateViewForm(data);
+                        toggleTimeKeepingFields('view', data.adjustmentCode);
+                        setViewMode();
+                        clearValidation('#viewAdjustmentRequestForm');
+                    }
+                });
+            });
+
+            // Save changes to Adjustment Request
+            $('#btnSaveAdjustmentRequest').click(() => {
+                if (!validateForm('#viewAdjustmentRequestForm', ['viewEmployeeName', 'viewAdjustmentType', 'viewRequestedAmount', 'viewEffectivityDate'])) return;
+
+                const formData = getFormData('#viewAdjustmentRequestForm');
+                saveRequest(config.endpoints.update, formData, '#btnSaveAdjustmentRequest', false);
+            });
+
+            // Handle Adjustment Type change in View/Edit Modal
+            $('#viewAdjustmentType').on('change', function() {
+                // Only toggle if in edit mode
+                if ($('#viewAdjustmentRequestModal .modal-body').hasClass('edit-mode')) {
+                    toggleTimeKeepingFields('view', $(this).val());
+                }
+            });
+
+            // Handle Employee Name change in View/Edit Modal
+            $('#viewEmployeeName').on('change', function() {
+                const employeeNo = $(this).val();
+                const adjustmentCode = $('#viewAdjustmentType').val();
+
+                if (adjustmentCode === config.timeKeepingCode && employeeNo) {
+                    if (config.canViewRates) loadEmployeeDailyRate('view', employeeNo);
+                    if (config.canViewRates && $('#viewDayType').val() && $('#viewValue').val() && $('#viewUnit').val())
+                        calculateAdjustmentAmount('view');
+                }
+            });
+
+            // Add event listeners for auto-calculation on VIEW/EDIT modal
+            $('#viewDayType, #viewValue, #viewUnit').on('change input', function() {
+                const adjustmentCode = $('#viewAdjustmentType').val();
+                const isEditMode = $('#viewAdjustmentRequestModal .modal-body').hasClass('edit-mode');
+                if (config.canViewRates && adjustmentCode === config.timeKeepingCode && isEditMode) {
+                    calculateAdjustmentAmount('view');
+                }
+            });
+
+            // EVENT HANDLERS - DECLINE ACTION
+
+            $(document).on('click', '.declineAdjustmentRequest', function(e) {
+                e.preventDefault();
+                declineWithReason({
+                    title: 'Decline Adjustment Request',
+                    text: 'Are you sure you want to decline this Adjustment Request?',
+                    url: config.endpoints.decline,
+                    id: $(this).data('id'),
+                    declinedByUser: 'CURRENT_USER',
+                    button: $(this),
+                    table: table
+                });
+            });
+
+            // EVENT HANDLERS - MODAL LIFECYCLE
+
+            $('#addAdjustmentRequestModal').on('hidden.bs.modal', resetAddForm);
+
+            $('#viewAdjustmentRequestModal').on('hidden.bs.modal', () => {
+                resetViewForm();
+                setViewMode();
+                resetAllButtons();
+            });
+
+            // EVENT HANDLERS - KEYBOARD
+
+            $('#addAdjustmentRequestForm').on('keypress', e => {
+                if (e.which === 13) {
+                    e.preventDefault();
+                    $('#btnSaveNewAdjustmentRequest').click();
+                }
+            });
+
+            $('#viewAdjustmentRequestForm').on('keypress', e => {
+                if (e.which === 13 && $('#viewAdjustmentRequestModal .modal-body').hasClass('edit-mode')) {
+                    e.preventDefault();
+                    $('#btnSaveAdjustmentRequest').click();
+                }
+            });
+
+            // EVENT HANDLERS - VALIDATION
+
+            $('#addEmployeeName, #addAdjustmentType, #addRequestedAmount, #addEffectivityDate, #addRemarks, #addDayType, #addValue, #addUnit, #viewEmployeeName, #viewAdjustmentType, #viewRequestedAmount, #viewEffectivityDate, #viewRemarks, #viewDayType, #viewValue, #viewUnit')
+                .on('input change', function() { $(this).removeClass('is-invalid'); });
+
+            // EVENT HANDLER - EXPORT TO EXCEL
+            $('#btnExportToExcel').click(function() {
+                const $btn = $(this);
+
+                if (table.rows({ search: 'applied' }).count() === 0) {
+                    showNotification('No data available to export', 'warning');
+                    return;
+                }
+
+                const currentPageData = table.rows({ page: 'current' }).data().toArray();
+                if (currentPageData.length === 0) {
+                    showNotification('No data on current page to export', 'warning');
+                    return;
+                }
+
+                const pageInfo = table.page.info();
+                const params = new URLSearchParams({
+                    status: isInitialLoad ? 'Default' : ($('#filterStatusName').val() || 'Default'),
+                    adjustmentType: $('#filterAdjustmentType').val() || '',
+                    dateFrom: $('#dateFrom').val() || '',
+                    dateTo: $('#dateTo').val() || '',
+                    offset: pageInfo.start,
+                    limit: pageInfo.length
+                });
+
+                const originalHtml = $btn.html();
+                $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Exporting...');
+
+                const link = document.createElement('a');
+                link.href = `/AdjustmentRequestListExport/ExportToExcel?${params.toString()}`;
+                link.download = '';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                setTimeout(() => {
+                    $btn.prop('disabled', false).html(originalHtml);
+                    showNotification(`Exported ${currentPageData.length} rows from page ${pageInfo.page + 1}`, 'success');
+                }, 1500);
+            });
+
+            // HELPER FUNCTIONS - TIME KEEPING
+            function getTimeKeepingAdjustmentCode() {
+                $.get(config.endpoints.types, data => {
+                    const basicSalary = data.find(item =>
+                        item.text.toLowerCase().includes('time keeping')
+                    );
+                    if (basicSalary) config.timeKeepingCode = basicSalary.value;
+                });
+            }
+
+            function loadTimeKeepingDropdowns() {
+                $.get(config.endpoints.timeKeepingDropdowns, data => {
+                    // Populate Day Type dropdowns
+                    ['add', 'view'].forEach(prefix => {
+                        const $dayType = $(`#${prefix}DayType`);
+                        $dayType.empty().append('<option value="">Select Day Type...</option>');
+                        data.dayTypes.forEach(item => {
+                            $dayType.append(`<option value="${item.value}">${item.text}</option>`);
+                        });
+                    });
+
+                    // Populate Unit dropdowns
+                    ['add', 'view'].forEach(prefix => {
+                        const $unit = $(`#${prefix}Unit`);
+                        $unit.empty().append('<option value="">Select Unit...</option>');
+                        data.unitTypes.forEach(item => {
+                            $unit.append(`<option value="${item.value}">${item.text}</option>`);
+                        });
+                    });
+                });
+            }
+
+            function toggleTimeKeepingFields(prefix, adjustmentCode) {
+                const isTimeKeeping = adjustmentCode === config.timeKeepingCode;
+                const $container = $(`#${prefix}TimeKeepingFields`);
+                const $dailyRateDisplay = $(`#${prefix}DailyRateDisplay`);
+                const employeeNo = $(`#${prefix}EmployeeName`).val();
+
+                if (isTimeKeeping) {
+                    $container.slideDown();
+
+                    // Rate display panel only for FULL / Admin
+                    if (config.canViewRates && $dailyRateDisplay.length) {
+                        $dailyRateDisplay.slideDown();
+                        if (employeeNo) loadEmployeeDailyRate(prefix, employeeNo);
+                    }
+
+                    $(`#${prefix}DayType, #${prefix}Value, #${prefix}Unit`).prop('required', true);
+                    $(`#${prefix}DayType`).prop('disabled', false);
+                } else {
+                    $container.slideUp();
+
+                    if (config.canViewRates && $dailyRateDisplay.length) {
+                        $dailyRateDisplay.slideUp();
+                    }
+
+                    $(`#${prefix}DayType, #${prefix}Value, #${prefix}Unit`).prop('required', false);
+                    $(`#${prefix}DayType`).val('').trigger('change').removeClass('is-invalid');
+                    $(`#${prefix}Value`).val('').removeClass('is-invalid');
+                    $(`#${prefix}Unit`).val('').removeClass('is-invalid');
+                    $(`#${prefix}RequestedAmount`).val('');
+                    currentEmployeeDailyRate[prefix] = 0;
+                    $(`#${prefix}DayType`).prop('disabled', true);
+                }
+            }
+
+            function loadEmployeeDailyRate(prefix, employeeNo) {
+                if (!employeeNo) return;
+
+                $.get(config.endpoints.employeeDailyRate, { employeeNo })
+                    .done(response => {
+                        if (response.success) {
+                            currentEmployeeDailyRate[prefix] = response.dailyRate;
+                            $(`#${prefix}EmployeeDailyRate`).text(
+                                response.dailyRate.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                            );
+                            // Show allowance row only when server confirms FULL access
+                            if (response.showAllowance && response.allowanceDailyRate !== undefined) {
+                                $(`#${prefix}EmployeeDailyAllowance`).text(
+                                    response.allowanceDailyRate.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                );
+                                $(`#${prefix}AllowanceRow`).show();
+                            } else {
+                                $(`#${prefix}AllowanceRow`).hide();
+                                $(`#${prefix}EmployeeDailyAllowance`).text('0.00');
+                            }
+                        } else {
+                            showNotification('Unable to load employee daily rate', 'warning');
+                            currentEmployeeDailyRate[prefix] = 0;
+                            $(`#${prefix}EmployeeDailyRate`).text('0.00');
+                            $(`#${prefix}AllowanceRow`).hide();
+                        }
+                    })
+                    .fail(() => {
+                        showNotification('Error loading employee daily rate', 'error');
+                        currentEmployeeDailyRate[prefix] = 0;
+                        $(`#${prefix}EmployeeDailyRate`).text('0.00');
+                        $(`#${prefix}AllowanceRow`).hide();
+                    });
+            }
+
+            function calculateAdjustmentAmount(prefix) {
+                if (!config.canViewRates) return;
+
+                const employeeNo = $(`#${prefix}EmployeeName`).val();
+                const dayType = $(`#${prefix}DayType`).val();
+                const value = parseFloat($(`#${prefix}Value`).val()) || 0;
+                const unit = $(`#${prefix}Unit`).val();
+
+                if (!employeeNo || !dayType || !value || !unit) return;
+
+                $.post(config.endpoints.calculateAmount, { employeeNo, dayType, value, unit })
+                .done(response => {
+                    if (response.success) {
+                        $(`#${prefix}RequestedAmount`).val(response.requestedAmount);
+                        $(`#${prefix}EmployeeDailyRate`).text(
+                            response.dailyRate.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                        );
+                        // Show allowance breakdown only when server confirms FULL access
+                        if (response.showAllowance && response.allowanceDailyRate !== undefined) {
+                            $(`#${prefix}EmployeeDailyAllowance`).text(
+                                response.allowanceDailyRate.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                            );
+                            $(`#${prefix}AllowanceRow`).show();
+                        } else {
+                            $(`#${prefix}AllowanceRow`).hide();
+                            $(`#${prefix}EmployeeDailyAllowance`).text('0.00');
+                        }
+                    } else {
+                        showNotification(response.message, 'error');
+                    }
+                })
+                .fail(() => showNotification('Error calculating adjustment amount', 'error'));
+            }
+
+            // HELPER FUNCTIONS - SELECT2 INITIALIZATION
+
+            function initializeSelect2() {
+                const modals = {
+                    add: { employee: '#addEmployeeName', type: '#addAdjustmentType', dayType: '#addDayType', parent: '#addAdjustmentRequestModal' },
+                    view: { employee: '#viewEmployeeName', type: '#viewAdjustmentType', dayType: '#viewDayType', parent: '#viewAdjustmentRequestModal' }
+                };
+
+                Object.values(modals).forEach(modal => {
+                    $(modal.employee).select2({ placeholder: "Select Employee", allowClear: true, dropdownParent: $(modal.parent), width: '100%' });
+                    $(modal.type).select2({ placeholder: "Select Adjustment Type", allowClear: true, dropdownParent: $(modal.parent), width: '100%' });
+                    $(modal.dayType).select2({ placeholder: "Select Day Type", allowClear: true, dropdownParent: $(modal.parent), width: '100%' });
+                });
+            }
+
+            function initializeFilterSelect2() {
+                $('#filterStatusName').select2({ selectOnClose: true, minimumResultsForSearch: Infinity });
+
+                $('#filterAdjustmentType').select2({
+                    placeholder: "All Adjustment Types",
+                    allowClear: true,
+                    ajax: {
+                        url: config.endpoints.types,
+                        dataType: 'json',
+                        delay: 250,
+                        processResults: data => ({
+                            results: [{ id: 'ALL', text: 'All Adjustment Types' }].concat(
+                                data.map(item => ({ id: item.value, text: item.text }))
+                            )
+                        })
+                    }
+                });
+            }
+
+            // HELPER FUNCTIONS - DROPDOWN LOADING
+
+            function loadDropdownOptions(employeeSelector, typeSelector) {
+                $.get(config.endpoints.employees, data => {
+                    const $select = $(employeeSelector);
+                    $select.empty().append('<option value="">Select Employee...</option>');
+                    data.forEach(item => $select.append(`<option value="${item.employeeNo}">${item.employeeName}</option>`));
+                });
+
+                $.get(config.endpoints.types, data => {
+                    const $select = $(typeSelector);
+                    $select.empty().append('<option value="">Select Adjustment Type...</option>');
+                    data.forEach(item => $select.append(`<option value="${item.value}">${item.text}</option>`));
+                });
+            }
+
+            function loadDropdownOptionsAsync(employeeSelector, typeSelector) {
+                return $.when(
+                    $.get(config.endpoints.employees).done(data => {
+                        const $select = $(employeeSelector);
+                        $select.empty().append('<option value="">Select Employee...</option>');
+                        data.forEach(item => $select.append(`<option value="${item.employeeNo}">${item.employeeName}</option>`));
+                    }),
+                    $.get(config.endpoints.types).done(data => {
+                        const $select = $(typeSelector);
+                        $select.empty().append('<option value="">Select Adjustment Type...</option>');
+                        data.forEach(item => $select.append(`<option value="${item.value}">${item.text}</option>`));
+                    })
+                );
+            }
+
+            // HELPER FUNCTIONS - FORM MANAGEMENT
+
+            function populateViewForm(data) {
+                $('#viewAdjustmentRequestId').val(data.id);
+                $('#viewAdjustmentRequestStatus').val(data.statusName);
+                $('#viewEmployeeName').val(data.employeeNo).trigger('change');
+                $('#viewAdjustmentType').val(data.adjustmentCode).trigger('change');
+                $('#viewRequestedAmount').val(data.requestedAmount);
+                $('#viewEffectivityDate').val(data.effectivityDate);
+                $('#viewRemarks').val(data.remarks);
+
+                // Populate Time Keeping fields
+                if (data.DayType) $('#viewDayType').val(data.DayType);
+                if (data.Value) $('#viewValue').val(data.Value);
+                if (data.Units) $('#viewUnit').val(data.Units);
+            }
+
+            function getFormData(formSelector) {
+                const isView = formSelector.includes('view');
+                const prefix = isView ? 'view' : 'add';
+
+                const baseData = {
+                    ...(isView && { id: $(`#${prefix}AdjustmentRequestId`).val() }),
+                    employeeNo: $(`#${prefix}EmployeeName`).val(),
+                    adjustmentCode: $(`#${prefix}AdjustmentType`).val(),
+                    amount: $(`#${prefix}RequestedAmount`).val(),
+                    dateToAdjustment: $(`#${prefix}EffectivityDate`).val(),
+                    reason: $(`#${prefix}Remarks`).val().trim()
+                };
+
+                // Add Time Keeping fields if visible - use capital case to match model
+                if ($(`#${prefix}TimeKeepingFields`).is(':visible')) {
+                    baseData.DayType = $(`#${prefix}DayType`).val() || '';
+                    baseData.Value = parseFloat($(`#${prefix}Value`).val()) || 0;
+                    baseData.Units = $(`#${prefix}Unit`).val() || '';
+                } else {
+                    // If not visible, send empty/null values to clear them in database
+                    baseData.DayType = '';
+                    baseData.Value = 0;
+                    baseData.Units = '';
+                }
+
+                return baseData;
+            }
+
+            function saveRequest(url, data, buttonSelector, closeModal) {
+                const $btn = $(buttonSelector);
+                toggleButtonLoading($btn, true, 'Saving...');
+
+                $.post(url, data)
+                    .done(response => {
+                        if (response.success) {
+                            if (closeModal) $('#addAdjustmentRequestModal').modal('hide');
+                            else setViewMode();
+                            table.ajax.reload(null, false);
+                            showNotification(response.message, 'success');
+                        } else {
+                            showNotification(response.message, 'error');
+                        }
+                    })
+                    .fail(() => showNotification('Unable to save. Please try again.', 'error'))
+                    .always(() => toggleButtonLoading($btn, false));
+            }
+
+            function updateViewButtons(status) {
+                $('#btnApproveAdjustmentRequest, #btnEditAdjustmentRequest').addClass('d-none');
+                $('#btnSaveAdjustmentRequest, #btnCancelEdit').addClass('d-none');
+
+                if (status === 'Pending') {
+                    // Approve — FULL only (button not rendered in HTML for others anyway)
+                    if (config.canApprove)  $('#btnApproveAdjustmentRequest').removeClass('d-none');
+                    // Edit — READWRITE or FULL
+                    if (config.canWrite)    $('#btnEditAdjustmentRequest').removeClass('d-none');
+                }
+                else if (status === 'Declined') {
+                    if (config.canWrite)    $('#btnEditAdjustmentRequest').removeClass('d-none');
+                }
+            }
+
+            function resetAddForm() {
+                $('#addAdjustmentRequestForm')[0].reset();
+                $('#addEmployeeName, #addAdjustmentType').val(null).trigger('change');
+                clearValidation('#addAdjustmentRequestForm');
+                $('#btnSaveNewAdjustmentRequest').prop('disabled', false).html('Save');
+                $('#addTimeKeepingFields').hide();
+                $('#addDailyRateDisplay').hide();
+                $('#addAllowanceRow').hide();
+                currentEmployeeDailyRate.add = 0;
+            }
+
+            function resetViewForm() {
+                $('#viewAdjustmentRequestForm')[0].reset();
+                $('#viewEmployeeName, #viewAdjustmentType, #viewDayType').val(null).trigger('change');  // UPDATE THIS LINE
+                clearValidation('#viewAdjustmentRequestForm');
+                $('#btnSaveAdjustmentRequest').prop('disabled', false).html('Save');
+                $('#viewTimeKeepingFields').hide();
+                $('#viewDailyRateDisplay').hide();
+                $('#viewAllowanceRow').hide();
+                currentEmployeeDailyRate.view = 0;
+            }
+
+            function resetAllButtons() {
+                $('#btnApproveAdjustmentRequest').prop('disabled', false).html('<i class="fas fa-check"></i> Approve');
+                $('#btnEditAdjustmentRequest').prop('disabled', false).html('<i class="fas fa-edit"></i> Edit');
+            }
+
+            // HELPER FUNCTIONS - VIEW MODES
+
+            function setViewMode() {
+                const status = $('#viewAdjustmentRequestStatus').val();
+                $('#viewModalTitle').text('View Adjustment Request');
+                $('#viewAdjustmentRequestModal .modal-body').removeClass('edit-mode');
+
+                $('#viewEmployeeName, #viewAdjustmentType').prop('disabled', true);
+                $('#viewRequestedAmount, #viewEffectivityDate, #viewRemarks').prop('readonly', true);
+                $('#viewDayType, #viewUnit').prop('disabled', true);
+                $('#viewValue').prop('readonly', true);
+
+                $('.edit-required').addClass('d-none');
+                $('#btnSaveAdjustmentRequest, #btnCancelEdit').addClass('d-none');
+                updateViewButtons(status);
+            }
+
+            function setEditMode() {
+                $('#viewModalTitle').text('Edit Adjustment Request');
+                $('#viewAdjustmentRequestModal .modal-body').addClass('edit-mode');
+
+                $('#viewEmployeeName, #viewAdjustmentType').prop('disabled', false);
+                $('#viewRequestedAmount, #viewEffectivityDate, #viewRemarks').prop('readonly', false);
+
+                // Enable Time Keeping fields if visible
+                const adjustmentCode = $('#viewAdjustmentType').val();
+                if (adjustmentCode === config.timeKeepingCode) {
+                    $('#viewDayType, #viewUnit').prop('disabled', false);  // This now works for Select2
+                    $('#viewValue').prop('readonly', false);
+                }
+
+                $('.edit-required').removeClass('d-none');
+                $('#btnApproveAdjustmentRequest, #btnEditAdjustmentRequest').addClass('d-none');
+                $('#btnSaveAdjustmentRequest, #btnCancelEdit').removeClass('d-none');
+            }
+
+            // HELPER FUNCTIONS - VALIDATION
+
+            function validateForm(formSelector, requiredFields) {
+                let isValid = true;
+                const $form = $(formSelector);
+
+                clearValidation(formSelector);
+
+                requiredFields.forEach(fieldId => {
+                    const $field = $(`#${fieldId}`);
+                    const value = $field.val();
+
+                    if (!value || (typeof value === 'string' && value.trim() === '')) {
+                        $field.addClass('is-invalid');
+
+                        // For Select2 dropdowns
+                        if ($field.hasClass('select2-hidden-accessible')) {
+                            $field.next('.select2-container').find('.select2-selection').addClass('is-invalid');
+                        }
+
+                        isValid = false;
+                    }
+                });
+
+                // Additional validation for Time Keeping fields if visible
+                const prefix = formSelector.includes('add') ? 'add' : 'view';
+                if ($(`#${prefix}TimeKeepingFields`).is(':visible')) {
+                    const timeKeepingFields = [`${prefix}DayType`, `${prefix}Value`, `${prefix}Unit`];
+
+                    timeKeepingFields.forEach(fieldId => {
+                        const $field = $(`#${fieldId}`);
+                        const value = $field.val();
+
+                        if (!value || (typeof value === 'string' && value.trim() === '')) {
+                            $field.addClass('is-invalid');
+
+                            if ($field.hasClass('select2-hidden-accessible')) {
+                                $field.next('.select2-container').find('.select2-selection').addClass('is-invalid');
+                            }
+
+                            isValid = false;
+                        }
+                    });
+                }
+
+                if (!isValid) {
+                    showNotification('Please fill in all required fields', 'warning');
+                }
+
+                return isValid;
+            }
+
+            function clearValidation(formSelector) {
+                const $form = $(formSelector);
+                $form.find('.is-invalid').removeClass('is-invalid');
+                $form.find('.select2-container .select2-selection').removeClass('is-invalid');
+            }
+
+            // HELPER FUNCTIONS - UI UTILITIES
+
+            function toggleButtonLoading($button, isLoading, text = 'Saving...') {
+                if (isLoading) {
+                    $button.data('original-html', $button.html());
+                    $button.prop('disabled', true).html(`<i class="fas fa-spinner fa-spin"></i> ${text}`);
+                } else {
+                    const originalHtml = $button.data('original-html') || $button.html();
+                    $button.prop('disabled', false).html(originalHtml);
+                }
+            }
+
+            function showNotification(message, type = 'info') {
+                toastr[type](message);
+            }
+
+
+            $(document).on('click', '.declineAdjustmentRequest', function(e) {
+                e.preventDefault();
+                declineWithReason({
+                    title: 'Decline Adjustment Request',
+                    text: 'Are you sure you want to decline this Adjustment Request?',
+                    url: config.endpoints.decline,
+                    id: $(this).data('id'),
+                    declinedByUser: sessemployeeNo || 'CURRENT_USER',
+                    button: $(this),
+                    table: table
+                });
+            });
+        });
+    </script>
+}

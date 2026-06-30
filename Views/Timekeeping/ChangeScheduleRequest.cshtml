@@ -1,0 +1,1298 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutFillow.cshtml";
+    ViewData["Title"] = "Change Schedule Request";
+}
+
+<div class="col-12">
+    <div class="card">
+        <div class="card-header">
+            <div class="row" style="width:100%;">
+                <h4 class="card-title">Change Schedule Request</h4>
+                <br> <br> <br>
+
+                <div class="row date-range" style="margin-left:0px;width:100%;">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Select Status</h5>
+                            <select name="filterStatusName" id="filterStatusName" class="form-control">
+                                <option value="All">ALL</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Approved">Approved</option>
+                                <option value="Cancelled">Cancelled</option>
+                                <option value="Declined">Declined</option>
+                                <option value="Processed">Processed</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label>Date From </label>
+                        <div class="input-hasicon">
+                            <input name="dateFrom" id="dateFrom" class="form-control formInput date-from" placeholder="mm/dd/yyyy">
+                            <div class="icon"><i class="far fa-calendar"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label>Date To </label>
+                        <div class="input-hasicon">
+                            <input name="dateTo" id="dateTo" class="form-control formInput date-to" placeholder="mm/dd/yyyy">
+                            <div class="icon"><i class="far fa-calendar"></i></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row align-items-end mt-2" style="margin-left:0px;width:100%;">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Branch</h5>
+                            <select name="branch" id="filterBranch" class="form-control"></select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Department</h5>
+                            <select name="department" id="filterDepartment" class="form-control"></select>
+                        </div>
+                    </div>
+                    <div class="col-md-6 d-flex justify-content-end">
+                        <div class="form-group me-2">
+                            <button type="button" class="btn btn-warning" id="btnExportToExcel">
+                                <i class="fas fa-file-excel"></i> Export to Excel
+                            </button>
+                        </div>
+                        <div class="form-group">
+                            <button type="button" class="btn btn-primary" id="btnAddChangeScheduleRequest">
+                                <i class="fa fa-plus"></i> New Request
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="changeScheduleTable" class="display" style="min-width: 845px">
+                    <thead>
+                        <tr>
+                            <th>Action</th>
+                            <th>Control</th>
+                            <th>Employee No</th>
+                            <th>Full Name</th>
+                            <th>Effectivity Date</th>
+                            <th>Time-In</th>
+                            <th>Time-Out</th>
+                            <th>Schedule Type</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                            <th>Requested By</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+
+        <!-- Modal for Add -->
+        <div class="modal fade" id="addChangeScheduleModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add Change Schedule Request</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addChangeScheduleForm">
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="addEmployeeName" class="form-label">Employee Name <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="addEmployeeName" name="employeeNo" style="width:100%" required>
+                                        <option value="">Select Employee...</option>
+                                    </select>
+                                    <div class="invalid-feedback">Please select an employee.</div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="addScheduleType" class="form-label">Schedule Type <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="addScheduleType" name="scheduleTypeCode" style="width:100%" required>
+                                        <option value="">Select Schedule Type...</option>
+                                    </select>
+                                    <div class="invalid-feedback">Please select a schedule type.</div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label>Effectivity Date <span class="text-danger">*</span></label>
+                                    <div class="input-hasicon">
+                                        <input name="addEffectivityDate" id="addEffectivityDate" class="form-control formInput" placeholder="mm/dd/yyyy" required>
+                                        <div class="icon"><i class="far fa-calendar"></i></div>
+                                    </div>
+                                    <div class="invalid-feedback">Please select effectivity date.</div>
+                                </div>
+                            </div>
+
+                            <div class="row" id="addTimeRow">
+                                <div class="col-md-6 mb-3">
+                                    <label for="addTimeIn" class="form-label">Time-In <span class="text-danger">*</span></label>
+                                    <input type="time" class="form-control" id="addTimeIn" name="timeIN">
+                                    <div class="invalid-feedback">Please select time in.</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="addTimeOut" class="form-label">Time-Out <span class="text-danger">*</span></label>
+                                    <input type="time" class="form-control" id="addTimeOut" name="timeOUT">
+                                    <div class="invalid-feedback">Please select time out.</div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="addReason" class="form-label">Reason <span class="text-danger">*</span></label>
+                                    <textarea class="form-control" id="addReason" name="Reason" rows="3" maxlength="500" required></textarea>
+                                    <div class="invalid-feedback">Please provide the reason.</div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="addRemarks" class="form-label">Remarks</label>
+                                <textarea class="form-control" id="addRemarks" name="remarks" rows="2" maxlength="1000"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="btnSaveNewChangeSchedule">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for View/Edit -->
+        <div class="modal fade" id="viewChangeScheduleModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="viewModalTitle">View Change Schedule Request</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="viewChangeScheduleForm">
+                            <input type="hidden" id="viewChangeScheduleId" name="id">
+                            <input type="hidden" id="viewChangeScheduleStatus" name="statusName">
+
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="viewEmployeeName" class="form-label">Employee Name <span class="text-danger edit-required d-none">*</span></label>
+                                    <select class="form-select" id="viewEmployeeName" name="employeeNo" style="width:100%" disabled>
+                                        <option value="">Select Employee...</option>
+                                    </select>
+                                    <div class="invalid-feedback">Please select an employee.</div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="viewScheduleType" class="form-label">Schedule Type <span class="text-danger edit-required d-none">*</span></label>
+                                    <select class="form-select" id="viewScheduleType" name="scheduleTypeCode" style="width:100%" disabled>
+                                        <option value="">Select Schedule Type...</option>
+                                    </select>
+                                    <div class="invalid-feedback">Please select a schedule type.</div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label>Effectivity Date <span class="text-danger edit-required d-none">*</span></label>
+                                    <div class="input-hasicon">
+                                        <input name="viewEffectivityDate" id="viewEffectivityDate" class="form-control formInput" placeholder="mm/dd/yyyy" readonly>
+                                        <div class="icon"><i class="far fa-calendar"></i></div>
+                                    </div>
+                                    <div class="invalid-feedback">Please select effectivity date.</div>
+                                </div>
+                            </div>
+
+                            <div class="row" id="viewTimeRow">
+                                <div class="col-md-6 mb-3">
+                                    <label for="viewTimeIn" class="form-label">Time-In <span class="text-danger edit-required d-none">*</span></label>
+                                    <input type="time" class="form-control" id="viewTimeIn" name="timeIN" readonly>
+                                    <div class="invalid-feedback">Please select time in.</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="viewTimeOut" class="form-label">Time-Out <span class="text-danger edit-required d-none">*</span></label>
+                                    <input type="time" class="form-control" id="viewTimeOut" name="timeOUT" readonly>
+                                    <div class="invalid-feedback">Please select time out.</div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="viewReason" class="form-label">Reason <span class="text-danger edit-required d-none">*</span></label>
+                                    <textarea class="form-control" id="viewReason" name="Reason" rows="3" maxlength="500" readonly></textarea>
+                                    <div class="invalid-feedback">Please provide the reason.</div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="viewRemarks" class="form-label">Remarks</label>
+                                <textarea class="form-control" id="viewRemarks" name="remarks" rows="2" maxlength="1000" readonly></textarea>
+                            </div>
+                            <!-- Approval Progress Tracker -->
+                            <div id="approvalProgress" class="mt-3 d-none">
+                                <hr>
+                                <h6 class="text-muted mb-2"><i class="fas fa-tasks me-1"></i> Approval Progress</h6>
+                                <div id="approvalSteps" class="d-flex flex-wrap gap-2"></div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-between">
+                        <div>
+                            <button type="button" class="btn btn-secondary btn-custom d-none" id="btnCancelChangeSchedule">
+                                <i class="fas fa-ban"></i> Cancel Request
+                            </button>
+                        </div>
+                        <div>
+                            <button type="button" class="btn btn-success d-none" id="btnApproveChangeSchedule">
+                                <i class="fas fa-check"></i> Approve
+                            </button>
+                            <button type="button" class="btn btn-primary d-none" id="btnEditChangeSchedule">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button type="button" class="btn btn-success d-none" id="btnSaveChangeSchedule">Save</button>
+                            <button type="button" class="btn btn-danger d-none" id="btnCancelEdit">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Fillow_style
+{
+    <style>
+        .table-responsive {
+            border-radius: 0.375rem;
+        }
+
+        #changeScheduleTable_wrapper .dataTables_length, #changeScheduleTable_wrapper .dataTables_filter {
+            margin-bottom: 1rem;
+        }
+
+        #changeScheduleTable_wrapper .dataTables_info, #changeScheduleTable_wrapper .dataTables_paginate {
+            margin-top: 1rem;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .modal-content {
+            border-radius: 0.5rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        .form-control[readonly], .form-select[disabled] {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        .edit-mode .form-control[readonly], .edit-mode .form-select[disabled] {
+            background-color: #ffffff;
+            border-color: #ced4da;
+        }
+
+        .invalid-feedback {
+            display: none;
+        }
+
+        .form-control.is-invalid, .form-select.is-invalid {
+            border-color: #dc3545;
+        }
+
+            .form-control.is-invalid ~ .invalid-feedback, .form-select.is-invalid ~ .invalid-feedback {
+                display: block;
+            }
+
+        .is-invalid + .select2-container .select2-selection--single {
+            border-color: #dc3545;
+        }
+
+        .select2-container .select2-selection--single {
+            height: 38px;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 36px;
+            padding-left: 12px;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 36px;
+        }
+
+        .select2-container--default.select2-container--focus .select2-selection--single {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        .select2-container--default .select2-selection--single.select2-selection--disabled {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        .swal2-popup {
+            border-radius: 15px !important;
+            padding: 2rem !important;
+        }
+
+        .swal2-icon.swal2-error {
+            border-color: #f27474 !important;
+            color: #f27474 !important;
+        }
+
+            .swal2-icon.swal2-error .swal2-x-mark {
+                display: none !important;
+            }
+
+            .swal2-icon.swal2-error::before {
+                content: "\f2ed" !important;
+                font-family: "Font Awesome 5 Free" !important;
+                font-weight: 900 !important;
+                font-size: 2.5rem !important;
+                color: #f27474 !important;
+                display: block !important;
+            }
+
+        .swal2-title {
+            font-size: 1.875rem !important;
+            font-weight: 600 !important;
+            color: #545454 !important;
+            margin: 1rem 0 0.5rem 0 !important;
+        }
+
+        .swal2-html-container {
+            font-size: 1rem !important;
+            color: #737373 !important;
+            margin: 0 0 2rem 0 !important;
+        }
+
+        .swal2-actions {
+            gap: 0.5rem !important;
+        }
+
+        .swal2-confirm {
+            background-color: #7c3aed !important;
+            border-color: #7c3aed !important;
+            color: white !important;
+            font-weight: 500 !important;
+            padding: 0.75rem 2rem !important;
+            border-radius: 8px !important;
+            font-size: 0.875rem !important;
+        }
+
+        .swal2-cancel {
+            background-color: #6b7280 !important;
+            border-color: #6b7280 !important;
+            color: white !important;
+            font-weight: 500 !important;
+            padding: 0.75rem 2rem !important;
+            border-radius: 8px !important;
+            font-size: 0.875rem !important;
+        }
+
+        .swal2-confirm:hover {
+            background-color: #6d28d9 !important;
+            border-color: #6d28d9 !important;
+        }
+
+        .swal2-cancel:hover {
+            background-color: #4b5563 !important;
+            border-color: #4b5563 !important;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.35rem 0.65rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            line-height: 1;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 0.25rem;
+        }
+
+        .status-pending {
+            background-color: #ffc107;
+            color: #000;
+        }
+
+        .status-approved {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .status-declined {
+            background-color: #dc3545;
+            color: #fff;
+        }
+
+        .status-cancelled {
+            background-color: #6c757d;
+            color: #fff;
+        }
+
+        .status-processed {
+            background-color: #17a2b8;
+            color: #fff;
+        }
+
+        .card-header {
+            border-bottom: none !important;
+        }
+
+        #btnCancelChangeSchedule {
+            background-color: #6c757d !important;
+            border-color: #6c757d !important;
+            color: white !important;
+        }
+
+            #btnCancelChangeSchedule:hover {
+                background-color: #5a6268 !important;
+                border-color: #545b62 !important;
+            }
+
+        .status-partial {
+            background-color: #fd7e14;
+            color: #fff;
+        }
+    </style>
+}
+
+@section Fillow_script
+{
+    <script>
+        $(document).ready(function () {
+            // CONFIGURATION
+            MODULE = 'RchangeschedM';
+            access = ROLE_ACCESS?.[MODULE];
+
+            // ✅ LOAD PERMISSIONS FROM SERVER
+            let canEditEmployee = false;
+            let currentEmployeeData = null;
+            let isApprover = false;
+
+            // Load permissions on page load
+            $.get('/ChangeScheduleRequest/GetCurrentEmployee', function(data) {
+                canEditEmployee = data.canEditEmployee;
+                currentEmployeeData = data.currentEmployee;
+                isApprover = data.isApprover;
+            });
+
+            if (access != 'READWRITE' && access != 'FULL') {
+                $('#btnAddChangeScheduleRequest').hide();
+                $('#btnEditChangeSchedule').hide();
+                $('#btnApproveChangeSchedule').hide();
+            }
+
+            const config = {
+                toastr: { positionClass: "toast-top-right", timeOut: 5000, closeButton: true, progressBar: true, preventDuplicates: true },
+                endpoints: {
+                    list: "/ChangeScheduleRequest/GetChangeScheduleRequestList",
+                    get: "/ChangeScheduleRequest/GetChangeScheduleRequest",
+                    employees: "/ChangeScheduleRequest/GetEmployeeList",
+                    scheduleTypes: "/ChangeScheduleRequest/GetScheduleTypes",
+                    add: "/ChangeScheduleRequest/AddChangeScheduleRequest",
+                    update: "/ChangeScheduleRequest/UpdateChangeScheduleRequest",
+                    approve: "/ChangeScheduleRequest/ApproveChangeScheduleRequest",
+                    decline: "/ChangeScheduleRequest/DeclineChangeScheduleRequest",
+                    cancel: "/ChangeScheduleRequest/CancelChangeScheduleRequest"
+                }
+            };
+
+            toastr.options = config.toastr;
+            let isInitialLoad = true;
+
+            // INITIALIZATION
+            // Earliest allowed effectivity date = today minus 3 calendar days
+            // FULL access bypasses the 3-day filing restriction
+            var minEffectivityDate = (access === 'FULL') ? null : new Date();
+            if (minEffectivityDate) minEffectivityDate.setDate(minEffectivityDate.getDate() - 3);
+
+            $('#dateFrom, #dateTo').datepicker({
+                format: 'mm/dd/yyyy',
+                autoclose: true,
+                todayHighlight: true
+            });
+
+            $('#addEffectivityDate, #viewEffectivityDate').datepicker({
+                format: 'mm/dd/yyyy',
+                autoclose: true,
+                todayHighlight: true,
+                startDate: minEffectivityDate
+            });
+
+            $('#addTimeIn, #addTimeOut, #viewTimeIn, #viewTimeOut').prop('disabled', false).prop('readonly', false);
+            $('#filterStatusName').val('Pending');
+            initializeSelect2();
+            initializeFilterSelect2();
+
+            // DATATABLE CONFIGURATION
+            const table = $('#changeScheduleTable').DataTable({
+                processing: true,
+                serverSide: false,
+                ajax: {
+                    url: config.endpoints.list,
+                    type: "GET",
+                    data: d => ({
+                        status: isInitialLoad ? 'Default' : $('#filterStatusName').val(),
+                        branch: $('#filterBranch').val(),
+                        department: $('#filterDepartment').val(),
+                        dateFrom: $('#dateFrom').val(),
+                        dateTo: $('#dateTo').val()
+                    }),
+                    dataSrc: function(json) { isInitialLoad = false; return json.data; },
+                    error: () => showNotification('Error loading data. Please refresh the page.', 'error')
+                },
+                columns: [
+                    {
+                        data: null, width: "8%", orderable: false,
+                        render: (data, type, row) => {
+                            let viewBtn = '';
+                            let declineBtn = '';
+
+                            if (access === 'READ' || access === 'READWRITE' || access === 'FULL') {
+                                viewBtn = `<button class="btn btn-sm btn-primary shadow-sm viewChangeSchedule" data-id="${row.id}" title="View"><i class="fas fa-eye"></i></button>`;
+                            }
+                            const displayStatus = computeDisplayStatus(row);
+                            if (['Pending', 'Partially Approved', 'Approved'].includes(displayStatus) && row.employeeNo !== sessemployeeNo && (access === 'FULL' || isApprover)) {
+                                declineBtn = `<button class="btn btn-sm btn-danger shadow-sm declineChangeSchedule" data-id="${row.id}" title="Decline"><i class="fas fa-times"></i></button>`;
+                            }
+                            return `<div class="d-flex gap-1">${viewBtn}${declineBtn}</div>`;
+                        }
+                    },
+                    {
+                        data: null,
+                        width: "5%",
+                        orderable: false,
+                        render: function(data, type, row) {
+                            return `<button class="btn btn-sm btn-warning shadow-sm printChangeSchedule"
+                                            data-id="${row.id}"
+                                            title="Print PDF">
+                                        <i class="fas fa-print"></i>
+                                    </button>`;
+                        }
+                    },
+                    { data: "employeeNo", width: "8%", render: data => data || '' },
+                    { data: "fullName", width: "12%", render: data => data || '' },
+                    { data: "displayEffectivityDate", width: "10%", render: data => data || '' },
+                    { data: "displayTimeIn", width: "8%", render: data => convertTo12Hour(data) },
+                    { data: "displayTimeOut", width: "8%", render: data => convertTo12Hour(data) },
+                    { data: "scheduleTypeName", width: "10%", render: data => data || '' },
+                    { data: "Reason", width: "15%", render: data => !data ? '' : (data.length > 50 ? data.substring(0, 50) + '...' : data) },
+                    {
+                        data: null,
+                        width: "8%",
+                        render: function(data, type, row) {
+                            const displayStatus = computeDisplayStatus(row);
+                            const statusMap = {
+                                'Approved':           'status-approved',
+                                'Declined':           'status-declined',
+                                'Cancelled':          'status-cancelled',
+                                'Processed':          'status-processed',
+                                'Partially Approved': 'status-partial'
+                            };
+                            const statusClass = statusMap[displayStatus] || 'status-pending';
+                            return `<span class="status-badge ${statusClass}">${displayStatus}</span>`;
+                        }
+                    },
+                    { data: "requestedByUser", width: "10%", render: data => data || '' }
+                ],
+                order: [],
+                pageLength: 25,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                language: {
+                    processing: "Loading...",
+                    emptyTable: "No change schedule requests found",
+                    zeroRecords: "No matching requests found",
+                    paginate: { next: '<i class="fa fa-angle-double-right"></i>', previous: '<i class="fa fa-angle-double-left"></i>' }
+                }
+            });
+
+            // EVENT HANDLERS - FILTERS
+            $('#filterStatusName, #filterBranch, #filterDepartment, #dateFrom, #dateTo').on('change', () => table.ajax.reload(null, false));
+
+            // ── REST schedule type: hide/show time fields ──────────────────────
+            function handleRestScheduleType(scheduleTypeVal, timeRowId, timeInId, timeOutId) {
+                if (scheduleTypeVal === 'REST') {
+                    $(`#${timeRowId}`).addClass('d-none');
+                    $(`#${timeInId}`).val('');
+                    $(`#${timeOutId}`).val('');
+                } else {
+                    $(`#${timeRowId}`).removeClass('d-none');
+                }
+            }
+
+            $('#addScheduleType').on('change', function () {
+                handleRestScheduleType($(this).val(), 'addTimeRow', 'addTimeIn', 'addTimeOut');
+            });
+
+            $('#viewScheduleType').on('change', function () {
+                handleRestScheduleType($(this).val(), 'viewTimeRow', 'viewTimeIn', 'viewTimeOut');
+            });
+
+            $('#addTimeIn, #addTimeOut').on('focus', function() {
+                $(this).prop('disabled', false).prop('readonly', false);
+            });
+
+            $('#viewTimeIn, #viewTimeOut').on('focus', function() {
+                if ($('#viewChangeScheduleModal .modal-body').hasClass('edit-mode')) {
+                    $(this).prop('disabled', false).prop('readonly', false);
+                }
+            });
+
+            // HELPER FUNCTIONS - DATE CONVERSION
+            function toISODate(mmddyyyy) {
+                if (!mmddyyyy) return '';
+                const [m, d, y] = mmddyyyy.split('/');
+                return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+            }
+
+            function convertTo12Hour(time24) {
+                if (!time24) return '';
+                const [hours, minutes] = time24.split(':');
+                let hour = parseInt(hours);
+                const ampm = hour >= 12 ? 'PM' : 'AM';
+                hour = hour % 12;
+                hour = hour ? hour : 12;
+                return `${hour}:${minutes} ${ampm}`;
+            }
+
+            function computeDisplayStatus(row) {
+                const l4 = row.statusLevel4 || row.statusName;
+                const l3 = row.statusLevel3;
+                const l2 = row.statusLevel2;
+                const l1 = row.statusLevel1;
+
+                if (l4 === 'Approved')  return 'Approved';
+                if (l4 === 'Declined')  return 'Declined';
+                if (l4 === 'Cancelled') return 'Cancelled';
+                if (l4 === 'Processed') return 'Processed';
+
+                if (l3 === 'Declined' || l2 === 'Declined' || l1 === 'Declined') return 'Declined';
+                if (l3 === 'Approved' || l2 === 'Approved' || l1 === 'Approved') return 'Partially Approved';
+
+                return 'Pending';
+            }
+
+            // EVENT HANDLERS - ADD MODAL
+            $('#btnAddChangeScheduleRequest').click(() => {
+                resetAddForm();
+
+                if (canEditEmployee) {
+                    // FULL access: Load all employees based on data scope
+                    loadDropdownOptions('#addEmployeeName', '#addScheduleType');
+                } else {
+                    // Limited access: Only show current user
+                    $.get(config.endpoints.scheduleTypes, data => {
+                        const $select = $('#addScheduleType');
+                        $select.empty().append('<option value="">Select Schedule Type...</option>');
+                        data.forEach(item => $select.append(`<option value="${item.scheduleTypeCode}">${item.scheduleTypeName}</option>`));
+                    });
+
+                    if (currentEmployeeData) {
+                        $('#addEmployeeName').empty()
+                            .append(`<option value="${currentEmployeeData.employeeNo}" selected>${currentEmployeeData.employeeName}</option>`)
+                            .prop('disabled', true)
+                            .trigger('change');
+                    }
+                }
+
+                setTimeout(() => {
+                    $('#addTimeIn').val('08:00').prop('disabled', false).prop('readonly', false);
+                    $('#addTimeOut').val('17:00').prop('disabled', false).prop('readonly', false);
+                }, 100);
+                $('#addChangeScheduleModal').modal('show');
+            });
+
+            // EVENT HANDLERS - CANCEL ACTION
+            $('#btnCancelChangeSchedule').click(() => {
+                const id = $('#viewChangeScheduleId').val();
+                cancelWithReason({
+                    title: 'Cancel Change Schedule Request',
+                    text: 'Are you sure you want to cancel this request?',
+                    url: config.endpoints.cancel,
+                    id: id,
+                    cancelledByUser: sessemployeeNo || 'CURRENT_USER',
+                    button: $('#btnCancelChangeSchedule'),
+                    table: table,
+                    onSuccess: function(response) {
+                        $('#viewChangeScheduleModal').modal('hide');
+                    }
+                });
+            });
+
+           $('#btnSaveNewChangeSchedule').click(() => {
+                const isRest = $('#addScheduleType').val() === 'REST';
+                const addRequiredFields = isRest
+                    ? ['addEmployeeName', 'addScheduleType', 'addEffectivityDate', 'addReason']
+                    : ['addEmployeeName', 'addScheduleType', 'addEffectivityDate', 'addTimeIn', 'addTimeOut', 'addReason'];
+                if (!validateForm('#addChangeScheduleForm', addRequiredFields)) return;
+
+                const formData = {
+                    employeeNo: $('#addEmployeeName').val(),
+                    scheduleTypeCode: $('#addScheduleType').val(),
+                    effectivityDate: toISODate($('#addEffectivityDate').val()),
+                    timeIN: $('#addTimeIn').val(),
+                    timeOUT: $('#addTimeOut').val(),
+                    Reason: $('#addReason').val().trim(),
+                    remarks: $('#addRemarks').val().trim()
+                };
+
+                saveRequest(config.endpoints.add, formData, '#btnSaveNewChangeSchedule', true);
+            });
+
+            // EVENT HANDLERS - VIEW/EDIT MODAL
+            $(document).on('click', '.viewChangeSchedule', function(e) {
+                e.preventDefault();
+                const id   = $(this).data('id');
+                const $btn = $(this);
+                toggleButtonLoading($btn, true);
+
+                $.get(config.endpoints.get, { id })
+                    .done(function(data) {
+                        if (!data || data.error) {
+                            showNotification(data?.error || 'Unable to load request data', 'error');
+                            return;
+                        }
+
+                        resetViewForm();
+                        setViewMode();
+
+                        if (canEditEmployee) {
+                            loadDropdownOptionsAsync('#viewEmployeeName', '#viewScheduleType')
+                                .done(function() {
+                                    populateViewForm(data);
+                                    updateViewButtons(data);   // ← full data object
+                                    $('#viewChangeScheduleModal').modal('show');
+                                });
+                        } else {
+                            $('#viewEmployeeName')
+                                .empty()
+                                .append(`<option value="${data.employeeNo}" selected>${data.employeeName}</option>`)
+                                .prop('disabled', true);
+
+                            $.get(config.endpoints.scheduleTypes, function(scheduleData) {
+                                const $select = $('#viewScheduleType');
+                                $select.empty().append('<option value="">Select Schedule Type...</option>');
+                                scheduleData.forEach(item =>
+                                    $select.append(`<option value="${item.scheduleTypeCode}">${item.scheduleTypeName}</option>`)
+                                );
+                                populateViewForm(data);
+                                updateViewButtons(data);       // ← full data object
+                                $('#viewChangeScheduleModal').modal('show');
+                            });
+                        }
+                    })
+                    .fail(function() {
+                        showNotification('Unable to load request data', 'error');
+                    })
+                    .always(function() {
+                        toggleButtonLoading($btn, false);
+                    });
+            });
+
+            $('#btnApproveChangeSchedule').click(() => {
+                const id = $('#viewChangeScheduleId').val();
+                Swal.fire({
+                    title: 'Approve Request',
+                    text: 'Are you sure you want to approve this change schedule request?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, Approve',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d'
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        const $btn = $('#btnApproveChangeSchedule');
+                        toggleButtonLoading($btn, true, 'Approving...');
+                        $.post(config.endpoints.approve, { id, approvedByUser: sessemployeeNo || 'CURRENT_USER' })
+                            .done(response => {
+                                if (response.success) {
+                                    $('#viewChangeScheduleModal').modal('hide');
+                                    table.ajax.reload(null, false);
+                                    showNotification(response.message, 'success');
+                                } else {
+                                    showNotification(response.message, 'error');
+                                    toggleButtonLoading($btn, false);
+                                }
+                            })
+                            .fail(() => {
+                                showNotification('Unable to approve. Please try again.', 'error');
+                                toggleButtonLoading($btn, false);
+                            });
+                    }
+                });
+            });
+
+            $('#btnEditChangeSchedule').click(() => {
+                setEditMode();
+                setTimeout(() => {
+                    $('#viewTimeIn, #viewTimeOut').prop('disabled', false).prop('readonly', false);
+                }, 100);
+                $('#viewEmployeeName').focus();
+            });
+
+            $('#btnCancelEdit').click(() => {
+                const id = $('#viewChangeScheduleId').val();
+                $.get(config.endpoints.get, { id }).done(function(data) {
+                    if (data) {
+                        populateViewForm(data);
+                        setViewMode();
+                        updateViewButtons(data);   // ← full data object
+                        clearValidation('#viewChangeScheduleForm');
+                    }
+                });
+            });
+
+            $('#btnSaveChangeSchedule').click(() => {
+                const isRest = $('#viewScheduleType').val() === 'REST';
+                const viewRequiredFields = isRest
+                    ? ['viewEmployeeName', 'viewScheduleType', 'viewEffectivityDate', 'viewReason']
+                    : ['viewEmployeeName', 'viewScheduleType', 'viewEffectivityDate', 'viewTimeIn', 'viewTimeOut', 'viewReason'];
+                if (!validateForm('#viewChangeScheduleForm', viewRequiredFields)) return;
+
+                const formData = {
+                    id: $('#viewChangeScheduleId').val(),
+                    employeeNo: $('#viewEmployeeName').val(),
+                    scheduleTypeCode: $('#viewScheduleType').val(),
+                    effectivityDate: toISODate($('#viewEffectivityDate').val()),
+                    timeIN: $('#viewTimeIn').val(),
+                    timeOUT: $('#viewTimeOut').val(),
+                    Reason: $('#viewReason').val().trim(),
+                    remarks: $('#viewRemarks').val().trim()
+                };
+
+                saveRequest(config.endpoints.update, formData, '#btnSaveChangeSchedule', false);
+            });
+
+            // EVENT HANDLERS - DECLINE ACTION
+            $(document).on('click', '.declineChangeSchedule', function(e) {
+                e.preventDefault();
+                declineWithReason({
+                    title: 'Decline Change Schedule Request',
+                    text: 'Are you sure you want to decline this request?',
+                    url: config.endpoints.decline,
+                    id: $(this).data('id'),
+                    declinedByUser: sessemployeeNo || 'CURRENT_USER',
+                    button: $(this),
+                    table: table
+                });
+            });
+
+            // EVENT HANDLERS - PRINT PDF
+            $(document).on('click', '.printChangeSchedule', function(e) {
+                e.preventDefault();
+                const id = $(this).data('id');
+                const $btn = $(this);
+
+                toggleButtonLoading($btn, true);
+                window.open(`/ChangeScheduleRequestPdf/PreviewPdf?id=${id}`, '_blank');
+                setTimeout(() => toggleButtonLoading($btn, false), 1000);
+            });
+
+            // EVENT HANDLER - EXPORT TO EXCEL
+            $('#btnExportToExcel').click(function() {
+                const $btn = $(this);
+                const pageInfo = table.page.info();
+
+                if (pageInfo.recordsDisplay === 0) {
+                    return showNotification('No data available to export', 'warning');
+                }
+
+                const sortMap = ['', '', 'employeeNo', 'fullName', 'displayEffectivityDate',
+                                 'displayTimeIn', 'displayTimeOut', 'scheduleTypeName', 'Reason', 'statusName', 'requestedByUser'];
+
+                const [sortIndex, sortDir] = table.order()[0] || [4, 'desc'];
+
+                // Use -1 for "All", otherwise use the current page length
+                const exportLimit = pageInfo.length === -1 ? -1 : pageInfo.length;
+
+                const params = new URLSearchParams({
+                    status: isInitialLoad ? 'Default' : ($('#filterStatusName').val() || 'Default'),
+                    branch: $('#filterBranch').val() || '',
+                    department: $('#filterDepartment').val() || '',
+                    dateFrom: $('#dateFrom').val() || '',
+                    dateTo: $('#dateTo').val() || '',
+                    offset: pageInfo.start,
+                    limit: exportLimit,
+                    sortColumn: sortMap[sortIndex] || '',
+                    sortDirection: sortDir
+                });
+
+                toggleButtonLoading($btn, true, 'Exporting...');
+
+                fetch(`/ChangeScheduleRequestExport/ExportToExcel?${params.toString()}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => {
+                            throw new Error(`Server error (${response.status}): ${text}`);
+                        });
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `ChangeScheduleRequest_${new Date().getTime()}.xlsx`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+                    toggleButtonLoading($btn, false);
+                    showNotification(`Successfully exported ${pageInfo.recordsDisplay} record(s).`, 'success');
+                })
+                .catch(error => {
+                    toggleButtonLoading($btn, false);
+                    showNotification(error.message || 'An error occurred during export. Please try again.', 'error');
+                });
+            });
+
+            // EVENT HANDLERS - MODAL LIFECYCLE
+            $('#addChangeScheduleModal').on('shown.bs.modal', function() {
+                $('#addTimeIn, #addTimeOut').prop('disabled', false).prop('readonly', false);
+            });
+
+            $('#addChangeScheduleModal').on('hidden.bs.modal', function() {
+                resetAddForm();
+                $('#addTimeRow').removeClass('d-none');
+            });
+
+            $('#viewChangeScheduleModal').on('shown.bs.modal', function() {
+                if ($('#viewChangeScheduleModal .modal-body').hasClass('edit-mode')) {
+                    $('#viewTimeIn, #viewTimeOut').prop('disabled', false).prop('readonly', false);
+                }
+            });
+
+            $('#viewChangeScheduleModal').on('hidden.bs.modal', () => {
+                resetViewForm();
+                setViewMode();
+                resetAllButtons();
+                $('#viewTimeRow').removeClass('d-none');
+            });
+
+            // EVENT HANDLERS - KEYBOARD
+            $('#addChangeScheduleForm').on('keypress', e => {
+                if (e.which === 13) { e.preventDefault(); $('#btnSaveNewChangeSchedule').click(); }
+            });
+            $('#viewChangeScheduleForm').on('keypress', e => {
+                if (e.which === 13 && $('#viewChangeScheduleModal .modal-body').hasClass('edit-mode')) {
+                    e.preventDefault(); $('#btnSaveChangeSchedule').click();
+                }
+            });
+
+            // EVENT HANDLERS - VALIDATION
+            $('#addEmployeeName, #addScheduleType, #addEffectivityDate, #addTimeIn, #addTimeOut, #addReason, #addRemarks, #viewEmployeeName, #viewScheduleType, #viewEffectivityDate, #viewTimeIn, #viewTimeOut, #viewReason, #viewRemarks')
+                .on('input change', function() { $(this).removeClass('is-invalid'); });
+
+            // HELPER FUNCTIONS - SELECT2 INITIALIZATION
+            function initializeSelect2() {
+                const modals = {
+                    add: { employee: '#addEmployeeName', schedule: '#addScheduleType', parent: '#addChangeScheduleModal' },
+                    view: { employee: '#viewEmployeeName', schedule: '#viewScheduleType', parent: '#viewChangeScheduleModal' }
+                };
+                Object.values(modals).forEach(modal => {
+                    $(modal.employee).select2({ placeholder: "Select Employee", allowClear: true, dropdownParent: $(modal.parent), width: '100%' });
+                    $(modal.schedule).select2({ placeholder: "Select Schedule Type", allowClear: true, dropdownParent: $(modal.parent), width: '100%' });
+                });
+            }
+
+            function initializeFilterSelect2() {
+                $('#filterStatusName').select2({ selectOnClose: true, minimumResultsForSearch: Infinity });
+                $('#filterBranch').select2({
+                    placeholder: "Select Branch", allowClear: true,
+                    ajax: {
+                        url: '/Setup/GetEmployeeBranch', dataType: 'json', delay: 250,
+                        processResults: data => ({
+                            results: [{ id: 'ALL', text: 'All Branches' }].concat(data.map(item => ({ id: item.branchCode, text: item.branchName })))
+                        })
+                    }
+                });
+                $('#filterDepartment').select2({
+                    placeholder: "Select Employee Department", allowClear: true,
+                    ajax: {
+                        url: '/Setup/GetEmployeeDepartment', dataType: 'json', delay: 250,
+                        processResults: data => ({
+                            results: [{ id: 'ALL', text: 'All Departments' }].concat(data.map(item => ({ id: item.departmentCode, text: item.departmentName })))
+                        })
+                    }
+                });
+            }
+
+            // HELPER FUNCTIONS - DROPDOWN LOADING
+            function loadDropdownOptions(employeeSelector, scheduleSelector) {
+                $.get(config.endpoints.employees, data => {
+                    const $select = $(employeeSelector);
+                    $select.empty().append('<option value="">Select Employee...</option>');
+                    data.forEach(item => $select.append(`<option value="${item.employeeNo}">${item.employeeName}</option>`));
+                });
+                $.get(config.endpoints.scheduleTypes, data => {
+                    const $select = $(scheduleSelector);
+                    $select.empty().append('<option value="">Select Schedule Type...</option>');
+                    data.forEach(item => $select.append(`<option value="${item.scheduleTypeCode}">${item.scheduleTypeName}</option>`));
+                });
+            }
+
+            function loadDropdownOptionsAsync(employeeSelector, scheduleSelector) {
+                return $.when(
+                    $.get(config.endpoints.employees).done(data => {
+                        const $select = $(employeeSelector);
+                        $select.empty().append('<option value="">Select Employee...</option>');
+                        data.forEach(item => $select.append(`<option value="${item.employeeNo}">${item.employeeName}</option>`));
+                    }),
+                    $.get(config.endpoints.scheduleTypes).done(data => {
+                        const $select = $(scheduleSelector);
+                        $select.empty().append('<option value="">Select Schedule Type...</option>');
+                        data.forEach(item => $select.append(`<option value="${item.scheduleTypeCode}">${item.scheduleTypeName}</option>`));
+                    })
+                );
+            }
+
+            // HELPER FUNCTIONS - FORM MANAGEMENT
+            function populateViewForm(data) {
+                $('#viewChangeScheduleId').val(data.id);
+                $('#viewChangeScheduleStatus').val(data.statusLevel4 || data.statusName);
+                $('#viewEmployeeName').val(data.employeeNo).trigger('change');
+                $('#viewScheduleType').val(data.scheduleTypeCode).trigger('change');
+                // Trigger REST visibility check on populate
+                handleRestScheduleType(data.scheduleTypeCode, 'viewTimeRow', 'viewTimeIn', 'viewTimeOut');
+                $('#viewEffectivityDate').val(data.displayEffectivityDate);
+                $('#viewTimeIn').val(data.displayTimeIn);
+                $('#viewTimeOut').val(data.displayTimeOut);
+                $('#viewReason').val(data.reason);
+                $('#viewRemarks').val(data.remarks);
+
+                renderApprovalProgress(data);
+            }
+
+            function renderApprovalProgress(data) {
+                const $progress = $('#approvalProgress');
+                const $steps    = $('#approvalSteps');
+                $steps.empty();
+
+                const overall = data.statusLevel4 || data.statusName;
+
+                if (overall === 'Cancelled' || overall === 'Processed') {
+                    $progress.addClass('d-none');
+                    return;
+                }
+
+                const required = data.requiredLevels || [];
+                if (required.length === 0) {
+                    $progress.addClass('d-none');
+                    return;
+                }
+
+                const levelStatus = {
+                    1: data.statusLevel1,
+                    2: data.statusLevel2,
+                    3: data.statusLevel3,
+                    4: data.statusLevel4
+                };
+
+                required.forEach(function(level) {
+                    const st = levelStatus[level] || 'Pending';
+                    let badgeClass, icon;
+
+                    switch (st) {
+                        case 'Approved':
+                            badgeClass = 'bg-success';
+                            icon       = 'fa-check-circle';
+                            break;
+                        case 'Declined':
+                            badgeClass = 'bg-danger';
+                            icon       = 'fa-times-circle';
+                            break;
+                        default:
+                            badgeClass = 'bg-warning';
+                            icon       = 'fa-clock';
+                    }
+
+                    $steps.append(`
+                        <span class="badge ${badgeClass} fs-6 px-3 py-2">
+                            <i class="fas ${icon} me-1"></i>
+                            Level ${level}: ${st}
+                        </span>
+                        ${required.indexOf(level) < required.length - 1
+                            ? '<i class="fas fa-arrow-right align-self-center text-muted"></i>'
+                            : ''}
+                    `);
+                });
+
+                $progress.removeClass('d-none');
+            }
+
+            function saveRequest(url, data, buttonSelector, closeModal) {
+                const $btn = $(buttonSelector);
+                toggleButtonLoading($btn, true, 'Saving...');
+                $.ajax({
+                    url, type: 'POST', data, dataType: 'json',
+                    success: response => {
+                        if (response.success) {
+                            if (closeModal) $('#addChangeScheduleModal').modal('hide');
+                            else setViewMode();
+                            table.ajax.reload(null, false);
+                            showNotification(response.message, 'success');
+                        } else {
+                            showNotification(response.message, 'error');
+                        }
+                    },
+                    error: () => showNotification('Unable to save. Please try again.', 'error'),
+                    complete: () => toggleButtonLoading($btn, false)
+                });
+            }
+
+            function updateViewButtons(data) {
+                const isFullObject = (typeof data === 'object' && data !== null);
+                const status       = isFullObject
+                    ? (data.statusLevel4 || data.statusName)
+                    : data;
+
+                $('#btnApproveChangeSchedule, #btnEditChangeSchedule, #btnCancelChangeSchedule').addClass('d-none');
+                $('#btnSaveChangeSchedule, #btnCancelEdit').addClass('d-none');
+
+                const requestEmployeeNo = isFullObject ? data.employeeNo : $('#viewEmployeeName').val();
+                const isOwnRequest      = requestEmployeeNo === sessemployeeNo;
+
+                if (status === 'Cancelled' || status === 'Processed') return;
+                if (status === 'Approved') return;
+
+                if (status === 'Declined') {
+                    if (isOwnRequest || access === 'FULL') {
+                        $('#btnEditChangeSchedule, #btnCancelChangeSchedule').removeClass('d-none');
+                    }
+                    return;
+                }
+
+                // Pending / Partially Approved
+                if (isFullObject && typeof data.canCurrentUserApprove !== 'undefined') {
+                    if (data.canCurrentUserApprove) {
+                        $('#btnApproveChangeSchedule').removeClass('d-none');
+                    }
+                } else {
+                    if (access === 'FULL') {
+                        $('#btnApproveChangeSchedule').removeClass('d-none');
+                    }
+                }
+
+                if (isOwnRequest || access === 'FULL') {
+                    $('#btnEditChangeSchedule, #btnCancelChangeSchedule').removeClass('d-none');
+                }
+            }
+
+            function resetAddForm() {
+                $('#addChangeScheduleForm')[0].reset();
+                $('#addEmployeeName, #addScheduleType').val(null).trigger('change');
+                clearValidation('#addChangeScheduleForm');
+                $('#btnSaveNewChangeSchedule').prop('disabled', false).html('Save');
+            }
+
+            function resetViewForm() {
+                $('#viewChangeScheduleForm')[0].reset();
+                $('#viewEmployeeName, #viewScheduleType').val(null).trigger('change');
+                clearValidation('#viewChangeScheduleForm');
+                $('#btnSaveChangeSchedule').prop('disabled', false).html('Save');
+            }
+
+            function resetAllButtons() {
+                $('#btnApproveChangeSchedule').prop('disabled', false).html('<i class="fas fa-check"></i> Approve');
+                $('#btnEditChangeSchedule').prop('disabled', false).html('<i class="fas fa-edit"></i> Edit');
+                $('#btnCancelChangeSchedule').prop('disabled', false).html('<i class="fas fa-ban"></i> Cancel Request');
+            }
+
+            // HELPER FUNCTIONS - VIEW MODES
+            function setViewMode() {
+                const status = $('#viewChangeScheduleStatus').val();
+                $('#viewModalTitle').text('View Change Schedule Request');
+                $('#viewChangeScheduleModal .modal-body').removeClass('edit-mode');
+                $('#viewEmployeeName, #viewScheduleType').prop('disabled', true);
+                $('#viewEffectivityDate').datepicker('destroy').prop('readonly', true);
+                $('#viewTimeIn, #viewTimeOut, #viewReason, #viewRemarks').prop('readonly', true);
+                $('.edit-required').addClass('d-none');
+                updateViewButtons($('#viewChangeScheduleStatus').val());
+                $('#btnSaveChangeSchedule, #btnCancelEdit').addClass('d-none');
+                clearValidation('#viewChangeScheduleForm');
+            }
+
+            function setEditMode() {
+                $('#viewModalTitle').text('Edit Change Schedule Request');
+                $('#viewChangeScheduleModal .modal-body').addClass('edit-mode');
+
+                // ✅ Only enable employee selector if user has FULL access
+                if (canEditEmployee) {
+                    $('#viewEmployeeName').prop('disabled', false);
+                } else {
+                    $('#viewEmployeeName').prop('disabled', true);
+                }
+
+                $('#viewScheduleType').prop('disabled', false);
+                $('#viewEffectivityDate').prop('readonly', false).datepicker({ format: 'mm/dd/yyyy', autoclose: true, todayHighlight: true, startDate: minEffectivityDate });
+                $('#viewTimeIn, #viewTimeOut').prop('readonly', false).prop('disabled', false);
+                $('#viewReason, #viewRemarks').prop('readonly', false);
+                $('.edit-required').removeClass('d-none');
+                $('#btnApproveChangeSchedule, #btnEditChangeSchedule').addClass('d-none');
+                $('#btnSaveChangeSchedule, #btnCancelEdit').removeClass('d-none');
+            }
+
+            // HELPER FUNCTIONS - VALIDATION
+            function validateForm(formSelector, fields) {
+                clearValidation(formSelector);
+                let isValid = true;
+                fields.forEach(field => {
+                    const $field = $(`#${field}`);
+                    if (!$field.val() || $field.val().trim() === '') {
+                        $field.addClass('is-invalid');
+                        isValid = false;
+                    }
+                });
+                return isValid;
+            }
+
+            function clearValidation(formSelector) {
+                $(`${formSelector} .form-control, ${formSelector} .form-select`).removeClass('is-invalid');
+            }
+
+            // HELPER FUNCTIONS - UI UTILITIES
+            function toggleButtonLoading($btn, loading, text = '') {
+                if (loading) {
+                    if (!$btn.data('original-html')) $btn.data('original-html', $btn.html());
+                    const icon = text ? '<i class="fas fa-spinner fa-spin"></i> ' : '<i class="fas fa-spinner fa-spin"></i>';
+                    $btn.prop('disabled', true).html(icon + text);
+                } else {
+                    const originalHtml = $btn.data('original-html') || 'Save';
+                    $btn.prop('disabled', false).html(originalHtml).removeData('original-html');
+                }
+            }
+
+            function showNotification(message, type) {
+                const types = { success: 'Success', error: 'Error', warning: 'Warning', info: 'Information' };
+                toastr[type](message, types[type] || 'Notification');
+            }
+
+            validationinputs();
+        });
+    </script>
+}

@@ -1,0 +1,576 @@
+﻿@model List<KEISAN_HRIS_v2.Models.Users.TrainingsInfo>
+
+<div class="card-header">
+    <div class="row" style="width:100%;">
+        <div class="row" style="margin-left:0px;width:100%;">
+            <div class="col-md-3">
+                <div class="form-group">
+                    <h5>Record Status</h5>
+                    <select name="filterRecordStatus" id="filterRecordStatus" class="form-control">
+                        <option value="active" selected>ACTIVE</option>
+                        <option value="inactive">INACTIVE</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-6"></div>
+            <div class="col-md-3 d-flex justify-content-end align-items-end">
+                <div class="form-group">
+                    <button type="button" class="btn btn-primary" id="btnAddTraining">
+                        <i class="fa fa-plus"></i> New Training
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card-body">
+    <div class="table-responsive">
+        <table id="trainingsTable" class="display" style="min-width: 900px">
+            <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>Training Title</th>
+                    <th>Training Provider</th>
+                    <th>Date From</th>
+                    <th>Date To</th>
+                    <th>Training Venue</th>
+                    <th>Date Added</th>
+                    <th>Added By</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<!-- Add Training Modal -->
+<div class="modal fade" id="addTrainingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">New Training</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addTrainingForm">
+                    <input type="hidden" id="addEmployeeNoHidden" name="EmployeeNo" value="@ViewBag.EmployeeNo" />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Training Title <span class="text-danger">*</span></label>
+                            <input type="text" id="addTrainingTitle" name="TrainingTitle" class="form-control" maxlength="255" required />
+                            <div class="invalid-feedback">Please enter training title.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Training Provider <span class="text-danger">*</span></label>
+                            <input type="text" id="addTrainingProvider" name="TrainingProvider" class="form-control" maxlength="255" required />
+                            <div class="invalid-feedback">Please enter training provider.</div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Date From <span class="text-danger">*</span></label>
+                            <div class="input-hasicon">
+                                <input type="text" id="addDateFrom" name="DateFrom" class="form-control bt-datepicker" required />
+                                <div class="icon"><i class="far fa-calendar"></i></div>
+                            </div>
+                            <div class="invalid-feedback">Please select from date.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Date To <span class="text-danger">*</span></label>
+                            <div class="input-hasicon">
+                                <input type="text" id="addDateTo" name="DateTo" class="form-control bt-datepicker" required />
+                                <div class="icon"><i class="far fa-calendar"></i></div>
+                            </div>
+                            <div class="invalid-feedback">Please select to date.</div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Training Venue</label>
+                            <input type="text" id="addTrainingVenue" name="TrainingVenue" class="form-control" maxlength="255" />
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Remarks</label>
+                            <textarea id="addRemarks" name="Remarks" class="form-control" rows="2" maxlength="500"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btnSaveNewTraining" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View/Edit Training Modal -->
+<div class="modal fade" id="viewTrainingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewModalTitle">View Training</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="viewTrainingForm">
+                    <input type="hidden" id="viewTrainingId" name="Id" />
+                    <input type="hidden" id="viewEmployeeNoHidden" name="EmployeeNo" value="@ViewBag.EmployeeNo" />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Training Title <span class="text-danger edit-required d-none">*</span></label>
+                            <input type="text" id="viewTrainingTitle" name="TrainingTitle" class="form-control" maxlength="255" readonly />
+                            <div class="invalid-feedback">Please enter training title.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Training Provider <span class="text-danger edit-required d-none">*</span></label>
+                            <input type="text" id="viewTrainingProvider" name="TrainingProvider" class="form-control" maxlength="255" readonly />
+                            <div class="invalid-feedback">Please enter training provider.</div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Date From <span class="text-danger edit-required d-none">*</span></label>
+                            <div class="input-hasicon">
+                                <input type="text" id="viewDateFrom" name="DateFrom" class="form-control bt-datepicker" readonly />
+                                <div class="icon"><i class="far fa-calendar"></i></div>
+                            </div>
+                            <div class="invalid-feedback">Please select from date.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Date To <span class="text-danger edit-required d-none">*</span></label>
+                            <div class="input-hasicon">
+                                <input type="text" id="viewDateTo" name="DateTo" class="form-control bt-datepicker" readonly />
+                                <div class="icon"><i class="far fa-calendar"></i></div>
+                            </div>
+                            <div class="invalid-feedback">Please select to date.</div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Training Venue</label>
+                            <input type="text" id="viewTrainingVenue" name="TrainingVenue" class="form-control" maxlength="255" readonly />
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Remarks</label>
+                            <textarea id="viewRemarks" name="Remarks" class="form-control" rows="2" maxlength="500" readonly></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="btnEditTraining">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+                <button type="button" class="btn btn-success d-none" id="btnSaveTraining">Save</button>
+                <button type="button" class="btn btn-danger d-none" id="btnCancelEdit">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .table-responsive {
+        border-radius: 0.375rem;
+    }
+
+    #trainingsTable_wrapper .dataTables_length, #trainingsTable_wrapper .dataTables_filter {
+        margin-bottom: 1rem;
+    }
+
+    #trainingsTable_wrapper .dataTables_info, #trainingsTable_wrapper .dataTables_paginate {
+        margin-top: 1rem;
+    }
+
+    #trainingsTable .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .modal-content {
+        border-radius: 0.5rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+
+    .invalid-feedback {
+        display: none;
+    }
+
+    .form-control.is-invalid {
+        border-color: #dc3545;
+    }
+
+        .form-control.is-invalid ~ .invalid-feedback {
+            display: block;
+        }
+
+    .input-hasicon {
+        position: relative;
+    }
+
+        .input-hasicon .icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+
+        .input-hasicon input {
+            padding-right: 35px;
+        }
+
+    .text-danger {
+        color: #dc3545 !important;
+    }
+
+    .form-control[readonly] {
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+    }
+
+    .edit-mode .form-control[readonly] {
+        background-color: #ffffff;
+        border-color: #ced4da;
+    }
+
+    .edit-mode textarea[readonly] {
+        background-color: #ffffff;
+        border-color: #ced4da;
+    }
+
+    .swal2-popup {
+        border-radius: 15px !important;
+        padding: 2rem !important;
+    }
+
+    .swal2-icon.swal2-error {
+        border-color: #f27474 !important;
+        color: #f27474 !important;
+    }
+
+        .swal2-icon.swal2-error .swal2-x-mark {
+            display: none !important;
+        }
+
+        .swal2-icon.swal2-error::before {
+            content: "\f2ed" !important;
+            font-family: "Font Awesome 5 Free" !important;
+            font-weight: 900 !important;
+            font-size: 2.5rem !important;
+            color: #f27474 !important;
+            display: block !important;
+        }
+
+    .swal2-title {
+        font-size: 1.875rem !important;
+        font-weight: 600 !important;
+        color: #545454 !important;
+        margin: 1rem 0 0.5rem 0 !important;
+    }
+
+    .swal2-html-container {
+        font-size: 1rem !important;
+        color: #737373 !important;
+        margin: 0 0 2rem 0 !important;
+    }
+
+    .swal2-actions {
+        gap: 0.5rem !important;
+    }
+
+    .swal2-confirm {
+        background-color: #7c3aed !important;
+        border-color: #7c3aed !important;
+        color: white !important;
+        font-weight: 500 !important;
+        padding: 0.75rem 2rem !important;
+        border-radius: 8px !important;
+        font-size: 0.875rem !important;
+    }
+
+    .swal2-cancel {
+        background-color: #6b7280 !important;
+        border-color: #6b7280 !important;
+        color: white !important;
+        font-weight: 500 !important;
+        padding: 0.75rem 2rem !important;
+        border-radius: 8px !important;
+        font-size: 0.875rem !important;
+    }
+
+    .swal2-confirm:hover {
+        background-color: #6d28d9 !important;
+        border-color: #6d28d9 !important;
+    }
+
+    .swal2-cancel:hover {
+        background-color: #4b5563 !important;
+        border-color: #4b5563 !important;
+    }
+
+    .btn-success.shadow-sm:hover {
+        background-color: #1e7e34;
+        border-color: #1c7430;
+    }
+
+    .table th, .table td {
+        vertical-align: middle;
+    }
+
+    #trainingsTable .btn-sm i {
+        font-size: 0.875rem;
+    }
+
+    #trainingsTable .d-flex.gap-1 {
+        gap: 0.25rem !important;
+    }
+
+    .card-header {
+        border-bottom: none !important;
+    }
+</style>
+
+<script>
+    $(document).ready(function () {
+
+        MODULE = 'FSTrainingsM';
+            access = ROLE_ACCESS?.[MODULE];
+
+        if (access != 'READWRITE' && access != 'FULL') {
+            $('#btnAddTraining, #btnEditTraining').hide();
+        }
+
+        const config = {
+            toastr: { positionClass: "toast-top-right", timeOut: 5000, closeButton: true, progressBar: true, preventDuplicates: true },
+            endpoints: {
+                list: "/Trainings/GetTrainingsList",
+                deleted: "/Trainings/GetDeletedTrainings",
+                get: "/Trainings/GetTrainingById",
+                save: "/Trainings/SaveTraining",
+                delete: "/Trainings/InactiveTraining",
+                restore: "/Trainings/RestoreTraining"
+            },
+            datepickerFormat: 'yyyy/mm/dd',
+            employeeNo: '@ViewBag.EmployeeNo'
+        };
+
+        toastr.options = config.toastr;
+        let isViewingDeleted = false;
+
+        $('.bt-datepicker').datepicker({ format: config.datepickerFormat, autoclose: true });
+
+        const table = $('#trainingsTable').DataTable({
+            processing: true,
+            serverSide: false,
+            ajax: {
+                url: config.endpoints.list,
+                type: "GET",
+                data: d => { d.employeeNo = config.employeeNo; d.isactive = isViewingDeleted ? '0' : '1'; },
+                datatype: "json",
+                error: () => showNotification('Error loading data. Please refresh the page.', 'error')
+            },
+            columns: [
+                {
+                    data: "id", width: "12%", orderable: false,
+                    render: (data) => {
+                        if (isViewingDeleted) {
+                            return access === 'FULL' ? `<div class="d-flex gap-1"><button type="button" class="btn btn-sm btn-success shadow-sm restoreTraining" data-id="${data}" title="Restore"><i class="fas fa-undo"></i></button></div>` : '';
+                        }
+                        const viewbtn = `<button type="button" class="btn btn-sm btn-primary shadow-sm viewTraining" data-id="${data}" title="View"><i class="fas fa-eye"></i></button>`;
+                        const deletebtn = access === 'FULL' ? `<button type="button" class="btn btn-sm btn-danger shadow-sm deleteTraining" data-id="${data}" title="Delete"><i class="fa fa-trash"></i></button>` : '';
+                        return `<div class="d-flex gap-1">${viewbtn}${deletebtn}</div>`;
+                    }
+                },
+                { data: "trainingTitle", width: "20%" },
+                { data: "trainingProvider", width: "15%" },
+                { data: "dateFrom", width: "12%" },
+                { data: "dateTo", width: "12%" },
+                { data: "trainingVenue", width: "15%" },
+                { data: "dtAdded", width: "10%" },
+                { data: "addedByUser", width: "10%" }
+            ],
+            order: [[3, 'desc']],
+            pageLength: 25,
+            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+            language: {
+                processing: "Loading...",
+                emptyTable: "No training records found",
+                zeroRecords: "No matching training records found",
+                paginate: { next: '<i class="fa fa-angle-double-right"></i>', previous: '<i class="fa fa-angle-double-left"></i>' }
+            }
+        });
+
+        setInterval(() => { if (table && !$('.modal').is(':visible')) table.ajax.reload(null, false); }, 3600000);
+
+        $('#filterRecordStatus').on('change', function () {
+            isViewingDeleted = $(this).val() === 'inactive';
+            table.ajax.reload(null, false);
+            $('#btnAddTraining').toggle(!isViewingDeleted);
+        }).select2({ selectOnClose: true, minimumResultsForSearch: Infinity });
+
+        $('#btnAddTraining').click(() => { resetForm('add'); $('#addTrainingModal').modal('show'); });
+        $('#btnSaveNewTraining').click(() => { if (validateForm('add')) saveTraining(false); });
+
+        $(document).on('click', '.viewTraining', function (e) {
+            e.preventDefault();
+            const id = $(this).data('id'), $btn = $(this);
+            toggleButtonLoading($btn, true);
+            $.get(config.endpoints.get, { id })
+                .done(r => { if (r.success) { resetForm('view'); setViewMode(); populateViewForm(r.data); $('#viewTrainingModal').modal('show'); } else showNotification(r.message, 'error'); })
+                .fail(() => showNotification('Unable to load training data', 'error'))
+                .always(() => toggleButtonLoading($btn, false));
+        });
+
+        $('#btnEditTraining').click(() => {
+            $('#viewModalTitle').text('Edit Training');
+            $('#viewTrainingModal .modal-body').addClass('edit-mode');
+            $('#viewTrainingTitle, #viewTrainingProvider, #viewTrainingVenue, #viewDateFrom, #viewDateTo, #viewRemarks').prop('readonly', false);
+            $('#viewDateFrom, #viewDateTo').datepicker({ format: config.datepickerFormat, autoclose: true });
+            $('.edit-required').removeClass('d-none');
+            $('#btnEditTraining').addClass('d-none');
+            $('#btnSaveTraining, #btnCancelEdit').removeClass('d-none');
+            $('#viewTrainingTitle').focus();
+        });
+
+        $('#btnCancelEdit').click(() => { $.get(config.endpoints.get, { id: $('#viewTrainingId').val() }).done(r => { if (r.success) { resetForm('view'); setViewMode(); populateViewForm(r.data); } }); });
+        $('#btnSaveTraining').click(() => { if (validateForm('view')) saveTraining(true); });
+
+        // EVENT HANDLERS - DELETE/RESTORE
+        $(document).on('click', '.deleteTraining', function (e) {
+            e.preventDefault();
+            deleteWithReason({
+                title: 'Inactive Training',
+                text: 'Are you sure you want to inactive this training record?',
+                url: config.endpoints.delete,
+                id: $(this).data('id'),
+                button: $(this),
+                table: table
+            });
+        });
+
+        $(document).on('click', '.restoreTraining', function (e) {
+            e.preventDefault();
+            const id = $(this).data('id'), $btn = $(this);
+            Swal.fire({
+                title: 'Restore Record',
+                text: 'Are you sure you want to restore this training record?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Restore',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#6c757d',
+                allowOutsideClick: false,
+                allowEscapeKey: false
+            }).then(result => { if (result.isConfirmed) { toggleButtonLoading($btn, true); $.post(config.endpoints.restore, { id }).done(r => { if (r.success) { table.ajax.reload(null, false); showNotification(r.message, 'success'); } else showNotification(r.message, 'error'); }).fail(() => showNotification('Unable to restore training. Please try again.', 'error')).always(() => toggleButtonLoading($btn, false)); } });
+        });
+
+        $('#addTrainingModal, #viewTrainingModal').on('hidden.bs.modal', function() { resetForm($(this).attr('id').includes('add') ? 'add' : 'view'); if ($(this).attr('id').includes('view')) setViewMode(); });
+
+        $('#addTrainingForm, #viewTrainingForm').on('keypress', function(e) { if (e.which === 13 && !$(e.target).is('textarea')) { e.preventDefault(); $(this).attr('id').includes('add') ? $('#btnSaveNewTraining').click() : $('#viewTrainingModal .modal-body').hasClass('edit-mode') && $('#btnSaveTraining').click(); } });
+
+        $('#addTrainingTitle, #viewTrainingTitle, #addTrainingProvider, #viewTrainingProvider, #addDateFrom, #viewDateFrom, #addDateTo, #viewDateTo').on('input change', function() { $(this).removeClass('is-invalid'); validateDateRange($(this).attr('id').startsWith('add') ? 'add' : 'view'); });
+
+        function saveTraining(isEdit) {
+            const prefix = isEdit ? 'view' : 'add';
+            const formData = {
+                ...(isEdit && { Id: parseInt($(`#${prefix}TrainingId`).val()) }),
+                EmployeeNo: $(`#${prefix}EmployeeNoHidden`).val(),
+                TrainingTitle: $(`#${prefix}TrainingTitle`).val(),
+                TrainingProvider: $(`#${prefix}TrainingProvider`).val() || '',
+                TrainingVenue: $(`#${prefix}TrainingVenue`).val() || '',
+                DateFrom: $(`#${prefix}DateFrom`).val(),
+                DateTo: $(`#${prefix}DateTo`).val(),
+                Remarks: $(`#${prefix}Remarks`).val() || ''
+            };
+            const $saveBtn = isEdit ? $('#btnSaveTraining') : $('#btnSaveNewTraining');
+            toggleButtonLoading($saveBtn, true, 'Saving...');
+            $.ajax({
+                url: config.endpoints.save,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(formData),
+                success: r => { if (r.success) { isEdit && setViewMode(); $(`#${isEdit ? 'view' : 'add'}TrainingModal`).modal('hide'); table.ajax.reload(null, false); showNotification(r.message, 'success'); } else showNotification(r.message, 'error'); },
+                error: () => showNotification('Unable to save training. Please try again.', 'error'),
+                complete: () => toggleButtonLoading($saveBtn, false)
+            });
+        }
+
+        function populateViewForm(data) {
+            $('#viewTrainingId').val(data.id);
+            $('#viewTrainingTitle').val(data.trainingTitle);
+            $('#viewTrainingProvider').val(data.trainingProvider);
+            $('#viewTrainingVenue').val(data.trainingVenue);
+            $('#viewDateFrom').val(data.dateFrom);
+            $('#viewDateTo').val(data.dateTo);
+            $('#viewRemarks').val(data.remarks || '');
+        }
+
+        function resetForm(prefix) {
+            $(`#${prefix}TrainingForm`)[0].reset();
+            $(`#${prefix}TrainingForm .form-control`).removeClass('is-invalid');
+            $(`#btnSave${prefix === 'view' ? 'Training' : 'NewTraining'}`).prop('disabled', false).html('Save');
+        }
+
+        function setViewMode() {
+            $('#viewModalTitle').text('View Training');
+            $('#viewTrainingModal .modal-body').removeClass('edit-mode');
+            $('#viewTrainingTitle, #viewTrainingProvider, #viewTrainingVenue, #viewDateFrom, #viewDateTo, #viewRemarks').prop('readonly', true);
+            $('#viewDateFrom, #viewDateTo').datepicker('remove');
+            $('.edit-required').addClass('d-none');
+            $('#btnEditTraining').removeClass('d-none');
+            $('#btnSaveTraining, #btnCancelEdit').addClass('d-none');
+            $('#viewTrainingForm .form-control').removeClass('is-invalid');
+        }
+
+        function validateForm(prefix) {
+            let isValid = true;
+            ['TrainingTitle', 'TrainingProvider', 'DateFrom', 'DateTo'].forEach(field => {
+                if (!$(`#${prefix}${field}`).val()) { $(`#${prefix}${field}`).addClass('is-invalid'); isValid = false; }
+            });
+            if (!validateDateRange(prefix)) isValid = false;
+            return isValid;
+        }
+
+        function validateDateRange(prefix) {
+            const from = $(`#${prefix}DateFrom`).val(), to = $(`#${prefix}DateTo`).val();
+            if (from && to && new Date(to) < new Date(from)) {
+                $(`#${prefix}DateTo`).addClass('is-invalid').siblings('.invalid-feedback').text('To date cannot be earlier than from date.');
+                return false;
+            }
+            return true;
+        }
+
+        function toggleButtonLoading($btn, loading, text = '') {
+            const iconMap = { 'viewTraining': '<i class="fas fa-eye"></i>', 'deleteTraining': '<i class="fa fa-trash"></i>', 'restoreTraining': '<i class="fas fa-undo"></i>' };
+            if (loading) {
+                $btn.data('original-html', $btn.html()).prop('disabled', true).html((text ? '<i class="fas fa-spinner fa-spin"></i> ' : '<i class="fas fa-spinner fa-spin"></i>') + text);
+            } else {
+                const btnClass = Object.keys(iconMap).find(cls => $btn.hasClass(cls));
+                $btn.prop('disabled', false).html($btn.data('original-html') || iconMap[btnClass] || 'Save').removeData('original-html');
+            }
+        }
+
+        function showNotification(message, type) {
+            const types = { success: 'Success', error: 'Error', warning: 'Warning', info: 'Information' };
+            toastr[type](message, types[type] || 'Notification');
+        }
+    });
+</script>

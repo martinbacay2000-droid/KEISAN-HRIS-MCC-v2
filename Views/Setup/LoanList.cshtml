@@ -1,0 +1,849 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutFillow.cshtml";
+    ViewData["Title"] = "Loan List";
+}
+
+<div class="col-12">
+    <div class="card">
+        <div class="card-header">
+            <div class="row" style="width:100%;">
+                <h4 class="card-title">Loan List</h4>
+                <br> <br> <br>
+
+                <div class="row" style="margin-left:0px;width:100%;">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Record Status</h5>
+                            <select name="filterRecordStatus" id="filterRecordStatus" class="form-control">
+                                <option value="active" selected>ACTIVE</option>
+                                <option value="inactive">INACTIVE</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                    </div>
+                    <div class="col-md-3 d-flex justify-content-end align-items-end">
+                        <div class="form-group">
+                            <button type="button" class="btn btn-primary" id="btnAddLoan">
+                                <i class="fa fa-plus"></i> New Loan
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="loanTable" class="display" style="min-width: 845px">
+                    <thead>
+                        <tr>
+                            <th>Action</th>
+                            <th>Loan Code</th>
+                            <th>Loan Name</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+
+        <!-- Modal for Add -->
+        <div class="modal fade" id="addLoanModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add Loan List Form</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addLoanForm">
+                            <div class="mb-3">
+                                <label for="addLoanCode" class="form-label">Loan Code <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control alphanum" id="addLoanCode" name="loanCode" required maxlength="50">
+                                <div class="invalid-feedback">
+                                    Please provide a valid loan code.
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="addLoanName" class="form-label">Loan Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="addLoanName" name="loanName" required maxlength="255">
+                                <div class="invalid-feedback">
+                                    Please provide a valid loan name.
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="addLoanType" class="form-label">Loan Type <span class="text-danger">*</span></label>
+                                <select class="form-select" id="addLoanType" name="loanType" style="width:100%" required>
+                                    <option value="">Select...</option>
+                                    <option value="Monthly">Monthly</option>
+                                    <option value="Semi Monthly">Semi Monthly</option>
+                                </select>
+                                <div class="invalid-feedback">
+                                    Please select a loan type.
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="btnSaveNewLoan">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for View/Edit -->
+        <div class="modal fade" id="viewLoanModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="viewModalTitle">Loan List Form</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="viewLoanForm">
+                            <input type="hidden" id="viewLoanId" name="id">
+
+                            <div class="mb-3">
+                                <label for="viewLoanCode" class="form-label">Loan Code <span class="text-danger edit-required d-none">*</span></label>
+                                <input type="text" class="form-control alphanum" id="viewLoanCode" name="loanCode" readonly maxlength="50">
+                                <div class="invalid-feedback">
+                                    Please provide a valid loan code.
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="viewLoanName" class="form-label">Loan Name <span class="text-danger edit-required d-none">*</span></label>
+                                <input type="text" class="form-control" id="viewLoanName" name="loanName" readonly maxlength="255">
+                                <div class="invalid-feedback">
+                                    Please provide a valid loan name.
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="viewLoanType" class="form-label">Loan Type <span class="text-danger edit-required d-none">*</span></label>
+                                <select class="form-select" id="viewLoanType" name="loanType" style="width:100%" disabled>
+                                    <option value="">Select...</option>
+                                    <option value="Monthly">Monthly</option>
+                                    <option value="Semi Monthly">Semi Monthly</option>
+                                </select>
+                                <div class="invalid-feedback">
+                                    Please select a loan type.
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="btnEditLoan">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button type="button" class="btn btn-success d-none" id="btnSaveLoan">Save</button>
+                        <button type="button" class="btn btn-danger d-none" id="btnCancelEdit">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Fillow_style
+{
+    <style>
+        .table-responsive {
+            border-radius: 0.375rem;
+        }
+
+        #loanTable_wrapper .dataTables_length,
+        #loanTable_wrapper .dataTables_filter {
+            margin-bottom: 1rem;
+        }
+
+        #loanTable_wrapper .dataTables_info,
+        #loanTable_wrapper .dataTables_paginate {
+            margin-top: 1rem;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .modal-content {
+            border-radius: 0.5rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        .invalid-feedback {
+            display: none;
+        }
+
+        .form-control.is-invalid,
+        .form-select.is-invalid {
+            border-color: #dc3545;
+        }
+
+            .form-control.is-invalid ~ .invalid-feedback,
+            .form-select.is-invalid ~ .invalid-feedback {
+                display: block;
+            }
+
+        /* Readonly/disabled field styling */
+        .form-control[readonly] {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        .form-select[disabled] {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        /* Edit mode styling */
+        .edit-mode .form-control[readonly] {
+            background-color: #ffffff;
+            border-color: #ced4da;
+        }
+
+        .edit-mode .form-select[disabled] {
+            background-color: #ffffff;
+            border-color: #ced4da;
+        }
+
+        /* Select2 styling adjustments */
+        .select2-container .select2-selection--single {
+            height: 38px;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 36px;
+            padding-left: 12px;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 36px;
+        }
+
+        .select2-container--default.select2-container--focus .select2-selection--single {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        .select2-container--default .select2-selection--single.select2-selection--disabled {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        /* Select2 validation styling */
+        .is-invalid + .select2-container .select2-selection--single {
+            border-color: #dc3545;
+        }
+
+        /* Custom SweetAlert2 styling */
+        .swal2-popup {
+            border-radius: 15px !important;
+            padding: 2rem !important;
+        }
+
+        .swal2-icon.swal2-error {
+            border-color: #f27474 !important;
+            color: #f27474 !important;
+        }
+
+            .swal2-icon.swal2-error .swal2-x-mark {
+                display: none !important;
+            }
+
+            .swal2-icon.swal2-error::before {
+                content: "\f2ed" !important;
+                font-family: "Font Awesome 5 Free" !important;
+                font-weight: 900 !important;
+                font-size: 2.5rem !important;
+                color: #f27474 !important;
+                display: block !important;
+            }
+
+        .swal2-title {
+            font-size: 1.875rem !important;
+            font-weight: 600 !important;
+            color: #545454 !important;
+            margin: 1rem 0 0.5rem 0 !important;
+        }
+
+        .swal2-html-container {
+            font-size: 1rem !important;
+            color: #737373 !important;
+            margin: 0 0 2rem 0 !important;
+        }
+
+        .swal2-actions {
+            gap: 0.5rem !important;
+        }
+
+        .swal2-confirm {
+            background-color: #7c3aed !important;
+            border-color: #7c3aed !important;
+            color: white !important;
+            font-weight: 500 !important;
+            padding: 0.75rem 2rem !important;
+            border-radius: 8px !important;
+            font-size: 0.875rem !important;
+        }
+
+        .swal2-cancel {
+            background-color: #6b7280 !important;
+            border-color: #6b7280 !important;
+            color: white !important;
+            font-weight: 500 !important;
+            padding: 0.75rem 2rem !important;
+            border-radius: 8px !important;
+            font-size: 0.875rem !important;
+        }
+
+        .swal2-confirm:hover {
+            background-color: #6d28d9 !important;
+            border-color: #6d28d9 !important;
+        }
+
+        .swal2-cancel:hover {
+            background-color: #4b5563 !important;
+            border-color: #4b5563 !important;
+        }
+
+        /* Restore button styling */
+        .btn-success.shadow-sm:hover {
+            background-color: #1e7e34;
+            border-color: #1c7430;
+        }
+
+        .card-header {
+            border-bottom: none !important;
+        }
+
+        #filterRecordStatus {
+            width: 100%;
+        }
+    </style>
+}
+
+@section Fillow_script
+{
+    <script>
+        $(document).ready(function () {
+
+            MODULE = 'SloanM';
+            access = ROLE_ACCESS?.[MODULE];
+
+            if (access != 'READWRITE' && access != 'FULL') {
+                $('#btnAddLoan').hide();
+                $('#btnEditLoan').hide();
+            }
+
+            // Initialize toastr options
+            toastr.options = {
+                positionClass: "toast-top-right",
+                timeOut: 5000,
+                closeButton: true,
+                debug: false,
+                newestOnTop: true,
+                progressBar: true,
+                preventDuplicates: true,
+                onclick: null,
+                showDuration: "300",
+                hideDuration: "1000",
+                extendedTimeOut: "1000",
+                showEasing: "swing",
+                hideEasing: "linear",
+                showMethod: "fadeIn",
+                hideMethod: "fadeOut",
+                tapToDismiss: false
+            };
+
+            // View state management
+            let isViewingDeleted = false;
+
+            // Initialize Select2 dropdowns
+            initializeSelect2();
+
+            // Initialize Select2 for the filter
+            $('#filterRecordStatus').select2({
+                selectOnClose: true,
+                minimumResultsForSearch: Infinity
+            });
+
+            // Handle filter change
+            $('#filterRecordStatus').on('change', function () {
+                isViewingDeleted = $(this).val() === 'inactive';
+                updateTableView();
+            });
+
+            var table = $('#loanTable').DataTable({
+                processing: true,
+                serverSide: false,
+                ajax: {
+                    url: "/LoanList/GetLoanList",
+                    type: "GET",
+                    datatype: "json",
+                    error: function(xhr, error, code) {
+                        console.log('Error loading data:', error);
+                        showNotification('Error loading loan data. Please refresh the page.', 'error');
+                    }
+                },
+                columns: [
+                    {
+                        data: "id",
+                        width: "20%",
+                        orderable: false,
+                        render: function (data) {
+                            if (isViewingDeleted) {
+                                return `
+                                    <div class="d-flex gap-1">
+                                        <button type="button" class="btn btn-sm btn-success shadow-sm restoreLoan" data-id="${data}" title="Restore">
+                                            <i class="fas fa-undo"></i>
+                                        </button>
+                                    </div>`;
+                            } else {
+                                return `
+                                    <div class="d-flex gap-1">
+                                        <button type="button" class="btn btn-sm btn-primary shadow-sm viewLoan" data-id="${data}" title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-danger shadow-sm deleteLoan" data-id="${data}" title="Delete">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                    </div>`;
+                            }
+                        }
+                    },
+                    {
+                        data: "loanCode",
+                        width: "25%"
+                    },
+                    {
+                        data: "loanName",
+                        width: "55%"
+                    }                   
+                ],
+                order: [],
+                pageLength: 25,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                language: {
+                    processing: "Loading...",
+                    emptyTable: "No loans found",
+                    zeroRecords: "No matching loans found",
+                    paginate: {
+                        next: '<i class="fa fa-angle-double-right" aria-hidden="true"></i>',
+                        previous: '<i class="fa fa-angle-double-left" aria-hidden="true"></i>'
+                    }
+                }
+            });
+
+            // Add New Loan
+            $('#btnAddLoan').click(function () {
+                resetAddForm();
+                $('#addLoanModal').modal('show');
+
+                // Focus on first input after modal is shown
+                $('#addLoanModal').on('shown.bs.modal', function () {
+                    $('#addLoanCode').focus();
+                });
+            });
+
+            // View Loan
+            $(document).on('click', '.viewLoan', function (e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+                var $btn = $(this);
+
+                // Disable button and show loading
+                $btn.prop('disabled', true);
+                $btn.html('<i class="fas fa-spinner fa-spin"></i>');
+
+                $.get('/LoanList/GetLoan', { id: id }, function (data) {
+                    if (data) {
+                        resetViewForm();
+                        setViewMode();
+
+                        $('#viewLoanId').val(data.id);
+                        $('#viewLoanCode').val(data.loanCode);
+                        $('#viewLoanName').val(data.loanName);
+
+                        // Set Select2 value for view modal
+                        $('#viewLoanType').val(data.loanType).trigger('change');
+
+                        $('#viewLoanModal').modal('show');
+                    } else {
+                        showNotification('Unable to load loan data', 'error');
+                    }
+                }).fail(function(xhr, status, error) {
+                    console.log('Error loading loan:', error);
+                    showNotification('Unable to load loan data', 'error');
+                }).always(function() {
+                    // Re-enable button
+                    $btn.prop('disabled', false);
+                    $btn.html('<i class="fas fa-eye"></i>');
+                });
+            });
+
+            // Edit button in view modal
+            $('#btnEditLoan').click(function () {
+                setEditMode();
+                $('#viewLoanCode').focus();
+            });
+
+            // Cancel edit button
+            $('#btnCancelEdit').click(function () {
+                // Reload the original data
+                var id = $('#viewLoanId').val();
+                $.get('/LoanList/GetLoan', { id: id }, function (data) {
+                    if (data) {
+                        $('#viewLoanCode').val(data.loanCode);
+                        $('#viewLoanName').val(data.loanName);
+                        $('#viewLoanType').val(data.loanType).trigger('change');
+                        setViewMode();
+                        clearValidation('#viewLoanForm');
+                    }
+                });
+            });
+
+            // Save Loan (from view/edit modal)
+            $('#btnSaveLoan').click(function () {
+                // Clear previous validation states
+                clearValidation('#viewLoanForm');
+
+                // Validate form
+                if (!validateViewForm()) {
+                    return;
+                }
+
+                var formData = {
+                    id: parseInt($('#viewLoanId').val()),
+                    loanCode: $('#viewLoanCode').val().trim(),
+                    loanName: $('#viewLoanName').val().trim(),
+                    loanType: $('#viewLoanType').val()
+                };
+
+                // Disable the save button to prevent double submission
+                var $saveBtn = $('#btnSaveLoan');
+                $saveBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+
+                $.post('/LoanList/UpdateLoan', formData, function (response) {
+                    if (response.success) {
+                        setViewMode();
+                        table.ajax.reload(null, false); // Keep current page
+                        showNotification(response.message, 'success');
+                    } else {
+                        showNotification(response.message, 'error');
+                    }
+                }).fail(function(xhr, status, error) {
+                    console.log('Error saving loan:', error);
+                    showNotification('Unable to save loan. Please try again.', 'error');
+                }).always(function() {
+                    // Re-enable the save button
+                    $saveBtn.prop('disabled', false).html('Save');
+                });
+            });
+
+            // Save New Loan (from add modal)
+            $('#btnSaveNewLoan').click(function () {
+                // Clear previous validation states
+                clearValidation('#addLoanForm');
+
+                // Validate form
+                if (!validateAddForm()) {
+                    return;
+                }
+
+                var formData = {
+                    loanCode: $('#addLoanCode').val().trim(),
+                    loanName: $('#addLoanName').val().trim(),
+                    loanType: $('#addLoanType').val()
+                };
+
+                // Disable the save button to prevent double submission
+                var $saveBtn = $('#btnSaveNewLoan');
+                $saveBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+
+                $.post('/LoanList/AddLoan', formData, function (response) {
+                    if (response.success) {
+                        $('#addLoanModal').modal('hide');
+                        table.ajax.reload(null, false); // Keep current page
+                        showNotification(response.message, 'success');
+                    } else {
+                        showNotification(response.message, 'error');
+                    }
+                }).fail(function(xhr, status, error) {
+                    console.log('Error saving loan:', error);
+                    showNotification('Unable to save loan. Please try again.', 'error');
+                }).always(function() {
+                    // Re-enable the save button
+                    $saveBtn.prop('disabled', false).html('Save');
+                });
+            });
+
+            // Delete Loan with reason - REUSABLE ALREADY IN THE GLOBAL
+            $(document).on('click', '.deleteLoan', function (e) {
+                e.preventDefault();
+                deleteWithReason({
+                    title: 'Inactive Loan',
+                    text: 'Are you sure you want to inactive this loan?',
+                    url: '/LoanList/DeleteLoan',
+                    id: $(this).data('id'),
+                    button: $(this),
+                    table: table
+                });
+            });
+
+            // Restore Loan with SweetAlert2
+            $(document).on('click', '.restoreLoan', function (e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+                var $btn = $(this);
+
+                Swal.fire({
+                    title: 'Restore Record',
+                    text: 'Are you sure you want to restore this loan?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, Restore',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d',
+                    reverseButtons: false,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Disable button and show loading
+                        $btn.prop('disabled', true);
+                        $btn.html('<i class="fas fa-spinner fa-spin"></i>');
+
+                        $.post('/LoanList/RestoreLoan', { id: id }, function (response) {
+                            if (response.success) {
+                                table.ajax.reload(null, false); // Keep current page
+                                showNotification(response.message, 'success');
+                            } else {
+                                showNotification(response.message, 'error');
+                            }
+                        }).fail(function(xhr, status, error) {
+                            console.log('Error restoring loan:', error);
+                            showNotification('Unable to restore loan. Please try again.', 'error');
+                        }).always(function() {
+                            // Re-enable button
+                            $btn.prop('disabled', false);
+                            $btn.html('<i class="fas fa-undo"></i>');
+                        });
+                    }
+                });
+            });
+
+            // Reset forms when modals are hidden
+            $('#addLoanModal').on('hidden.bs.modal', function () {
+                resetAddForm();
+            });
+
+            $('#viewLoanModal').on('hidden.bs.modal', function () {
+                resetViewForm();
+                setViewMode();
+            });
+
+            // Enter key handling for forms
+            $('#addLoanForm').on('keypress', function(e) {
+                if (e.which === 13) { // Enter key
+                    e.preventDefault();
+                    $('#btnSaveNewLoan').click();
+                }
+            });
+
+            $('#viewLoanForm').on('keypress', function(e) {
+                if (e.which === 13 && $('#viewLoanModal .modal-body').hasClass('edit-mode')) { // Enter key in edit mode
+                    e.preventDefault();
+                    $('#btnSaveLoan').click();
+                }
+            });
+
+            // Helper Functions
+            function initializeSelect2() {
+                // Initialize Select2 for Add modal
+                $('#addLoanType').select2({
+                    placeholder: "Select Loan Type",
+                    allowClear: true,
+                    dropdownParent: $('#addLoanModal'),
+                    minimumResultsForSearch: Infinity // Hide search box for simple dropdown
+                });
+
+                // Initialize Select2 for View/Edit modal
+                $('#viewLoanType').select2({
+                    placeholder: "Select Loan Type",
+                    allowClear: true,
+                    dropdownParent: $('#viewLoanModal'),
+                    minimumResultsForSearch: Infinity // Hide search box for simple dropdown
+                });
+            }
+
+            function updateTableView() {
+                if (isViewingDeleted) {
+                    // Update for deleted records view
+                    table.ajax.url('/LoanList/GetDeletedLoanList').load();
+                    $('#btnAddLoan').hide();
+                } else {
+                    // Update for active records view
+                    table.ajax.url('/LoanList/GetLoanList').load();
+                    $('#btnAddLoan').show();
+                }
+            }
+
+            function resetAddForm() {
+                $('#addLoanForm')[0].reset();
+                $('#addLoanType').val(null).trigger('change'); // Reset Select2
+                clearValidation('#addLoanForm');
+                $('#btnSaveNewLoan').prop('disabled', false).html('Save');
+            }
+
+            function resetViewForm() {
+                $('#viewLoanForm')[0].reset();
+                $('#viewLoanType').val(null).trigger('change'); // Reset Select2
+                clearValidation('#viewLoanForm');
+                $('#btnSaveLoan').prop('disabled', false).html('Save');
+            }
+
+            function setViewMode() {
+                $('#viewModalTitle').text('View Loan');
+                $('#viewLoanModal .modal-body').removeClass('edit-mode');
+
+                // Make fields readonly/disabled
+                $('#viewLoanCode').prop('readonly', true);
+                $('#viewLoanName').prop('readonly', true);
+                $('#viewLoanType').prop('disabled', true);
+
+                // Hide required asterisks
+                $('.edit-required').addClass('d-none');
+
+                // Show/hide buttons
+                $('#btnEditLoan').removeClass('d-none');
+                $('#btnSaveLoan').addClass('d-none');
+                $('#btnCancelEdit').addClass('d-none');
+
+                clearValidation('#viewLoanForm');
+            }
+
+            function setEditMode() {
+                $('#viewModalTitle').text('Edit Loan');
+                $('#viewLoanModal .modal-body').addClass('edit-mode');
+
+                // Make fields editable
+                $('#viewLoanCode').prop('readonly', false);
+                $('#viewLoanName').prop('readonly', false);
+                $('#viewLoanType').prop('disabled', false);
+
+                // Show required asterisks
+                $('.edit-required').removeClass('d-none');
+
+                // Show/hide buttons
+                $('#btnEditLoan').addClass('d-none');
+                $('#btnSaveLoan').removeClass('d-none');
+                $('#btnCancelEdit').removeClass('d-none');
+            }
+
+            function clearValidation(formSelector) {
+                $(formSelector + ' .form-control, ' + formSelector + ' .form-select').removeClass('is-invalid');
+                $(formSelector + ' .invalid-feedback').hide();
+            }
+
+            function validateAddForm() {
+                var isValid = true;
+
+                // Validate loan code
+                var loanCode = $('#addLoanCode').val().trim();
+                if (!loanCode) {
+                    $('#addLoanCode').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                // Validate loan name
+                var loanName = $('#addLoanName').val().trim();
+                if (!loanName) {
+                    $('#addLoanName').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                // Validate loan type selection
+                var loanType = $('#addLoanType').val();
+                if (!loanType) {
+                    $('#addLoanType').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                return isValid;
+            }
+
+            function validateViewForm() {
+                var isValid = true;
+
+                // Validate loan code
+                var loanCode = $('#viewLoanCode').val().trim();
+                if (!loanCode) {
+                    $('#viewLoanCode').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                // Validate loan name
+                var loanName = $('#viewLoanName').val().trim();
+                if (!loanName) {
+                    $('#viewLoanName').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                // Validate loan type selection
+                var loanType = $('#viewLoanType').val();
+                if (!loanType) {
+                    $('#viewLoanType').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                return isValid;
+            }
+
+            // Updated notification function using toastr
+            function showNotification(message, type) {
+                if (type === 'success') {
+                    toastr.success(message, "Success");
+                } else if (type === 'error') {
+                    toastr.error(message, "Error");
+                } else if (type === 'warning') {
+                    toastr.warning(message, "Warning");
+                } else if (type === 'info') {
+                    toastr.info(message, "Information");
+                } else {
+                    toastr.info(message, "Notification");
+                }
+            }
+
+            // Remove validation classes when user starts typing (Add form)
+            $('#addLoanCode, #addLoanName').on('input', function() {
+                $(this).removeClass('is-invalid');
+            });
+
+            $('#addLoanType').on('change', function() {
+                $(this).removeClass('is-invalid');
+            });
+
+            // Remove validation classes when user starts typing (View/Edit form)
+            $('#viewLoanCode, #viewLoanName').on('input', function() {
+                $(this).removeClass('is-invalid');
+            });
+
+            $('#viewLoanType').on('change', function() {
+                $(this).removeClass('is-invalid');
+            });
+        });
+    </script>
+}

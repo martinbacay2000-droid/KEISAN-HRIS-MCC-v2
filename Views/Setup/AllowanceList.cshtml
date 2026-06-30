@@ -1,0 +1,1149 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutFillow.cshtml";
+    ViewData["Title"] = "Allowance List";
+}
+
+<div class="col-12">
+    <div class="card">
+        <div class="card-header">
+            <div class="row" style="width:100%;">
+                <h4 class="card-title">Allowance List</h4>
+                <br> <br> <br>
+
+                <div class="row" style="margin-left:0px;width:100%;">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Record Status</h5>
+                            <select name="filterRecordStatus" id="filterRecordStatus" class="form-control">
+                                <option value="active" selected>ACTIVE</option>
+                                <option value="inactive">INACTIVE</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                    </div>
+                    <div class="col-md-3 d-flex justify-content-end align-items-end">
+                        <div class="form-group">
+                            <button type="button" class="btn btn-primary" id="btnAddAllowance">
+                                <i class="fa fa-plus"></i> New Allowance
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="allowanceTable" class="display" style="min-width: 845px">
+                    <thead>
+                        <tr>
+                            <th>Action</th>
+                            <th>Allowance Code</th>
+                            <th>Allowance Name</th>                          
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+
+        <!-- Modal for Add -->
+        <div class="modal fade" id="addAllowanceModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Allowance List Form</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addAllowanceForm">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="addAllowanceCode" class="form-label">Allowance Code <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control alphanum" id="addAllowanceCode" name="allowanceCode" required maxlength="50">
+                                        <div class="invalid-feedback">
+                                            Please provide a valid allowance code.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="addAllowanceName" class="form-label">Allowance Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="addAllowanceName" name="allowanceName" required maxlength="255">
+                                        <div class="invalid-feedback">
+                                            Please provide a valid allowance name.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="addIsTaxable" class="form-label">Taxable <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="addIsTaxable" name="isTaxable" style="width:100%" required>
+                                            <option value="">Select...</option>
+                                            <option value="true">Yes</option>
+                                            <option value="false">No</option>
+                                        </select>
+                                        <div class="invalid-feedback">
+                                            Please select if the allowance is taxable.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="addBasis" class="form-label">Basis <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="addBasis" name="basis" style="width:100%" required>
+                                            <option value="">Select...</option>
+                                            <option value="Daily">Daily</option>
+                                            <option value="Semi-Monthly">Semi-Monthly</option>
+                                            <option value="Monthly">Monthly</option>
+                                            <option value="Yearly">Yearly</option>
+                                        </select>
+                                        <div class="invalid-feedback">
+                                            Please select a basis.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="mb-3">
+                                        <label for="addBasisDate" class="form-label">Basis Date <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="addBasisDate" name="basisDate" style="width:100%" required>
+                                            <option value="">Select basis first...</option>
+                                        </select>
+                                        <input type="text" class="form-control d-none" id="addBasisDateCalendar" name="basisDateCalendar" placeholder="Select date">
+                                        <div class="invalid-feedback">
+                                            Please select a basis date.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="btnSaveNewAllowance">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for View/Edit -->
+        <div class="modal fade" id="viewAllowanceModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="viewModalTitle">View Allowance</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="viewAllowanceForm">
+                            <input type="hidden" id="viewAllowanceId" name="id">
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="viewAllowanceCode" class="form-label">Allowance Code <span class="text-danger edit-required d-none">*</span></label>
+                                        <input type="text" class="form-control alphanum" id="viewAllowanceCode" name="allowanceCode" readonly maxlength="50">
+                                        <div class="invalid-feedback">
+                                            Please provide a valid allowance code.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="viewAllowanceName" class="form-label">Allowance Name <span class="text-danger edit-required d-none">*</span></label>
+                                        <input type="text" class="form-control" id="viewAllowanceName" name="allowanceName" readonly maxlength="255">
+                                        <div class="invalid-feedback">
+                                            Please provide a valid allowance name.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="viewIsTaxable" class="form-label">Taxable <span class="text-danger edit-required d-none">*</span></label>
+                                        <select class="form-select" id="viewIsTaxable" name="isTaxable" style="width:100%" disabled>
+                                            <option value="">Select...</option>
+                                            <option value="true">Yes</option>
+                                            <option value="false">No</option>
+                                        </select>
+                                        <div class="invalid-feedback">
+                                            Please select if the allowance is taxable.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="viewBasis" class="form-label">Basis <span class="text-danger edit-required d-none">*</span></label>
+                                        <select class="form-select" id="viewBasis" name="basis" style="width:100%" disabled>
+                                            <option value="">Select...</option>
+                                            <option value="Daily">Daily</option>
+                                            <option value="Semi-Monthly">Semi-Monthly</option>
+                                            <option value="Monthly">Monthly</option>
+                                            <option value="Yearly">Yearly</option>
+                                        </select>
+                                        <div class="invalid-feedback">
+                                            Please select a basis.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="mb-3">
+                                        <label for="viewBasisDate" class="form-label">Basis Date <span class="text-danger edit-required d-none">*</span></label>
+                                        <select class="form-select" id="viewBasisDate" name="basisDate" style="width:100%" disabled>
+                                            <option value="">Select basis first...</option>
+                                        </select>
+                                        <input type="text" class="form-control d-none" id="viewBasisDateCalendar" name="basisDateCalendar" readonly placeholder="Select date">
+                                        <div class="invalid-feedback">
+                                            Please select a basis date.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="btnEditAllowance">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button type="button" class="btn btn-success d-none" id="btnSaveAllowance">Save</button>
+                        <button type="button" class="btn btn-danger d-none" id="btnCancelEdit">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Fillow_style
+{
+    <!-- Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+    <style>
+        .table-responsive {
+            border-radius: 0.375rem;
+        }
+
+        #allowanceTable_wrapper .dataTables_length,
+        #allowanceTable_wrapper .dataTables_filter {
+            margin-bottom: 1rem;
+        }
+
+        #allowanceTable_wrapper .dataTables_info,
+        #allowanceTable_wrapper .dataTables_paginate {
+            margin-top: 1rem;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .modal-content {
+            border-radius: 0.5rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        .invalid-feedback {
+            display: none;
+        }
+
+        .form-control.is-invalid,
+        .form-select.is-invalid {
+            border-color: #dc3545;
+        }
+
+        .form-control.is-invalid ~ .invalid-feedback,
+        .form-select.is-invalid ~ .invalid-feedback {
+            display: block;
+        }
+
+        /* Readonly/disabled field styling */
+        .form-control[readonly] {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        .form-select[disabled] {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        /* Edit mode styling */
+        .edit-mode .form-control[readonly] {
+            background-color: #ffffff;
+            border-color: #ced4da;
+        }
+
+        .edit-mode .form-select[disabled] {
+            background-color: #ffffff;
+            border-color: #ced4da;
+        }
+
+        /* Select2 styling adjustments */
+        .select2-container .select2-selection--single {
+            height: 38px;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 36px;
+            padding-left: 12px;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 36px;
+        }
+
+        .select2-container--default.select2-container--focus .select2-selection--single {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        .select2-container--default .select2-selection--single.select2-selection--disabled {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        /* Select2 validation styling */
+        .is-invalid + .select2-container .select2-selection--single {
+            border-color: #dc3545;
+        }
+
+        /* Custom SweetAlert2 styling */
+        .swal2-popup {
+            border-radius: 15px !important;
+            padding: 2rem !important;
+        }
+
+        .swal2-icon.swal2-error {
+            border-color: #f27474 !important;
+            color: #f27474 !important;
+        }
+
+        .swal2-icon.swal2-error .swal2-x-mark {
+            display: none !important;
+        }
+
+        .swal2-icon.swal2-error::before {
+            content: "\f2ed" !important;
+            font-family: "Font Awesome 5 Free" !important;
+            font-weight: 900 !important;
+            font-size: 2.5rem !important;
+            color: #f27474 !important;
+            display: block !important;
+        }
+
+        .swal2-title {
+            font-size: 1.875rem !important;
+            font-weight: 600 !important;
+            color: #545454 !important;
+            margin: 1rem 0 0.5rem 0 !important;
+        }
+
+        .swal2-html-container {
+            font-size: 1rem !important;
+            color: #737373 !important;
+            margin: 0 0 2rem 0 !important;
+        }
+
+        .swal2-actions {
+            gap: 0.5rem !important;
+        }
+
+        .swal2-confirm {
+            background-color: #7c3aed !important;
+            border-color: #7c3aed !important;
+            color: white !important;
+            font-weight: 500 !important;
+            padding: 0.75rem 2rem !important;
+            border-radius: 8px !important;
+            font-size: 0.875rem !important;
+        }
+
+        .swal2-cancel {
+            background-color: #6b7280 !important;
+            border-color: #6b7280 !important;
+            color: white !important;
+            font-weight: 500 !important;
+            padding: 0.75rem 2rem !important;
+            border-radius: 8px !important;
+            font-size: 0.875rem !important;
+        }
+
+        .swal2-confirm:hover {
+            background-color: #6d28d9 !important;
+            border-color: #6d28d9 !important;
+        }
+
+        .swal2-cancel:hover {
+            background-color: #4b5563 !important;
+            border-color: #4b5563 !important;
+        }
+
+        .btn-success.shadow-sm:hover {
+            background-color: #1e7e34;
+            border-color: #1c7430;
+        }
+
+        .card-header {
+            border-bottom: none !important;
+        }
+
+        #filterRecordStatus {
+            width: 100%;
+        }
+
+        /* Flatpickr styling */
+        .flatpickr-calendar {
+            border-radius: 0.375rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+    </style>
+}
+
+@section Fillow_script
+{
+    <!-- Flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <script>
+        $(document).ready(function () {
+
+            MODULE = 'SallowanceM';
+            access = ROLE_ACCESS?.[MODULE];
+
+            if (access != 'READWRITE' && access != 'FULL') {
+                $('#btnAddAllowance').hide();
+                $('#btnEditAllowance').hide();
+            }
+
+            // Initialize toastr options
+            toastr.options = {
+                positionClass: "toast-top-right",
+                timeOut: 5000,
+                closeButton: true,
+                debug: false,
+                newestOnTop: true,
+                progressBar: true,
+                preventDuplicates: true,
+                onclick: null,
+                showDuration: "300",
+                hideDuration: "1000",
+                extendedTimeOut: "1000",
+                showEasing: "swing",
+                hideEasing: "linear",
+                showMethod: "fadeIn",
+                hideMethod: "fadeOut",
+                tapToDismiss: false
+            };
+
+            // View state management
+            let isViewingDeleted = false;
+
+            // Flatpickr instances
+            let addDatePicker = null;
+            let viewDatePicker = null;
+
+            // Initialize Select2 dropdowns
+            initializeSelect2();
+
+            // Initialize Select2 for the filter
+            $('#filterRecordStatus').select2({
+                selectOnClose: true,
+                minimumResultsForSearch: Infinity
+            });
+
+            // Handle filter change
+            $('#filterRecordStatus').on('change', function () {
+                isViewingDeleted = $(this).val() === 'inactive';
+                updateTableView();
+            });
+
+            var table = $('#allowanceTable').DataTable({
+                processing: true,
+                serverSide: false,
+                ajax: {
+                    url: "/AllowanceList/GetAllowanceList",
+                    type: "GET",
+                    datatype: "json",
+                    error: function(xhr, error, code) {
+                        console.log('Error loading data:', error);
+                        showNotification('Error loading allowance data. Please refresh the page.', 'error');
+                    }
+                },
+                columns: [
+                    {
+                        data: "id",
+                        width: "20%",
+                        orderable: false,
+                        render: function (data) {
+                            if (isViewingDeleted) {
+                                return `
+                                    <div class="d-flex gap-1">
+                                        <button type="button" class="btn btn-sm btn-success shadow-sm restoreAllowance" data-id="${data}" title="Restore">
+                                            <i class="fas fa-undo"></i>
+                                        </button>
+                                    </div>`;
+                            } else {
+                                return `
+                                    <div class="d-flex gap-1">
+                                        <button type="button" class="btn btn-sm btn-primary shadow-sm viewAllowance" data-id="${data}" title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-danger shadow-sm deleteAllowance" data-id="${data}" title="Delete">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                    </div>`;
+                            }
+                        }
+                    },
+                    {
+                        data: "allowanceCode",
+                        width: "25%"
+                    },
+                    {
+                        data: "allowanceName",
+                        width: "55%"
+                    }                   
+                ],
+                order: [],
+                pageLength: 25,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                language: {
+                    processing: "Loading...",
+                    emptyTable: "No allowances found",
+                    zeroRecords: "No matching allowances found",
+                    paginate: {
+                        next: '<i class="fa fa-angle-double-right" aria-hidden="true"></i>',
+                        previous: '<i class="fa fa-angle-double-left" aria-hidden="true"></i>'
+                    }
+                }
+            });
+
+            // Basis change handler for Add modal
+            $('#addBasis').on('change', function() {
+                updateBasisDateOptions('add', $(this).val());
+            });
+
+            // Basis change handler for View modal
+            $('#viewBasis').on('change', function() {
+                updateBasisDateOptions('view', $(this).val());
+            });
+
+            // Function to update basis date options based on selected basis
+            function updateBasisDateOptions(modalType, basis) {
+                const prefix = modalType === 'add' ? 'add' : 'view';
+                const $basisDate = $(`#${prefix}BasisDate`);
+                const $basisDateCalendar = $(`#${prefix}BasisDateCalendar`);
+
+                // Clear current options
+                $basisDate.empty().append('<option value="">Select...</option>');
+
+                // Hide both by default
+                $basisDate.removeClass('d-none');
+                $basisDateCalendar.addClass('d-none');
+
+                // Destroy existing datepicker if any
+                if (modalType === 'add' && addDatePicker) {
+                    addDatePicker.destroy();
+                    addDatePicker = null;
+                } else if (modalType === 'view' && viewDatePicker) {
+                    viewDatePicker.destroy();
+                    viewDatePicker = null;
+                }
+
+                switch(basis) {
+                    case 'Daily':
+                        $basisDate.append('<option value="Daily">Daily</option>');
+                        $basisDate.val('Daily').trigger('change');
+                        break;
+
+                    case 'Semi-Monthly':
+                        $basisDate.append('<option value="1st And 2nd Cut-off">1st And 2nd Cut-off</option>');
+                        $basisDate.val('1st And 2nd Cut-off').trigger('change');
+                        break;
+
+                    case 'Monthly':
+                        $basisDate.append('<option value="1st cut-off">1st cut-off</option>');
+                        $basisDate.append('<option value="2nd cut-off">2nd cut-off</option>');
+                        break;
+
+                    case 'Yearly':
+                        // Show calendar input instead
+                        $basisDate.addClass('d-none');
+                        $basisDateCalendar.removeClass('d-none');
+
+                        // Initialize flatpickr
+                        if (modalType === 'add') {
+                            addDatePicker = flatpickr($basisDateCalendar[0], {
+                                dateFormat: "Y-m-d",
+                                allowInput: true
+                            });
+                        } else {
+                            viewDatePicker = flatpickr($basisDateCalendar[0], {
+                                dateFormat: "Y-m-d",
+                                allowInput: true
+                            });
+                        }
+                        break;
+
+                    default:
+                        $basisDate.empty().append('<option value="">Select basis first...</option>');
+                        break;
+                }
+            }
+
+            // Add New Allowance
+            $('#btnAddAllowance').click(function () {
+                resetAddForm();
+                $('#addAllowanceModal').modal('show');
+
+                // Focus on first input after modal is shown
+                $('#addAllowanceModal').on('shown.bs.modal', function () {
+                    $('#addAllowanceCode').focus();
+                });
+            });
+
+            // View Allowance
+            $(document).on('click', '.viewAllowance', function (e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+                var $btn = $(this);
+
+                // Disable button and show loading
+                $btn.prop('disabled', true);
+                $btn.html('<i class="fas fa-spinner fa-spin"></i>');
+
+                $.get('/AllowanceList/GetAllowance', { id: id }, function (data) {
+                    if (data) {
+                        resetViewForm();
+                        setViewMode();
+
+                        $('#viewAllowanceId').val(data.id);
+                        $('#viewAllowanceCode').val(data.allowanceCode);
+                        $('#viewAllowanceName').val(data.allowanceName);
+                        $('#viewIsTaxable').val(data.isTaxable.toString()).trigger('change');
+                        $('#viewBasis').val(data.basis).trigger('change');
+
+                        // Set basis date based on basis type
+                        setTimeout(function() {
+                            if (data.basis === 'Yearly') {
+                                $('#viewBasisDateCalendar').val(data.basisDate);
+                            } else {
+                                $('#viewBasisDate').val(data.basisDate).trigger('change');
+                            }
+                        }, 100);
+
+                        $('#viewAllowanceModal').modal('show');
+                    } else {
+                        showNotification('Unable to load allowance data', 'error');
+                    }
+                }).fail(function(xhr, status, error) {
+                    console.log('Error loading allowance:', error);
+                    showNotification('Unable to load allowance data', 'error');
+                }).always(function() {
+                    // Re-enable button
+                    $btn.prop('disabled', false);
+                    $btn.html('<i class="fas fa-eye"></i>');
+                });
+            });
+
+            // Edit button in view modal
+            $('#btnEditAllowance').click(function () {
+                setEditMode();
+                $('#viewAllowanceCode').focus();
+            });
+
+            // Cancel edit button
+            $('#btnCancelEdit').click(function () {
+                // Reload the original data
+                var id = $('#viewAllowanceId').val();
+                $.get('/AllowanceList/GetAllowance', { id: id }, function (data) {
+                    if (data) {
+                        $('#viewAllowanceCode').val(data.allowanceCode);
+                        $('#viewAllowanceName').val(data.allowanceName);
+                        $('#viewIsTaxable').val(data.isTaxable.toString()).trigger('change');
+                        $('#viewBasis').val(data.basis).trigger('change');
+
+                        setTimeout(function() {
+                            if (data.basis === 'Yearly') {
+                                $('#viewBasisDateCalendar').val(data.basisDate);
+                            } else {
+                                $('#viewBasisDate').val(data.basisDate).trigger('change');
+                            }
+                        }, 100);
+
+                        setViewMode();
+                        clearValidation('#viewAllowanceForm');
+                    }
+                });
+            });
+
+            // Save Allowance (from view/edit modal)
+            $('#btnSaveAllowance').click(function () {
+                // Clear previous validation states
+                clearValidation('#viewAllowanceForm');
+
+                // Validate form
+                if (!validateViewForm()) {
+                    return;
+                }
+
+                // Get basis date value based on basis type
+                var basis = $('#viewBasis').val();
+                var basisDate = basis === 'Yearly' ? $('#viewBasisDateCalendar').val() : $('#viewBasisDate').val();
+
+                var formData = {
+                    id: parseInt($('#viewAllowanceId').val()),
+                    allowanceCode: $('#viewAllowanceCode').val().trim(),
+                    allowanceName: $('#viewAllowanceName').val().trim(),
+                    isTaxable: $('#viewIsTaxable').val() === 'true',
+                    basis: basis,
+                    basisDate: basisDate
+                };
+
+                // Disable the save button to prevent double submission
+                var $saveBtn = $('#btnSaveAllowance');
+                $saveBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+
+                $.post('/AllowanceList/UpdateAllowance', formData, function (response) {
+                    if (response.success) {
+                        setViewMode();
+                        table.ajax.reload(null, false); // Keep current page
+                        showNotification(response.message, 'success');
+                    } else {
+                        showNotification(response.message, 'error');
+                    }
+                }).fail(function(xhr, status, error) {
+                    console.log('Error saving allowance:', error);
+                    showNotification('Unable to save allowance. Please try again.', 'error');
+                }).always(function() {
+                    // Re-enable the save button
+                    $saveBtn.prop('disabled', false).html('Save');
+                });
+            });
+
+            // Save New Allowance (from add modal)
+            $('#btnSaveNewAllowance').click(function () {
+                // Clear previous validation states
+                clearValidation('#addAllowanceForm');
+
+                // Validate form
+                if (!validateAddForm()) {
+                    return;
+                }
+
+                // Get basis date value based on basis type
+                var basis = $('#addBasis').val();
+                var basisDate = basis === 'Yearly' ? $('#addBasisDateCalendar').val() : $('#addBasisDate').val();
+
+                var formData = {
+                    allowanceCode: $('#addAllowanceCode').val().trim(),
+                    allowanceName: $('#addAllowanceName').val().trim(),
+                    isTaxable: $('#addIsTaxable').val() === 'true',
+                    basis: basis,
+                    basisDate: basisDate
+                };
+
+                // Disable the save button to prevent double submission
+                var $saveBtn = $('#btnSaveNewAllowance');
+                $saveBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+
+                $.post('/AllowanceList/AddAllowance', formData, function (response) {
+                    if (response.success) {
+                        $('#addAllowanceModal').modal('hide');
+                        table.ajax.reload(null, false); // Keep current page
+                        showNotification(response.message, 'success');
+                    } else {
+                        showNotification(response.message, 'error');
+                    }
+                }).fail(function(xhr, status, error) {
+                    console.log('Error saving allowance:', error);
+                    showNotification('Unable to save allowance. Please try again.', 'error');
+                }).always(function() {
+                    // Re-enable the save button
+                    $saveBtn.prop('disabled', false).html('Save');
+                });
+            });
+
+            // Delete Allowance with reason - REUSABLE ALREADY IN THE GLOBAL
+            $(document).on('click', '.deleteAllowance', function (e) {
+                e.preventDefault();
+                deleteWithReason({
+                    title: 'Inactive Allowance',
+                    text: 'Are you sure you want to inactive this allowance?',
+                    url: '/AllowanceList/DeleteAllowance',
+                    id: $(this).data('id'),
+                    button: $(this),
+                    table: table
+                });
+            });
+
+            // Restore Allowance with SweetAlert2
+            $(document).on('click', '.restoreAllowance', function (e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+                var $btn = $(this);
+
+                Swal.fire({
+                    title: 'Restore Record',
+                    text: 'Are you sure you want to restore this allowance?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, Restore',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d',
+                    reverseButtons: false,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Disable button and show loading
+                        $btn.prop('disabled', true);
+                        $btn.html('<i class="fas fa-spinner fa-spin"></i>');
+
+                        $.post('/AllowanceList/RestoreAllowance', { id: id }, function (response) {
+                            if (response.success) {
+                                table.ajax.reload(null, false); // Keep current page
+                                showNotification(response.message, 'success');
+                            } else {
+                                showNotification(response.message, 'error');
+                            }
+                        }).fail(function(xhr, status, error) {
+                            console.log('Error restoring allowance:', error);
+                            showNotification('Unable to restore allowance. Please try again.', 'error');
+                        }).always(function() {
+                            // Re-enable button
+                            $btn.prop('disabled', false);
+                            $btn.html('<i class="fas fa-undo"></i>');
+                        });
+                    }
+                });
+            });
+
+            // Reset forms when modals are hidden
+            $('#addAllowanceModal').on('hidden.bs.modal', function () {
+                resetAddForm();
+            });
+
+            $('#viewAllowanceModal').on('hidden.bs.modal', function () {
+                resetViewForm();
+                setViewMode();
+            });
+
+            // Enter key handling for forms
+            $('#addAllowanceForm').on('keypress', function(e) {
+                if (e.which === 13) { // Enter key
+                    e.preventDefault();
+                    $('#btnSaveNewAllowance').click();
+                }
+            });
+
+            $('#viewAllowanceForm').on('keypress', function(e) {
+                if (e.which === 13 && $('#viewAllowanceModal .modal-body').hasClass('edit-mode')) { // Enter key in edit mode
+                    e.preventDefault();
+                    $('#btnSaveAllowance').click();
+                }
+            });
+
+            // Helper Functions
+            function initializeSelect2() {
+                // Initialize Select2 for Add modal
+                $('#addIsTaxable').select2({
+                    placeholder: "Select Taxable Option",
+                    allowClear: true,
+                    dropdownParent: $('#addAllowanceModal'),
+                    minimumResultsForSearch: Infinity
+                });
+
+                $('#addBasis').select2({
+                    placeholder: "Select Basis",
+                    allowClear: true,
+                    dropdownParent: $('#addAllowanceModal'),
+                    minimumResultsForSearch: Infinity
+                });
+
+                $('#addBasisDate').select2({
+                    placeholder: "Select Basis Date",
+                    allowClear: true,
+                    dropdownParent: $('#addAllowanceModal'),
+                    minimumResultsForSearch: Infinity
+                });
+
+                // Initialize Select2 for View/Edit modal
+                $('#viewIsTaxable').select2({
+                    placeholder: "Select Taxable Option",
+                    allowClear: true,
+                    dropdownParent: $('#viewAllowanceModal'),
+                    minimumResultsForSearch: Infinity
+                });
+
+                $('#viewBasis').select2({
+                    placeholder: "Select Basis",
+                    allowClear: true,
+                    dropdownParent: $('#viewAllowanceModal'),
+                    minimumResultsForSearch: Infinity
+                });
+
+                $('#viewBasisDate').select2({
+                    placeholder: "Select Basis Date",
+                    allowClear: true,
+                    dropdownParent: $('#viewAllowanceModal'),
+                    minimumResultsForSearch: Infinity
+                });
+            }
+
+            function updateTableView() {
+                if (isViewingDeleted) {
+                    // Update for deleted records view
+                    table.ajax.url('/AllowanceList/GetDeletedAllowanceList').load();
+                    $('#btnAddAllowance').hide();
+                } else {
+                    // Update for active records view
+                    table.ajax.url('/AllowanceList/GetAllowanceList').load();
+                    $('#btnAddAllowance').show();
+                }
+            }
+
+            function resetAddForm() {
+                $('#addAllowanceForm')[0].reset();
+                $('#addIsTaxable').val(null).trigger('change');
+                $('#addBasis').val(null).trigger('change');
+                $('#addBasisDate').empty().append('<option value="">Select basis first...</option>').val(null).trigger('change');
+                $('#addBasisDateCalendar').val('').addClass('d-none');
+                $('#addBasisDate').removeClass('d-none');
+
+                if (addDatePicker) {
+                    addDatePicker.destroy();
+                    addDatePicker = null;
+                }
+
+                clearValidation('#addAllowanceForm');
+                $('#btnSaveNewAllowance').prop('disabled', false).html('Save');
+            }
+
+            function resetViewForm() {
+                $('#viewAllowanceForm')[0].reset();
+                $('#viewIsTaxable').val(null).trigger('change');
+                $('#viewBasis').val(null).trigger('change');
+                $('#viewBasisDate').empty().append('<option value="">Select basis first...</option>').val(null).trigger('change');
+                $('#viewBasisDateCalendar').val('').addClass('d-none');
+                $('#viewBasisDate').removeClass('d-none');
+
+                if (viewDatePicker) {
+                    viewDatePicker.destroy();
+                    viewDatePicker = null;
+                }
+
+                clearValidation('#viewAllowanceForm');
+                $('#btnSaveAllowance').prop('disabled', false).html('Save');
+            }
+
+            function setViewMode() {
+                $('#viewModalTitle').text('View Allowance');
+                $('#viewAllowanceModal .modal-body').removeClass('edit-mode');
+
+                // Make fields readonly/disabled
+                $('#viewAllowanceCode').prop('readonly', true);
+                $('#viewAllowanceName').prop('readonly', true);
+                $('#viewIsTaxable').prop('disabled', true);
+                $('#viewBasis').prop('disabled', true);
+                $('#viewBasisDate').prop('disabled', true);
+                $('#viewBasisDateCalendar').prop('readonly', true);
+
+                // Hide required asterisks
+                $('.edit-required').addClass('d-none');
+
+                // Show/hide buttons
+                $('#btnEditAllowance').removeClass('d-none');
+                $('#btnSaveAllowance').addClass('d-none');
+                $('#btnCancelEdit').addClass('d-none');
+
+                clearValidation('#viewAllowanceForm');
+            }
+
+            function setEditMode() {
+                $('#viewModalTitle').text('Edit Allowance');
+                $('#viewAllowanceModal .modal-body').addClass('edit-mode');
+
+                // Make fields editable
+                $('#viewAllowanceCode').prop('readonly', false);
+                $('#viewAllowanceName').prop('readonly', false);
+                $('#viewIsTaxable').prop('disabled', false);
+                $('#viewBasis').prop('disabled', false);
+                $('#viewBasisDate').prop('disabled', false);
+                $('#viewBasisDateCalendar').prop('readonly', false);
+
+                // Show required asterisks
+                $('.edit-required').removeClass('d-none');
+
+                // Show/hide buttons
+                $('#btnEditAllowance').addClass('d-none');
+                $('#btnSaveAllowance').removeClass('d-none');
+                $('#btnCancelEdit').removeClass('d-none');
+            }
+
+            function clearValidation(formSelector) {
+                $(formSelector + ' .form-control, ' + formSelector + ' .form-select').removeClass('is-invalid');
+                $(formSelector + ' .invalid-feedback').hide();
+            }
+
+            function validateAddForm() {
+                var isValid = true;
+
+                // Validate allowance code
+                var allowanceCode = $('#addAllowanceCode').val().trim();
+                if (!allowanceCode) {
+                    $('#addAllowanceCode').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                // Validate allowance name
+                var allowanceName = $('#addAllowanceName').val().trim();
+                if (!allowanceName) {
+                    $('#addAllowanceName').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                // Validate taxable selection
+                var isTaxable = $('#addIsTaxable').val();
+                if (!isTaxable) {
+                    $('#addIsTaxable').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                // Validate basis selection
+                var basis = $('#addBasis').val();
+                if (!basis) {
+                    $('#addBasis').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                // Validate basis date
+                var basisDate = '';
+                if (basis === 'Yearly') {
+                    basisDate = $('#addBasisDateCalendar').val().trim();
+                    if (!basisDate) {
+                        $('#addBasisDateCalendar').addClass('is-invalid');
+                        isValid = false;
+                    }
+                } else {
+                    basisDate = $('#addBasisDate').val();
+                    if (!basisDate) {
+                        $('#addBasisDate').addClass('is-invalid');
+                        isValid = false;
+                    }
+                }
+
+                return isValid;
+            }
+
+            function validateViewForm() {
+                var isValid = true;
+
+                // Validate allowance code
+                var allowanceCode = $('#viewAllowanceCode').val().trim();
+                if (!allowanceCode) {
+                    $('#viewAllowanceCode').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                // Validate allowance name
+                var allowanceName = $('#viewAllowanceName').val().trim();
+                if (!allowanceName) {
+                    $('#viewAllowanceName').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                // Validate taxable selection
+                var isTaxable = $('#viewIsTaxable').val();
+                if (!isTaxable) {
+                    $('#viewIsTaxable').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                // Validate basis selection
+                var basis = $('#viewBasis').val();
+                if (!basis) {
+                    $('#viewBasis').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                // Validate basis date
+                var basisDate = '';
+                if (basis === 'Yearly') {
+                    basisDate = $('#viewBasisDateCalendar').val().trim();
+                    if (!basisDate) {
+                        $('#viewBasisDateCalendar').addClass('is-invalid');
+                        isValid = false;
+                    }
+                } else {
+                    basisDate = $('#viewBasisDate').val();
+                    if (!basisDate) {
+                        $('#viewBasisDate').addClass('is-invalid');
+                        isValid = false;
+                    }
+                }
+
+                return isValid;
+            }
+
+            // Updated notification function using toastr
+            function showNotification(message, type) {
+                if (type === 'success') {
+                    toastr.success(message, "Success");
+                } else if (type === 'error') {
+                    toastr.error(message, "Error");
+                } else if (type === 'warning') {
+                    toastr.warning(message, "Warning");
+                } else if (type === 'info') {
+                    toastr.info(message, "Information");
+                } else {
+                    toastr.info(message, "Notification");
+                }
+            }
+
+            // Remove validation classes when user starts typing (Add form)
+            $('#addAllowanceCode, #addAllowanceName, #addBasisDateCalendar').on('input', function() {
+                $(this).removeClass('is-invalid');
+            });
+
+            $('#addIsTaxable, #addBasis, #addBasisDate').on('change', function() {
+                $(this).removeClass('is-invalid');
+            });
+
+            // Remove validation classes when user starts typing (View/Edit form)
+            $('#viewAllowanceCode, #viewAllowanceName, #viewBasisDateCalendar').on('input', function() {
+                $(this).removeClass('is-invalid');
+            });
+
+            $('#viewIsTaxable, #viewBasis, #viewBasisDate').on('change', function() {
+                $(this).removeClass('is-invalid');
+            });
+        });
+    </script>
+}

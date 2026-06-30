@@ -1,0 +1,126 @@
+﻿@{
+    @using Microsoft.Extensions.Configuration
+    @inject IConfiguration Configuration
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <partial name="Fillow/_Meta" />
+    <title>@Configuration.GetSection("DefaultValue")["Title"]</title>
+    <!-- Favicon icon -->
+    <link rel="shortcut icon" type="image/png" href="~/Fillow/images/logo_title.png">
+    <link href="~/Fillow/vendor/bootstrap-select/css/bootstrap-select.min.css" rel="stylesheet">
+    <!-- Style css -->
+    <link href="~/Fillow/css/style.css" rel="stylesheet">
+</head>
+<body>
+    @RenderBody()
+    <!--**********************************
+        Scripts
+    ***********************************-->
+    <!-- Required vendors -->
+    <link href="~/Fillow/vendor/sweetalert2/sweetalert2.min.css" rel="stylesheet">
+    <script src="~/Fillow/vendor/global/global.min.js"></script>
+    <script src="~/Fillow/js/custom.min.js"></script>
+    <script src="~/Fillow/vendor/bootstrap-select/js/bootstrap-select.min.js"></script>
+    <script src="~/Fillow/js/dlabnav-init.js"></script>
+    <script src="~/Fillow/vendor/sweetalert2/sweetalert2.min.js"></script>
+    <script src="~/Fillow/vendor/bootstrap-select/js/bootstrap-select.min.js"></script>
+    <script src="~/Fillow/js/session-timeout-handler.js"></script>
+</body>
+</html>
+
+<script>
+
+    $(document).ready(function (){
+        let isDarkMode = false;
+        const savedMode = localStorage.getItem('theme-mode');
+        if (savedMode) {
+            isDarkMode = savedMode === 'dark';
+            dlabSettingsOptions.version = savedMode;
+            new dlabSettings(dlabSettingsOptions);
+            jQuery('.dz-theme-mode').toggleClass('active', isDarkMode);
+        }
+    })
+
+    function Login(_Username, _Password) {
+
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("UserLogin", "Auth")',
+            data: {
+                "acc.UserCode": _Username,
+                "acc.Password": _Password
+            },
+            async: false,
+            success: function (response) {
+                if (response.success) {
+                    OnSuccess(response)
+                } else {
+                    swal.fire("Error:", response.responseText, "error");
+                }
+            },
+            error: function (response) {
+                swal.fire("Error!", response.responseText, "error");
+            }
+        })
+
+
+        // console.log("Logged in!")
+    }
+
+    function OnBegin() {
+        // SetDatabase($("#Database").val());
+
+        Swal.fire({
+            title: 'Logging In!',
+            text: 'Please wait .....',
+            imageUrl: '@Url.Content("~/Fillow/images/ajax_loader.gif")',
+            imageWidth: 127,
+            imageHeight: 126,
+            imageAlt: 'Loading',
+            animation: false,
+            showCancelButton: false,
+            showConfirmButton: false,
+            closeOnClickOutside: false,
+            allowOutsideClick: false
+        })
+    }
+
+    function OnSuccess(data) {
+        if (data.success == true) {
+            Swal.fire({
+                title: 'Login Success!',
+                text: 'Please wait .....',
+                imageUrl: '@Url.Content("~/Fillow/images/ajax_loader.gif")',
+                imageWidth: 127,
+                imageHeight: 126,
+                imageAlt: 'Loading',
+                animation: false,
+                showCancelButton: false,
+                showConfirmButton: false,
+                closeOnClickOutside: false,
+                allowOutsideClick: false
+            })
+
+
+            window.setTimeout(function () {
+                var url = $("#RedirectTo").val();
+                location.href = url;
+            }, 3000);
+        }
+        else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Failure...',
+                text: data.responseText
+            })
+        }
+    }
+
+    
+
+    
+
+
+</script>

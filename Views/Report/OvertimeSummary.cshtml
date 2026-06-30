@@ -1,0 +1,678 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutFillow.cshtml";
+    ViewData["Title"] = "Overtime Summary Report";
+}
+
+<div class="col-12">
+    <div class="card">
+        <div class="card-header">
+            <div class="row" style="width:100%;">
+                <h4 class="card-title">Overtime Summary Report</h4>
+                <br> <br> <br>
+
+                <div class="row" style="margin-left:0px;width:100%;">                    
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Company</h5>
+                            <select name="branch" id="filterBranch" class="form-control"></select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Department</h5>
+                            <select name="department" id="filterDepartment" class="form-control"></select>
+                        </div>
+                    </div>         
+                </div>
+                <br><br><br>
+                <div class="row" style="margin-left:0px;width:100%;">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Cutoff</h5>
+                            <select name="month" id="filterCutoff" class="form-control">
+                                <option value="">-- Select Cutoff --</option>
+                                <option value="ALL">All Cutoff</option>
+                                <option value="1">1st Cutoff</option>
+                                <option value="2">2nd Cutoff</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Month</h5>
+                            <select name="month" id="filterMonth" class="form-control">
+                                <option value="">-- Select Month --</option>
+                                <option value="ALL">All Months</option>
+                                <option value="January">January</option>
+                                <option value="February">February</option>
+                                <option value="March">March</option>
+                                <option value="April">April</option>
+                                <option value="May">May</option>
+                                <option value="June">June</option>
+                                <option value="July">July</option>
+                                <option value="August">August</option>
+                                <option value="September">September</option>
+                                <option value="October">October</option>
+                                <option value="November">November</option>
+                                <option value="December">December</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <h5>Year</h5>
+                        <div class="input-hasicon">
+                            <input type="text" name="dateYear" id="dateYear" class="form-control yearpicker"
+                                   value="@DateTime.Now.Year" readonly placeholder="Select Year">
+                            <div class="icon"><i class="far fa-calendar"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 d-flex justify-content-end">
+                        <div class="form-group">
+                            <h5>&nbsp;</h5>
+                            <button type="button" class="btn btn-warning" id="btnExportToExcel">
+                                <i class="fas fa-file-excel"></i> Export to Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="row">
+                <div class="table-responsive">
+                    <table id="requestTable" class="display" style="min-width: 845px">
+                        <thead>
+                            <tr>
+                                <th>Action</th>
+                                <th>Company</th>
+                                <th>Department</th>
+                                <th>Employee No</th>
+                                <th>Full Name</th>
+
+                                <th>OT</th>
+                                <th>NSD</th>
+                                <th>NSD OT</th>
+
+                                <th>Rest Day</th>
+                                <th>RD OT</th>
+                                <th>RD NSD </th>
+                                <th>RD NSD OT</th>
+
+                                <th>Legal Holiday</th>
+                                <th>Legal Hol. OT</th>
+                                <th>Legal Hol. NSD</th>
+                                <th>Legal Hol. NSD OT</th>
+
+                                <th>Special Holiday</th>
+                                <th>Special Hol. OT</th>
+                                <th>Special Hol. NSD</th>
+                                <th>Special Hol. NSD OT</th>
+
+                                <th>Legal Hol. RD</th>
+                                <th>Legal Hol. RD OT</th>
+                                <th>Legal Hol. RD NSD</th>
+                                <th>Legal Hol. RD NSD OT</th>
+
+                                <th>Special Hol. RD</th>
+                                <th>Special Hol. RD OT</th>
+                                <th>Special Hol. RD NSD</th>
+                                <th>Special Hol. RD NSD OT</th>
+                            </tr>
+                        </thead>
+                        <tfoot>
+                            <tr>
+                                <th colspan="5" style="text-align:right"><b>TOTAL:</b></th>
+
+                                <!-- totals -->
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+          
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Complete -->
+<div class="modal fade" id="requestModal" tabindex="-1" aria-hidden="true" style="margin-top:20px!important">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content" style="box-shadow: -1px 1px 13px 0px #7d7979;">
+            <div class="modal-header">
+                <h5 class="modal-title">Approved Overtime Request</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6"></div>
+                    <div class="col-md-6 d-flex justify-content-end">
+                        <div class="form-group">
+                            <h5>&nbsp;</h5>
+                            <button type="button" class="btn btn-warning" id="btnExportToExcelRequests">
+                                <i class="fas fa-file-excel"></i> Export to Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="partialParentDiv">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table id="requestList" class="display" style="min-width: 845px">
+                                    <thead>
+                                        <tr>
+                                            <th>Employee No</th>
+                                            <th>Full Name</th>
+                                            <th>OT Time In</th>
+                                            <th>OT Time Out</th>
+                                            <th>Reason</th>
+                                            <th>Date Requested</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- data rows -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Fillow_style
+{
+    <style>
+        .yearpicker {
+            cursor: pointer;
+        }
+
+        .ui-datepicker-calendar {
+            display: none;
+        }
+    </style>
+
+}
+
+@section Fillow_script
+{
+    <script>
+        var sessionEmpNo="";
+        var sessionDateFrom="";
+        var sessionDateTo="";
+        var requestListTable = null; 
+
+        $(document).ready(function () {
+            //datepicker
+            $('.bt-datepicker').datepicker({
+                format: 'yyyy/mm/dd',
+                autoclose: true,
+                todayHighlight: true    // Highlight today's date
+            });
+
+            $('#dateYear').datepicker({
+                format: 'yyyy',
+                viewMode: 'years',
+                minViewMode: 'years',
+                autoclose: true,
+                orientation: 'bottom'
+            });
+
+            initializeFilterSelect2();
+
+            const requestTable = $('#requestTable').DataTable({
+            ajax: {
+                url: "/OvertimeSummary/GetReportList",
+                type: "GET",
+                dataType: "json",
+                data: function (d) {
+                    d.branch     = $('#filterBranch').val();
+                    d.department = $('#filterDepartment').val();
+                    d.dateYear   = $('#dateYear').val();
+                    d.dateMonth  = $('#filterMonth').val();
+                    d.cutoff     = $('#filterCutoff').val();
+                }
+            },
+
+            columnDefs: [
+                {
+                    targets: '_all',
+                    className: 'dt-right',
+                    createdCell: function (td, cellData, rowData, row, col) {
+                        if (col < 5) {
+                            $(td).removeClass('dt-right');
+                        }
+                    }
+                }
+            ],
+
+            footerCallback: function (row, data, start, end, display) {
+                let api = this.api();
+
+                let intVal = function (i) {
+                    return typeof i === 'string'
+                        ? i.replace(/[,]/g, '') * 1
+                        : typeof i === 'number'
+                        ? i
+                        : 0;
+                };
+
+                // numeric columns start at index 4
+                for (let col = 5; col < api.columns().count(); col++) {
+                    let total = api
+                        .column(col, { page: 'current' })
+                        .data()
+                        .reduce(function (a, b) {
+                            return intVal(a) + intVal(b);
+                        }, 0);
+
+                    $(api.column(col).footer()).html(total.toFixed(2));
+                }
+            },
+
+            columns: [
+                { 
+                        data: "id",
+                        width: "20%",
+                        orderable: false,
+                        render: function (data, type, row) {
+                            var x=`<div class="d-flex gap-1">
+                                        <button type="button"
+                                            class="btn btn-sm btn-primary shadow-sm viewDetails"
+                                            data-employeeno="${row.employeeNo}"
+                                            data-datefrom="${row.cutoffStart}"
+                                            data-dateto="${row.cutoffEnd}"
+                                            title="View OT Requests"> <i class="fa fa-eye"></i></button>
+                                         </button>                      
+                                    </div>`;
+                            return x;
+                        }
+                },
+                { data: "branchName" },
+                { data: "departmentName" },
+                { data: "employeeNo" },
+                { data: "fullName" },
+
+                { data: "renderOT" },
+                { data: "renderNSD" },
+                { data: "renderNSDOT" },
+
+                { data: "renderREST" },
+                { data: "renderRESTOT" },
+                { data: "renderNSDREST" },
+                { data: "renderNSDRESTOT" },
+
+                { data: "renderL" },
+                { data: "renderOTL" },
+                { data: "renderNSDL" },
+                { data: "renderNSDOTL" },
+
+                { data: "renderS" },
+                { data: "renderOTS" },
+                { data: "renderNSDS" },
+                { data: "renderNSDOTS" },
+
+                { data: "renderRESTL" },
+                { data: "renderRESTOTL" },
+                { data: "renderNSDRESTL" },
+                { data: "renderNSDRESTOTL" },
+
+                { data: "renderRESTS" },
+                { data: "renderRESTOTS" },
+                { data: "renderNSDRESTS" },
+                { data: "renderNSDRESTOTS" }
+            ],
+                language: {
+                    paginate: {
+                        next: '<i class="fa fa-angle-double-right" aria-hidden="true"></i>',
+                        previous: '<i class="fa fa-angle-double-left" aria-hidden="true"></i>'
+                    }
+                }
+        });
+
+
+            //apply filter when user chose a param
+            $('#filterBranch,#filterDepartment,#filterMonth,#filterCutoff,#dateYear').on('change', function () {
+                requestTable.ajax.reload(null, true); // true = reset paging to first page
+            });
+
+            // EVENT HANDLER - EXPORT TO EXCEL (CURRENT PAGE ONLY)
+            $('#btnExportToExcel').click(function() {
+                const $btn = $(this);
+
+                // Validate data availability
+                if (requestTable.rows({ search: 'applied' }).count() === 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'No Data',
+                        text: 'No data available to export',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+
+                const currentPageData = requestTable.rows({ page: 'current' }).data().toArray();
+                if (currentPageData.length === 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'No Data',
+                        text: 'No data on current page to export',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+
+                // Validate year is selected
+                const branch = $('#filterBranch').val();
+                if (!branch) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Company is required',
+                        text: 'Please select a company before exporting',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+
+                // Get pagination and filter info
+                const pageInfo = requestTable.page.info();
+                const params = new URLSearchParams({
+                    branch: $('#filterBranch').val() || 'ALL',
+                    department: $('#filterDepartment').val() || 'ALL',
+                    dateYear: $('#dateYear').val(),
+                    dateMonth: $('#filterMonth').val(),
+                    cutoff: $('#filterCutoff').val(),
+                    offset: pageInfo.start,
+                    limit: pageInfo.length
+                });
+
+                // Show loading state
+                const originalHtml = $btn.html();
+                $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Exporting...');
+
+                const url = `/OvertimeSummaryExport/ExportToExcel?${params.toString()}`;
+
+                fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => {
+                            throw new Error(`Server error (${response.status}): ${text}`);
+                        });
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `OvertimeSummary_${new Date().getTime()}.xlsx`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+
+                    // Reset button
+                    $btn.prop('disabled', false).html(originalHtml);
+                })
+                .catch(error => {
+                    // Reset button
+                    $btn.prop('disabled', false).html(originalHtml);
+
+                    // Show error notification
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Export Failed',
+                        text: 'An error occurred during export. Please try again.',
+                        confirmButtonText: 'OK'
+                    });
+                });
+            });
+
+        });
+
+
+        $(document).on('click', '.viewDetails', function (e) {
+            e.preventDefault();
+            var employeeNo = $(this).data('employeeno');
+            var datefrom = $(this).data('datefrom');
+            var dateto = $(this).data('dateto');
+
+            sessionEmpNo = employeeNo;
+            sessionDateFrom = datefrom;
+            sessionDateTo = dateto;
+
+            $('#requestModal').modal('show');
+
+            requestListTable = $('#requestList').DataTable({
+            autoWidth: false,
+            responsive: false,
+            processing: true,
+            serverSide: false,
+            destroy: true, // ✅ add this if you reload the table multiple times
+            ajax: {
+                url: "/OvertimeSummary/GetOTRequest",
+                type: "GET",
+                datatype: "json",
+                data: function (d) {
+                    // Add employeeno as a parameter
+                    d.employeeno = employeeNo;
+                    d.datefrom = datefrom;
+                    d.dateto = dateto;
+                },
+                error: function(xhr, error, code) {
+                    console.log('Error loading data:', error);
+                    //showNotification('Error loading rate history. Please refresh the page.', 'error');
+                }
+            },
+            columns: [
+                { data: "employeeNo" },
+                { data: "fullName" },
+                { data: "requestIn" },
+                { data: "requestOut" },
+                { data: "reason" },
+                { data: "dateRequested" }
+            ],
+            order: [[0, 'asc']],
+            pageLength: 25,
+            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+            language: {
+                processing: "Loading...",
+                emptyTable: "No records found",
+                zeroRecords: "No matching records found",
+                paginate: {
+                    next: '<i class="fa fa-angle-double-right" aria-hidden="true"></i>',
+                    previous: '<i class="fa fa-angle-double-left" aria-hidden="true"></i>'
+                }
+            }
+        });
+        });
+
+
+        // EVENT HANDLER - EXPORT TO EXCEL (CURRENT PAGE ONLY)
+            $('#btnExportToExcelRequests').click(function() {
+                const $btn = $(this);
+
+                // Validate data availability
+                if (requestListTable.rows({ search: 'applied' }).count() === 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'No Data',
+                        text: 'No data available to export',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+
+                const currentPageData = requestListTable.rows({ page: 'current' }).data().toArray();
+                if (currentPageData.length === 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'No Data',
+                        text: 'No data on current page to export',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+
+                // Get pagination and filter info
+                const pageInfoList = requestListTable.page.info();
+                const params = new URLSearchParams({
+                    employeeno: sessionEmpNo,
+                    datefrom: sessionDateFrom,
+                    dateto: sessionDateTo,
+
+                    offset: pageInfoList.start,
+                    limit: pageInfoList.length
+                });
+
+                // Show loading state
+                const originalHtml = $btn.html();
+                $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Exporting...');
+
+                const url = `/OvertimeRequestSummaryExport/ExportToExcel?${params.toString()}`;
+
+                fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => {
+                            throw new Error(`Server error (${response.status}): ${text}`);
+                        });
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `OvertimeRequest_${new Date().getTime()}.xlsx`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+
+                    // Reset button
+                    $btn.prop('disabled', false).html(originalHtml);
+                })
+                .catch(error => {
+                    // Reset button
+                    $btn.prop('disabled', false).html(originalHtml);
+
+                    // Show error notification
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Export Failed',
+                        text: 'An error occurred during export. Please try again.',
+                        confirmButtonText: 'OK'
+                    });
+                });
+            });
+
+        function initializeFilterSelect2(){
+
+            // Initialize date pickers
+            $('#dateFrom, #dateTo').datepicker({ format: 'mm/dd/yyyy', autoclose: true, todayHighlight: true });
+
+            // branch
+            $('#filterBranch').select2({
+                placeholder: "Select Company",
+                allowClear: true,
+                ajax: {
+                    url: '/Setup/GetEmployeeBranch',
+                    dataType: 'json',
+                    delay: 250,
+                    processResults: function (data) {
+                        // Add "All" option manually
+                        var allOption = {
+                            id: 'ALL',
+                            text: 'All Companies'
+                        };
+
+                        var results = $.map(data, function (item) {
+                            return {
+                                id: item.branchCode,
+                                text: item.branchName
+                            };
+                        });
+
+                        // Put "All" on top
+                        results.unshift(allOption);
+
+                        return {
+                            results: results
+                        };
+                    }
+                }
+            });
+
+             // department
+             $('#filterDepartment').select2({
+                placeholder: "Select Department",
+                allowClear: true,
+                ajax: {
+                    url: '/Setup/GetEmployeeDepartment',
+                    dataType: 'json',
+                    delay: 250,
+                    processResults: function (data) {
+                        // Map your results as usual
+                        var results = $.map(data, function (item) {
+                            return {
+                                id: item.departmentCode,
+                                text: item.departmentName
+                            };
+                        });
+
+                        // Add the "All" option at the top
+                        results.unshift({
+                            id: 'ALL',
+                            text: 'All Departments'
+                        });
+
+                        return {
+                            results: results
+                        };
+                    }
+                }
+            });
+
+        }
+
+    </script>
+}

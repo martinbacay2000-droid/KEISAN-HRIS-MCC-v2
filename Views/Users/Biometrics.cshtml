@@ -1,0 +1,721 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutFillow.cshtml";
+    ViewData["Title"] = "Biometrics";
+}
+
+<div class="col-12">
+    <div class="card">
+        <div class="card-header">
+            <div class="row" style="width:100%;">
+                <h4 class="card-title">Biometrics Management</h4>
+                <br> <br> <br>
+
+                <div class="row" style="margin-left:0px;width:100%;">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Record Status</h5>
+                            <select name="filterRecordStatus" id="filterRecordStatus" class="form-control">
+                                <option value="active" selected>ACTIVE</option>
+                                <option value="inactive">INACTIVE</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6"></div>
+                    <div class="col-md-3 d-flex justify-content-end align-items-end">
+                        <div class="form-group">
+                            <button type="button" class="btn btn-primary" id="btnAddBiometric">
+                                <i class="fa fa-plus"></i> New Biometric
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="biometricsTable" class="display" style="min-width: 845px">
+                    <thead>
+                        <tr>
+                            <th>Action</th>
+                            <th>No.</th>
+                            <th>Employee Name</th>
+                            <th>Biometrics ID</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+
+        <!-- Modal for Add -->
+        <div class="modal fade" id="addBiometricModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add Biometric</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addBiometricForm">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="addEmployeeName" class="form-label">Employee Name <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="addEmployeeName" name="employeeNo" style="width:100%" required>
+                                        <option value="">Select Employee...</option>
+                                    </select>
+                                    <div class="invalid-feedback">Please select an employee.</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="addAccessNo" class="form-label">Biometrics ID <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control alphanum" id="addAccessNo" name="accessNo" maxlength="50" placeholder="Enter access number" required>
+                                    <div class="invalid-feedback">Please provide a valid access number.</div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="btnSaveNewBiometric">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for View/Edit -->
+        <div class="modal fade" id="viewBiometricModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="viewModalTitle">View Biometric</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="viewBiometricForm">
+                            <input type="hidden" id="viewBiometricId" name="id">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="viewEmployeeNameDisplay" class="form-label">Employee Name</label>
+                                    <input type="text" class="form-control" id="viewEmployeeNameDisplay" readonly>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="viewAccessNo" class="form-label">Biometrics ID <span class="text-danger edit-required d-none">*</span></label>
+                                    <input type="text" class="form-control alphanum" id="viewAccessNo" name="accessNo" readonly maxlength="50">
+                                    <div class="invalid-feedback">Please provide a valid access number.</div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="btnEditBiometric">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button type="button" class="btn btn-success d-none" id="btnSaveBiometric">Save</button>
+                        <button type="button" class="btn btn-danger d-none" id="btnCancelEdit">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Fillow_style
+{
+    <style>
+        .table-responsive {
+            border-radius: 0.375rem;
+        }
+
+        #biometricsTable_wrapper .dataTables_length, #biometricsTable_wrapper .dataTables_filter {
+            margin-bottom: 1rem;
+        }
+
+        #biometricsTable_wrapper .dataTables_info, #biometricsTable_wrapper .dataTables_paginate {
+            margin-top: 1rem;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        #biometricsTable .d-flex.gap-1 {
+            gap: 0.25rem !important;
+        }
+
+        .modal-content {
+            border-radius: 0.5rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        .invalid-feedback {
+            display: none;
+        }
+
+        .form-control.is-invalid, .form-select.is-invalid {
+            border-color: #dc3545;
+        }
+
+            .form-control.is-invalid ~ .invalid-feedback, .form-select.is-invalid ~ .invalid-feedback {
+                display: block;
+            }
+
+        .form-control[readonly] {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        .form-select[disabled] {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        .edit-mode .form-control[readonly] {
+            background-color: #ffffff;
+            border-color: #ced4da;
+        }
+
+        .edit-mode .form-select[disabled] {
+            background-color: #ffffff;
+            border-color: #ced4da;
+        }
+
+        .select2-container .select2-selection--single {
+            height: 38px;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 36px;
+            padding-left: 12px;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 36px;
+        }
+
+        .select2-container--default.select2-container--focus .select2-selection--single {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        .select2-container--default .select2-selection--single.select2-selection--disabled {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        .is-invalid + .select2-container .select2-selection--single {
+            border-color: #dc3545;
+        }
+
+        .swal2-popup {
+            border-radius: 15px !important;
+            padding: 2rem !important;
+        }
+
+        .swal2-icon.swal2-error {
+            border-color: #f27474 !important;
+            color: #f27474 !important;
+        }
+
+            .swal2-icon.swal2-error .swal2-x-mark {
+                display: none !important;
+            }
+
+            .swal2-icon.swal2-error::before {
+                content: "\f2ed" !important;
+                font-family: "Font Awesome 5 Free" !important;
+                font-weight: 900 !important;
+                font-size: 2.5rem !important;
+                color: #f27474 !important;
+                display: block !important;
+            }
+
+        .swal2-title {
+            font-size: 1.875rem !important;
+            font-weight: 600 !important;
+            color: #545454 !important;
+            margin: 1rem 0 0.5rem 0 !important;
+        }
+
+        .swal2-html-container {
+            font-size: 1rem !important;
+            color: #737373 !important;
+            margin: 0 0 2rem 0 !important;
+        }
+
+        .swal2-actions {
+            gap: 0.5rem !important;
+        }
+
+        .swal2-confirm {
+            background-color: #7c3aed !important;
+            border-color: #7c3aed !important;
+            color: white !important;
+            font-weight: 500 !important;
+            padding: 0.75rem 2rem !important;
+            border-radius: 8px !important;
+            font-size: 0.875rem !important;
+        }
+
+        .swal2-cancel {
+            background-color: #6b7280 !important;
+            border-color: #6b7280 !important;
+            color: white !important;
+            font-weight: 500 !important;
+            padding: 0.75rem 2rem !important;
+            border-radius: 8px !important;
+            font-size: 0.875rem !important;
+        }
+
+        .swal2-confirm:hover {
+            background-color: #6d28d9 !important;
+            border-color: #6d28d9 !important;
+        }
+
+        .swal2-cancel:hover {
+            background-color: #4b5563 !important;
+            border-color: #4b5563 !important;
+        }
+
+        .truncate {
+            max-width: 200px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-header {
+            border-bottom: none !important;
+        }
+
+        #filterRecordStatus {
+            width: 100%;
+        }
+    </style>
+}
+
+@section Fillow_script
+{
+    <script>
+        $(document).ready(function () {
+
+            MODULE = 'TbiometricsM';
+            access = ROLE_ACCESS?.[MODULE];
+
+             if (access != 'READWRITE' && access != 'FULL') {
+                   $('#btnAddBiometric').hide();
+                   $('#btnEditBiometric').hide();
+             }
+
+            // CONFIGURATION
+            const config = {
+                toastr: {
+                    positionClass: "toast-top-right",
+                    timeOut: 5000,
+                    closeButton: true,
+                    progressBar: true,
+                    preventDuplicates: true
+                },
+                endpoints: {
+                    list: "/Biometrics/GetBiometricsList",
+                    deleted: "/Biometrics/GetDeletedBiometricsList",
+                    get: "/Biometrics/GetBiometric",
+                    employees: "/Biometrics/GetEmployeeList",
+                    add: "/Biometrics/AddBiometric",
+                    update: "/Biometrics/UpdateBiometric",
+                    delete: "/Biometrics/DeleteBiometric",
+                    restore: "/Biometrics/RestoreBiometric",
+                    checkEmployee: "/Biometrics/CheckEmployeeBiometric",
+                    validateAccess: "/Biometrics/ValidateAccessNo"
+                }
+            };
+
+            toastr.options = config.toastr;
+            let isViewingDeleted = false;
+
+            // INITIALIZATION
+            initializeSelect2();
+            $('#filterRecordStatus').select2({ selectOnClose: true, minimumResultsForSearch: Infinity });
+            $('#filterRecordStatus').on('change', () => {
+                isViewingDeleted = $('#filterRecordStatus').val() === 'inactive';
+                updateTableView();
+            });
+
+            // DATATABLE CONFIGURATION
+            const table = $('#biometricsTable').DataTable({
+                responsive: true,
+                processing: true,
+                serverSide: false,
+                ajax: {
+                    url: config.endpoints.list,
+                    type: "GET",
+                    error: () => showNotification('Error loading data. Please refresh the page.', 'error')
+                },
+                columns: [
+                    {
+                        data: "id",
+                        width: "15%",
+                        orderable: false,
+                        render: data => {
+
+                            let approveBtn ='';
+                            let restorebtn = '';
+                            let declineBtn ='';
+
+                            
+
+                            if (isViewingDeleted) {
+
+                                if (access === 'FULL') {
+
+                                    restorebtn = ` <button class="btn btn-sm btn-success shadow-sm restoreBiometric" data-id="${data}" title="Restore">
+                                        <i class="fas fa-undo"></i>
+                                    </button>`;
+
+                                }
+
+                                return `<div class="d-flex gap-1">
+                                    ${restorebtn}
+                                    </div>`;
+                            } else {
+
+                                    approveBtn = ` <button class="btn btn-sm btn-primary shadow-sm viewBiometric" data-id="${data}" title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </button>`;
+
+                                if (access === 'FULL') {
+                                    declineBtn = ` <button class="btn btn-sm btn-danger shadow-sm deleteBiometric" data-id="${data}" title="Delete">
+                                            <i class="fa fa-trash"></i>
+                                        </button>`;
+                                }
+
+                                return `<div class="d-flex gap-1">
+                                   ${approveBtn}
+                                   ${declineBtn}
+                                </div>`;
+                            }
+                        }
+                    },
+                    { data: "id", width: "10%" },
+                    { data: "employeeName", width: "50%", render: data => `<span class="truncate" title="${data || ''}">${data || ''}</span>` },
+                    { data: "accessNo", width: "25%", render: data => `<span class="truncate" title="${data || ''}">${data || 'Not Set'}</span>` }                   
+                ],
+                order: [[0, 'desc']],
+                pageLength: 25,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                language: {
+                    processing: "Loading...",
+                    emptyTable: "No biometric records found",
+                    zeroRecords: "No matching biometric records found",
+                    paginate: {
+                        next: '<i class="fa fa-angle-double-right"></i>',
+                        previous: '<i class="fa fa-angle-double-left"></i>'
+                    }
+                }
+            });
+
+            // EVENT HANDLERS - ADD MODAL
+            $('#btnAddBiometric').click(() => {
+                resetAddForm();
+                loadEmployeeOptions('#addEmployeeName');
+                $('#addBiometricModal').modal('show');
+            });
+
+            $('#btnSaveNewBiometric').click(() => {
+                if (!validateForm('#addBiometricForm', ['addEmployeeName', 'addAccessNo'])) return;
+
+                const data = { employeeNo: $('#addEmployeeName').val(), accessNo: $('#addAccessNo').val().trim() };
+                const $btn = $('#btnSaveNewBiometric');
+
+                toggleButtonLoading($btn, true, 'Saving...');
+
+                // Validate employee and access number
+                $.when(
+                    $.get(config.endpoints.checkEmployee, { employeeNo: data.employeeNo }),
+                    data.accessNo ? $.get(config.endpoints.validateAccess, { accessNo: data.accessNo }) : null
+                ).done((employeeCheck, accessCheck) => {
+                    if (employeeCheck[0].exists) {
+                        showNotification('Employee already has a biometric record.', 'error');
+                        $('#addEmployeeName').addClass('is-invalid');
+                        toggleButtonLoading($btn, false);
+                        return;
+                    }
+
+                    if (accessCheck && !accessCheck[0].isUnique) {
+                        showNotification('Access number already exists.', 'error');
+                        $('#addAccessNo').addClass('is-invalid');
+                        toggleButtonLoading($btn, false);
+                        return;
+                    }
+
+                    saveRequest(config.endpoints.add, data, $btn, true);
+                }).fail(() => {
+                    showNotification('Unable to validate data.', 'error');
+                    toggleButtonLoading($btn, false);
+                });
+            });
+
+            // EVENT HANDLERS - VIEW/EDIT MODAL
+            $(document).on('click', '.viewBiometric', function(e) {
+                e.preventDefault();
+                const id = $(this).data('id');
+                const $btn = $(this);
+
+                toggleButtonLoading($btn, true);
+
+                $.get(config.endpoints.get, { id })
+                    .done(data => {
+                        if (data) {
+                            resetViewForm();
+                            setViewMode();
+                            $('#viewBiometricId').val(data.id);
+                            $('#viewEmployeeNameDisplay').val(data.employeeName || '');
+                            $('#viewAccessNo').val(data.accessNo || '');
+                            $('#viewBiometricModal').modal('show');
+                        } else {
+                            showNotification('Unable to load biometric data', 'error');
+                        }
+                    })
+                    .fail(() => showNotification('Unable to load biometric data', 'error'))
+                    .always(() => toggleButtonLoading($btn, false));
+            });
+
+            $('#btnEditBiometric').click(() => {
+                setEditMode();
+                $('#viewAccessNo').focus();
+            });
+
+            $('#btnCancelEdit').click(() => {
+                const id = $('#viewBiometricId').val();
+                $.get(config.endpoints.get, { id }).done(data => {
+                    if (data) {
+                        $('#viewAccessNo').val(data.accessNo || '');
+                        setViewMode();
+                        clearValidation('#viewBiometricForm');
+                    }
+                });
+            });
+
+            $('#btnSaveBiometric').click(() => {
+                if (!validateForm('#viewBiometricForm', ['viewAccessNo'])) return;
+
+                const data = { id: $('#viewBiometricId').val(), accessNo: $('#viewAccessNo').val().trim() };
+                const $btn = $('#btnSaveBiometric');
+
+                toggleButtonLoading($btn, true, 'Saving...');
+
+                if (data.accessNo) {
+                    $.get(config.endpoints.validateAccess, { accessNo: data.accessNo, excludeId: data.id })
+                        .done(response => {
+                            if (response.isUnique) {
+                                saveRequest(config.endpoints.update, data, $btn, false);
+                            } else {
+                                showNotification('Access number already exists.', 'error');
+                                $('#viewAccessNo').addClass('is-invalid');
+                                toggleButtonLoading($btn, false);
+                            }
+                        })
+                        .fail(() => {
+                            showNotification('Unable to validate access number.', 'error');
+                            toggleButtonLoading($btn, false);
+                        });
+                } else {
+                    saveRequest(config.endpoints.update, data, $btn, false);
+                }
+            });
+
+            // EVENT HANDLERS - DELETE/RESTORE
+            $(document).on('click', '.deleteBiometric', function(e) {
+                e.preventDefault();
+                deleteWithReason({
+                    title: 'Inactive Biometric Record',
+                    text: 'Are you sure you want to inactive this biometric record?',
+                    url: '/Biometrics/DeleteBiometric',
+                    id: $(this).data('id'),
+                    button: $(this),
+                    table: table
+                });
+            });
+
+            $(document).on('click', '.restoreBiometric', function(e) {
+                e.preventDefault();
+                const id = $(this).data('id');
+                const $btn = $(this);
+
+                Swal.fire({
+                    title: 'Restore Record',
+                    text: 'Are you sure you want to restore this biometric record?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, Restore',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d',
+                    reverseButtons: false,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        toggleButtonLoading($btn, true);
+                        $.post(config.endpoints.restore, { id })
+                            .done(response => {
+                                if (response.success) {
+                                    table.ajax.reload(null, false);
+                                    showNotification(response.message, 'success');
+                                } else {
+                                    showNotification(response.message, 'error');
+                                }
+                            })
+                            .fail(() => showNotification('Unable to restore biometric.', 'error'))
+                            .always(() => toggleButtonLoading($btn, false));
+                    }
+                });
+            });
+
+            $(document).on('click', '.restoreBiometric', function(e) {
+                e.preventDefault();
+                const id = $(this).data('id');
+                const $btn = $(this);
+
+                Swal.fire({
+                    title: 'Restore Record',
+                    text: 'Are you sure you want to restore this biometric record?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, Restore',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d'
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        toggleButtonLoading($btn, true);
+                        $.post(config.endpoints.restore, { id })
+                            .done(response => {
+                                if (response.success) {
+                                    table.ajax.reload(null, false);
+                                    showNotification(response.message, 'success');
+                                } else {
+                                    showNotification(response.message, 'error');
+                                }
+                            })
+                            .fail(() => showNotification('Unable to restore biometric.', 'error'))
+                            .always(() => toggleButtonLoading($btn, false));
+                    }
+                });
+            });
+
+            // EVENT HANDLERS - MODAL LIFECYCLE
+            $('#addBiometricModal').on('hidden.bs.modal', resetAddForm);
+            $('#viewBiometricModal').on('hidden.bs.modal', () => { resetViewForm(); setViewMode(); });
+
+            // EVENT HANDLERS - KEYBOARD
+            $('#addBiometricForm').on('keypress', e => { if (e.which === 13) { e.preventDefault(); $('#btnSaveNewBiometric').click(); } });
+            $('#viewBiometricForm').on('keypress', e => { if (e.which === 13 && $('#viewBiometricModal .modal-body').hasClass('edit-mode')) { e.preventDefault(); $('#btnSaveBiometric').click(); } });
+
+            // EVENT HANDLERS - VALIDATION
+            $('#addEmployeeName, #addAccessNo, #viewAccessNo').on('input change', function() { $(this).removeClass('is-invalid'); });
+
+            // HELPER FUNCTIONS
+            function initializeSelect2() {
+                $('#addEmployeeName').select2({ placeholder: "Select Employee", allowClear: true, dropdownParent: $('#addBiometricModal'), width: '100%' });
+            }
+
+            function loadEmployeeOptions(selector) {
+                $.get(config.endpoints.employees, data => {
+                    const $select = $(selector);
+                    $select.empty().append('<option value="">Select Employee...</option>');
+                    data.forEach(item => $select.append(`<option value="${item.employeeNo}">${item.employeeName}</option>`));
+                });
+            }
+
+            function updateTableView() {
+                table.ajax.url(isViewingDeleted ? config.endpoints.deleted : config.endpoints.list).load();
+                $('#btnAddBiometric').toggle(!isViewingDeleted);
+            }
+
+            function saveRequest(url, data, $btn, closeModal) {
+                $.post(url, data)
+                    .done(response => {
+                        if (response.success) {
+                            if (closeModal) $('#addBiometricModal').modal('hide');
+                            else setViewMode();
+                            table.ajax.reload(null, false);
+                            showNotification(response.message, 'success');
+                        } else {
+                            showNotification(response.message, 'error');
+                        }
+                    })
+                    .fail(() => showNotification('Unable to save.', 'error'))
+                    .always(() => toggleButtonLoading($btn, false));
+            }
+
+            function resetAddForm() {
+                $('#addBiometricForm')[0].reset();
+                $('#addEmployeeName').val(null).trigger('change');
+                clearValidation('#addBiometricForm');
+                $('#btnSaveNewBiometric').prop('disabled', false).html('Save');
+            }
+
+            function resetViewForm() {
+                $('#viewBiometricForm')[0].reset();
+                clearValidation('#viewBiometricForm');
+                $('#btnSaveBiometric').prop('disabled', false).html('Save');
+            }
+
+            function setViewMode() {
+                $('#viewModalTitle').text('View Biometric');
+                $('#viewBiometricModal .modal-body').removeClass('edit-mode');
+                $('#viewAccessNo').prop('readonly', true);
+                $('.edit-required').addClass('d-none');
+                $('#btnEditBiometric').removeClass('d-none');
+                $('#btnSaveBiometric, #btnCancelEdit').addClass('d-none');
+                clearValidation('#viewBiometricForm');
+            }
+
+            function setEditMode() {
+                $('#viewModalTitle').text('Edit Biometric');
+                $('#viewBiometricModal .modal-body').addClass('edit-mode');
+                $('#viewAccessNo').prop('readonly', false);
+                $('.edit-required').removeClass('d-none');
+                $('#btnEditBiometric').addClass('d-none');
+                $('#btnSaveBiometric, #btnCancelEdit').removeClass('d-none');
+            }
+
+            function validateForm(formSelector, fields) {
+                clearValidation(formSelector);
+                let isValid = true;
+                fields.forEach(field => {
+                    if (!$(`#${field}`).val()) {
+                        $(`#${field}`).addClass('is-invalid');
+                        isValid = false;
+                    }
+                });
+                return isValid;
+            }
+
+            function clearValidation(formSelector) {
+                $(`${formSelector} .form-control, ${formSelector} .form-select`).removeClass('is-invalid');
+            }
+
+            function toggleButtonLoading($btn, loading, text = '') {
+                if (loading) {
+                    if (!$btn.data('original-html')) $btn.data('original-html', $btn.html());
+                    const icon = text ? '<i class="fas fa-spinner fa-spin"></i> ' : '<i class="fas fa-spinner fa-spin"></i>';
+                    $btn.prop('disabled', true).html(icon + text);
+                } else {
+                    $btn.prop('disabled', false).html($btn.data('original-html') || 'Save');
+                    $btn.removeData('original-html');
+                }
+            }
+
+            function showNotification(message, type) {
+                const types = { success: 'Success', error: 'Error', warning: 'Warning', info: 'Information' };
+                toastr[type](message, types[type] || 'Notification');
+            }
+        });
+    </script>
+}

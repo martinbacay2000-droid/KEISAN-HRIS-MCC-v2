@@ -1,0 +1,891 @@
+﻿@model List<KEISAN_HRIS_v2.Models.Users.userAllowances>
+
+@{
+    // Access flags passed from controller
+    bool canViewAmount = ViewBag.CanViewAmount ?? false;  // READWRITE | FULL
+    bool canEditAllowance = ViewBag.CanEditAllowance ?? false;  // EDIT | READWRITE | FULL
+    bool canSaveAllowance = ViewBag.CanSaveAllowance ?? false;  // READWRITE | FULL
+    bool canFullAccess = ViewBag.CanFullAccess ?? false;  // FULL only
+}
+
+<div class="card-header">
+    <div class="row" style="width:100%;">
+        <div class="row" style="margin-left:0px;width:100%;">
+            <div class="col-md-3">
+                <div class="form-group">
+                    <h5>Record Status</h5>
+                    <select name="filterRecordStatus" id="filterRecordStatus" class="form-control">
+                        <option value="active" selected>ACTIVE</option>
+                        <option value="inactive">INACTIVE</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-6"></div>
+            <div class="col-md-3 d-flex justify-content-end align-items-end">
+                <div class="form-group">
+                    @if (canSaveAllowance)
+                    {
+                        <button type="button" class="btn btn-primary" id="btnAddAllowance">
+                            <i class="fa fa-plus"></i> New Allowance
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card-body">
+    <div class="table-responsive">
+        <table id="allowanceTable" class="display" style="min-width: 900px">
+            <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>Allowance Name</th>
+                    <th>
+                        Amount
+                        @if (!canViewAmount)
+                        {
+                            <span class="text-muted">(Hidden)</span>
+                        }
+                    </th>
+                    <th>Tax Type</th>
+                    <th>Effectivity Date</th>
+                    <th>Schedule</th>
+                    <th>Date Added</th>
+                    <th>Added By</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<!-- Add Allowance Modal — only rendered for READWRITE / FULL -->
+@if (canSaveAllowance)
+{
+    <div class="modal fade" id="addAllowanceModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">New Allowance</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addAllowanceForm">
+                        <input type="hidden" id="addEmployeeNoHidden" name="EmployeeNo" value="@ViewBag.EmployeeNo" />
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label">Allowance Name <span class="text-danger">*</span></label>
+                                <select id="addAllowanceCode" name="AllowanceCode" class="form-select" required>
+                                    <option value="">Select Allowance Type</option>
+                                </select>
+                                <div class="invalid-feedback">Please select an allowance type.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Tax Type</label>
+                                <input type="text" id="addTaxType" class="form-control" readonly />
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Schedule</label>
+                                <input type="text" id="addAllowanceSchedule" class="form-control" readonly />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Effectivity Date <span class="text-danger">*</span></label>
+                                <div class="input-hasicon">
+                                    <input type="text" id="addEffectivityDate" name="EffectivityDate" class="form-control bt-datepicker" required />
+                                    <div class="icon"><i class="far fa-calendar"></i></div>
+                                </div>
+                                <div class="invalid-feedback">Please select effectivity date.</div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Allowance Amount <span class="text-danger">*</span></label>
+                                <input type="number" id="addAllowanceAmount" name="AllowanceAmount" class="form-control" step="0.01" min="0" required />
+                                <div class="invalid-feedback">Please enter allowance amount.</div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="btnSaveNewAllowance" class="btn btn-primary">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- View/Edit Allowance Modal -->
+<div class="modal fade" id="viewAllowanceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewModalTitle">View Allowance</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="viewAllowanceForm">
+                    <input type="hidden" id="viewAllowanceId" name="Id" />
+                    <input type="hidden" id="viewEmployeeNoHidden" name="EmployeeNo" value="@ViewBag.EmployeeNo" />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Allowance Name</label>
+                            <input type="text" class="form-control" id="viewAllowanceDisplay" readonly>
+                            <input type="hidden" id="viewAllowanceCode" name="AllowanceCode">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Tax Type</label>
+                            <input type="text" id="viewTaxType" class="form-control" readonly />
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Schedule</label>
+                            <input type="text" id="viewAllowanceSchedule" class="form-control" readonly />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Effectivity Date
+                                <span class="text-danger edit-required d-none">*</span>
+                            </label>
+                            <div class="input-hasicon">
+                                <input type="text" id="viewEffectivityDate" name="EffectivityDate"
+                                       class="form-control bt-datepicker" readonly />
+                                <div class="icon"><i class="far fa-calendar"></i></div>
+                            </div>
+                            <div class="invalid-feedback">Please select effectivity date.</div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Allowance Amount
+                                @if (!canViewAmount)
+                                {
+                                    <span class="text-muted">(Hidden)</span>
+                                }
+                                @if (canViewAmount)
+                                {
+                                    <span class="text-danger edit-required d-none">*</span>
+                                }
+                            </label>
+
+                            @if (canViewAmount)
+                            {
+                                <!-- READWRITE / FULL: real editable amount field -->
+                                <input type="number" id="viewAllowanceAmount" name="AllowanceAmount"
+                                       class="form-control" step="0.01" min="0" readonly />
+                                <div class="invalid-feedback">Please enter allowance amount.</div>
+                            }
+                            else
+                            {
+                                <!-- EDIT / READ: masked display + hidden zero so form still submits -->
+                                <input type="text" id="viewAllowanceAmountMask" class="form-control"
+                                       value="****" readonly style="background-color:#f8f9fa;cursor:not-allowed;" />
+                                <input type="hidden" id="viewAllowanceAmount" name="AllowanceAmount" value="0" />
+                            }
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                @if (canEditAllowance)
+                {
+                    <button type="button" class="btn btn-primary" id="btnEditAllowance">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button type="button" class="btn btn-success d-none" id="btnSaveAllowance">Save</button>
+                    <button type="button" class="btn btn-danger d-none" id="btnCancelEdit">Cancel</button>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .table-responsive {
+        border-radius: 0.375rem;
+    }
+
+    #allowanceTable_wrapper .dataTables_length,
+    #allowanceTable_wrapper .dataTables_filter {
+        margin-bottom: 1rem;
+    }
+
+    #allowanceTable_wrapper .dataTables_info,
+    #allowanceTable_wrapper .dataTables_paginate {
+        margin-top: 1rem;
+    }
+
+    #allowanceTable .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .modal-content {
+        border-radius: 0.5rem;
+        box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15);
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13,110,253,.25);
+    }
+
+    .invalid-feedback {
+        display: none;
+    }
+
+    .form-control.is-invalid,
+    .form-select.is-invalid {
+        border-color: #dc3545;
+    }
+
+        .form-control.is-invalid ~ .invalid-feedback,
+        .form-select.is-invalid ~ .invalid-feedback {
+            display: block;
+        }
+
+    .input-hasicon {
+        position: relative;
+    }
+
+        .input-hasicon .icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+
+        .input-hasicon input {
+            padding-right: 35px;
+        }
+
+    .text-danger {
+        color: #dc3545 !important;
+    }
+
+    .form-control[readonly] {
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+    }
+
+    .form-select[disabled] {
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+    }
+
+    .edit-mode .form-control[readonly] {
+        background-color: #ffffff;
+        border-color: #ced4da;
+    }
+
+    .select2-container .select2-selection--single {
+        height: 38px;
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 36px;
+        padding-left: 12px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 36px;
+    }
+
+    .select2-container--default.select2-container--focus .select2-selection--single {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13,110,253,.25);
+    }
+
+    .select2-container--default .select2-selection--single.select2-selection--disabled {
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+    }
+
+    .is-invalid + .select2-container .select2-selection--single {
+        border-color: #dc3545;
+    }
+
+    /* SweetAlert2 */
+    .swal2-popup {
+        border-radius: 15px !important;
+        padding: 2rem !important;
+    }
+
+    .swal2-icon.swal2-error {
+        border-color: #f27474 !important;
+        color: #f27474 !important;
+    }
+
+        .swal2-icon.swal2-error .swal2-x-mark {
+            display: none !important;
+        }
+
+        .swal2-icon.swal2-error::before {
+            content: "\f2ed" !important;
+            font-family: "Font Awesome 5 Free" !important;
+            font-weight: 900 !important;
+            font-size: 2.5rem !important;
+            color: #f27474 !important;
+            display: block !important;
+        }
+
+    .swal2-title {
+        font-size: 1.875rem !important;
+        font-weight: 600 !important;
+        color: #545454 !important;
+        margin: 1rem 0 0.5rem 0 !important;
+    }
+
+    .swal2-html-container {
+        font-size: 1rem !important;
+        color: #737373 !important;
+        margin: 0 0 2rem 0 !important;
+    }
+
+    .swal2-actions {
+        gap: 0.5rem !important;
+    }
+
+    .swal2-confirm {
+        background-color: #7c3aed !important;
+        border-color: #7c3aed !important;
+        color: white !important;
+        font-weight: 500 !important;
+        padding: 0.75rem 2rem !important;
+        border-radius: 8px !important;
+        font-size: 0.875rem !important;
+    }
+
+    .swal2-cancel {
+        background-color: #6b7280 !important;
+        border-color: #6b7280 !important;
+        color: white !important;
+        font-weight: 500 !important;
+        padding: 0.75rem 2rem !important;
+        border-radius: 8px !important;
+        font-size: 0.875rem !important;
+    }
+
+    .swal2-confirm:hover {
+        background-color: #6d28d9 !important;
+        border-color: #6d28d9 !important;
+    }
+
+    .swal2-cancel:hover {
+        background-color: #4b5563 !important;
+        border-color: #4b5563 !important;
+    }
+
+    .btn-success.shadow-sm:hover {
+        background-color: #1e7e34;
+        border-color: #1c7430;
+    }
+
+    .table th, .table td {
+        vertical-align: middle;
+    }
+
+    #allowanceTable .btn-sm i {
+        font-size: 0.875rem;
+    }
+
+    #allowanceTable .d-flex.gap-1 {
+        gap: 0.25rem !important;
+    }
+
+    .card-header {
+        border-bottom: none !important;
+    }
+</style>
+
+<script>
+    $(document).ready(function () {
+
+        // ── Access flags from Razor ──────────────────────────────────────────────
+        const config = {
+            canViewAmount    : @Json.Serialize(canViewAmount),     // READWRITE | FULL
+            canEditAllowance : @Json.Serialize(canEditAllowance),  // EDIT | READWRITE | FULL
+            canSaveAllowance : @Json.Serialize(canSaveAllowance),  // READWRITE | FULL
+            canFullAccess    : @Json.Serialize(canFullAccess),     // FULL only
+
+            toastr: {
+                positionClass   : "toast-top-right",
+                timeOut         : 5000,
+                closeButton     : true,
+                progressBar     : true,
+                preventDuplicates: true
+            },
+            endpoints: {
+                list    : "/Allowances/GetAllowanceList",
+                deleted : "/Allowances/GetDeletedAllowances",
+                get     : "/Allowances/GetAllowanceById",
+                types   : "/Allowances/GetAllowanceTypes",
+                save    : "/Allowances/SaveAllowance",
+                delete  : "/Allowances/InactiveAllowance",
+                restore : "/Allowances/RestoreAllowance"
+            },
+            datepickerFormat : 'yyyy/mm/dd',
+            employeeNo       : '@ViewBag.EmployeeNo'
+        };
+
+        MODULE = 'FSAllowancesM';
+        access = ROLE_ACCESS?.[MODULE];
+
+        toastr.options = config.toastr;
+        let isViewingDeleted = false;
+
+        // ── Initialization ───────────────────────────────────────────────────────
+        initializeSelect2();
+        initializeDatepickers();
+        const table = initializeDataTable();
+
+        // Auto-refresh table every hour
+        setInterval(() => {
+            if (table && !$('.modal').is(':visible')) table.ajax.reload(null, false);
+        }, 3600000);
+
+        // ── Event Handlers ───────────────────────────────────────────────────────
+        $('#filterRecordStatus').on('change', function () {
+            isViewingDeleted = $(this).val() === 'inactive';
+            updateTableView();
+        }).select2({ selectOnClose: true, minimumResultsForSearch: Infinity });
+
+        // Add modal — only wired up when button exists (canSaveAllowance)
+        $('#btnAddAllowance').click(() => { resetForm('add'); $('#addAllowanceModal').modal('show'); });
+        $('#btnSaveNewAllowance').click(() => { if (validateForm('add')) saveAllowance(false); });
+
+        // View/Edit modal
+        $(document).on('click', '.viewAllowance', function (e) {
+            e.preventDefault();
+            const $btn = $(this);
+            toggleButtonLoading($btn, true);
+            loadAllowanceForView($(this).data('id'), $btn);
+        });
+
+        $('#btnEditAllowance').click(() => {
+            setEditMode();
+            $('#viewEffectivityDate').focus();
+        });
+
+        $('#btnCancelEdit').click(() => {
+            const id = $('#viewAllowanceId').val();
+            loadAllowanceForView(id, null, true);
+        });
+
+        $('#btnSaveAllowance').click(() => { if (validateForm('view')) saveAllowance(true); });
+
+        // Delete / Restore
+        $(document).on('click', '.deleteAllowance', function (e) {
+            e.preventDefault();
+            deleteWithReason({
+                title  : 'Inactive Allowance',
+                text   : 'Are you sure you want to inactive this allowance?',
+                url    : config.endpoints.delete,
+                id     : $(this).data('id'),
+                button : $(this),
+                table  : table
+            });
+        });
+
+        $(document).on('click', '.restoreAllowance', function (e) {
+            e.preventDefault();
+            const id  = $(this).data('id');
+            const $btn = $(this);
+
+            Swal.fire({
+                title             : 'Restore Record',
+                text              : 'Are you sure you want to restore this allowance?',
+                icon              : 'question',
+                showCancelButton  : true,
+                confirmButtonText : 'Yes, Restore',
+                cancelButtonText  : 'Cancel',
+                confirmButtonColor: '#28a745',
+                cancelButtonColor : '#6c757d',
+                reverseButtons    : false,
+                allowOutsideClick : false,
+                allowEscapeKey    : false
+            }).then(result => {
+                if (result.isConfirmed) {
+                    toggleButtonLoading($btn, true);
+                    restoreAllowance(id, $btn);
+                }
+            });
+        });
+
+        // Modal lifecycle
+        $('#addAllowanceModal').on('hidden.bs.modal', () => resetForm('add'));
+        $('#viewAllowanceModal').on('hidden.bs.modal', () => { resetForm('view'); setViewMode(); });
+
+        // Keyboard shortcuts
+        $('#addAllowanceForm').on('keypress', e => {
+            if (e.which === 13) { e.preventDefault(); $('#btnSaveNewAllowance').click(); }
+        });
+        $('#viewAllowanceForm').on('keypress', e => {
+            if (e.which === 13 && $('#viewAllowanceModal .modal-body').hasClass('edit-mode')) {
+                e.preventDefault(); $('#btnSaveAllowance').click();
+            }
+        });
+
+        // Allowance type change → populate readonly fields
+        $('#addAllowanceCode').on('change', function () {
+            $(this).removeClass('is-invalid');
+            const selectedData = $(this).select2('data')[0];
+            if (selectedData) {
+                $('#addTaxType').val(selectedData.taxType || '');
+                $('#addAllowanceSchedule').val(selectedData.basis || '');
+            } else {
+                $('#addTaxType').val('');
+                $('#addAllowanceSchedule').val('');
+            }
+        });
+
+        $('#addEffectivityDate, #viewEffectivityDate').on('input', function () {
+            $(this).removeClass('is-invalid');
+        });
+
+        // Amount validation — only when field is a real number input (canViewAmount)
+        if (config.canViewAmount) {
+            $('#addAllowanceAmount, #viewAllowanceAmount').on('input', function () {
+                $(this).removeClass('is-invalid');
+                const value = parseFloat($(this).val());
+                if (!isNaN(value) && value <= 0) {
+                    $(this).addClass('is-invalid');
+                    $(this).siblings('.invalid-feedback').text('Allowance amount must be greater than 0');
+                }
+            });
+
+            $('#addAllowanceAmount, #viewAllowanceAmount').on('keydown', function (e) {
+                if (e.key === 'e' || e.key === 'E' || e.key === '+' || e.key === '-') e.preventDefault();
+            });
+
+            $('#addAllowanceAmount, #viewAllowanceAmount').on('input', function (e) {
+                let value = e.target.value;
+                value = value.replace(/[^0-9.]/g, '');
+                value = value.replace(/(\..*)\./g, '$1');
+                value = value.replace(/^(\d+(\.\d{0,2})?).*$/, '$1');
+                e.target.value = value;
+            });
+        }
+
+        // ── Initialization Functions ─────────────────────────────────────────────
+        function initializeSelect2() {
+            if (config.canSaveAllowance) {
+                $('#addAllowanceCode').select2({
+                    placeholder  : "Select Allowance Type",
+                    allowClear   : true,
+                    dropdownParent: $('#addAllowanceModal'),
+                    ajax: {
+                        url           : config.endpoints.types,
+                        dataType      : 'json',
+                        delay         : 250,
+                        processResults: data => ({
+                            results: data.map(item => ({
+                                id     : item.allowanceCode,
+                                text   : item.allowanceName,
+                                taxType: item.isTaxable ? 'Taxable' : 'NonTaxable',
+                                basis  : item.basis
+                            }))
+                        }),
+                        cache: true
+                    }
+                });
+            }
+        }
+
+        function initializeDatepickers() {
+            $('.bt-datepicker').datepicker({ format: config.datepickerFormat, autoclose: true });
+        }
+
+        function initializeDataTable() {
+            return $('#allowanceTable').DataTable({
+                processing : true,
+                serverSide : false,
+                ajax: {
+                    url     : config.endpoints.list,
+                    type    : "GET",
+                    data    : function (d) {
+                        d.employeeNo = config.employeeNo;
+                        d.isactive   = isViewingDeleted ? '0' : '1';
+                    },
+                    datatype: "json",
+                    error   : () => showNotification('Error loading data. Please refresh the page.', 'error')
+                },
+                columns: [
+                    {
+                        data     : "id",
+                        width    : "15%",
+                        orderable: false,
+                        render   : (data, type, row) => {
+                            if (isViewingDeleted) {
+                                // Restore button — FULL only
+                                if (!config.canFullAccess) return '';
+                                return `<div class="d-flex gap-1">
+                                    <button type="button" class="btn btn-sm btn-success shadow-sm restoreAllowance"
+                                        data-id="${data}" title="Restore">
+                                        <i class="fas fa-undo"></i>
+                                    </button></div>`;
+                            } else {
+                                // View button — anyone with at least READ
+                                let viewbtn = `<button type="button" class="btn btn-sm btn-primary shadow-sm viewAllowance"
+                                    data-id="${data}" title="View"><i class="fas fa-eye"></i></button>`;
+
+                                // Delete button — FULL only
+                                let deletebtn = config.canFullAccess
+                                    ? `<button type="button" class="btn btn-sm btn-danger shadow-sm deleteAllowance"
+                                        data-id="${data}" title="Delete"><i class="fa fa-trash"></i></button>`
+                                    : '';
+
+                                return `<div class="d-flex gap-1">${viewbtn}${deletebtn}</div>`;
+                            }
+                        }
+                    },
+                    { data: "allowanceName", width: "20%" },
+                    {
+                        data  : "allowanceAmount",
+                        width : "10%",
+                        // null means server masked it (EDIT / READ users)
+                        render: data => (data !== null && data !== undefined)
+                            ? parseFloat(data).toFixed(2)
+                            : '****'
+                    },
+                    { data: "taxType",         width: "10%" },
+                    { data: "effectivityDate", width: "15%" },
+                    { data: "basis",           width: "10%" },
+                    { data: "dtAdded",         width: "10%" },
+                    { data: "addedByUser",     width: "10%" }
+                ],
+                order     : [[0, 'asc']],
+                pageLength: 25,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                language: {
+                    processing : "Loading...",
+                    emptyTable : "No allowance records found",
+                    zeroRecords: "No matching allowance records found",
+                    paginate: {
+                        next    : '<i class="fa fa-angle-double-right"></i>',
+                        previous: '<i class="fa fa-angle-double-left"></i>'
+                    }
+                }
+            });
+        }
+
+        // ── Data Operations ──────────────────────────────────────────────────────
+        function loadAllowanceForView(id, $btn, isCancel = false) {
+            if ($btn && !$btn.data('original-html')) $btn.data('original-html', $btn.html());
+
+            $.get(config.endpoints.get, { id })
+                .done(response => {
+                    if (response.success) {
+                        resetForm('view');
+                        setViewMode();
+                        populateViewForm(response.data);
+                        if (!isCancel) $('#viewAllowanceModal').modal('show');
+                    } else {
+                        showNotification(response.message, 'error');
+                    }
+                })
+                .fail(() => showNotification('Unable to load allowance data', 'error'))
+                .always(() => {
+                    if ($btn) {
+                        $btn.prop('disabled', false).html($btn.data('original-html') || '<i class="fas fa-eye"></i>');
+                        $btn.removeData('original-html');
+                    }
+                });
+        }
+
+        function saveAllowance(isEdit) {
+            const formData = getFormData(isEdit ? 'view' : 'add');
+            const $saveBtn = isEdit ? $('#btnSaveAllowance') : $('#btnSaveNewAllowance');
+
+            toggleButtonLoading($saveBtn, true, 'Saving...');
+
+            $.ajax({
+                url        : config.endpoints.save,
+                type       : 'POST',
+                contentType: 'application/json',
+                data       : JSON.stringify(formData),
+                success    : response => {
+                    if (response.success) {
+                        if (isEdit) { setViewMode(); $('#viewAllowanceModal').modal('hide'); }
+                        else        { $('#addAllowanceModal').modal('hide'); }
+                        table.ajax.reload(null, false);
+                        showNotification(response.message, 'success');
+                    } else {
+                        showNotification(response.message, 'error');
+                    }
+                },
+                error   : () => showNotification('Unable to save allowance. Please try again.', 'error'),
+                complete: () => toggleButtonLoading($saveBtn, false)
+            });
+        }
+
+        function restoreAllowance(id, $btn) {
+            $.post(config.endpoints.restore, { id })
+                .done(response => {
+                    if (response.success) {
+                        table.ajax.reload(null, false);
+                        showNotification(response.message, 'success');
+                    } else {
+                        showNotification(response.message, 'error');
+                    }
+                })
+                .fail(() => showNotification('Unable to restore allowance. Please try again.', 'error'))
+                .always(() => toggleButtonLoading($btn, false));
+        }
+
+        // ── Form Helpers ─────────────────────────────────────────────────────────
+        function populateViewForm(data) {
+            $('#viewAllowanceId').val(data.id);
+            $('#viewAllowanceCode').val(data.allowanceCode);
+            $('#viewAllowanceDisplay').val(data.allowanceName);
+            $('#viewTaxType').val(data.taxType);
+            $('#viewAllowanceSchedule').val(data.basis);
+            $('#viewEffectivityDate').val(data.effectivityDate);
+
+            // Amount — only populate the real field when canViewAmount
+            if (config.canViewAmount) {
+                $('#viewAllowanceAmount').val(data.allowanceAmount);
+            }
+            // masked field stays as **** (set in Razor markup)
+        }
+
+        function getFormData(prefix) {
+            const isView = prefix === 'view';
+            return {
+                ...(isView && { Id: parseInt($(`#${prefix}AllowanceId`).val()) }),
+                EmployeeNo    : $(`#${prefix}EmployeeNoHidden`).val(),
+                AllowanceCode : $(`#${prefix}AllowanceCode`).val(),
+                EffectivityDate: $(`#${prefix}EffectivityDate`).val(),
+                // Send real value only when canViewAmount; otherwise send 0 (server also guards)
+                AllowanceAmount: config.canViewAmount
+                    ? (parseFloat($(`#${prefix}AllowanceAmount`).val()) || 0)
+                    : 0,
+                IsActive: true
+            };
+        }
+
+        function resetForm(prefix) {
+            $(`#${prefix}AllowanceForm`)[0].reset();
+            if (prefix === 'add') $(`#${prefix}AllowanceCode`).val(null).trigger('change');
+            clearValidation(`#${prefix}AllowanceForm`);
+            $(`#btnSave${prefix === 'view' ? 'Allowance' : 'NewAllowance'}`).prop('disabled', false).html('Save');
+            $(`#${prefix}TaxType`).val('');
+            $(`#${prefix}AllowanceSchedule`).val('');
+        }
+
+        // ── View / Edit Mode Management ──────────────────────────────────────────
+        function setViewMode() {
+            $('#viewModalTitle').text('View Allowance');
+            $('#viewAllowanceModal .modal-body').removeClass('edit-mode');
+            $('#viewEffectivityDate').prop('readonly', true).datepicker('remove');
+
+            // Amount field (only real input exists when canViewAmount)
+            if (config.canViewAmount) {
+                $('#viewAllowanceAmount').prop('readonly', true);
+            }
+
+            $('.edit-required').addClass('d-none');
+            $('#btnEditAllowance').removeClass('d-none');
+            $('#btnSaveAllowance, #btnCancelEdit').addClass('d-none');
+            clearValidation('#viewAllowanceForm');
+        }
+
+        function setEditMode() {
+            $('#viewModalTitle').text('Edit Allowance');
+            $('#viewAllowanceModal .modal-body').addClass('edit-mode');
+
+            // Effectivity date — editable for ALL edit-capable users (EDIT, READWRITE, FULL)
+            $('#viewEffectivityDate').prop('readonly', false).datepicker({
+                format  : config.datepickerFormat,
+                autoclose: true
+            });
+
+            // Amount — only editable for READWRITE / FULL
+            if (config.canViewAmount) {
+                $('#viewAllowanceAmount').prop('readonly', false);
+            }
+            // For EDIT-only users: amount mask stays as **** (readonly text input, untouched)
+
+            $('.edit-required').removeClass('d-none');
+            $('#btnEditAllowance').addClass('d-none');
+            $('#btnSaveAllowance, #btnCancelEdit').removeClass('d-none');
+        }
+
+        // ── Validation ───────────────────────────────────────────────────────────
+        function validateForm(prefix) {
+            let isValid = true;
+            const allowanceCodeVal = prefix === 'view'
+                ? $('#viewAllowanceCode').val()
+                : $('#addAllowanceCode').val();
+
+            if (!allowanceCodeVal) {
+                if (prefix === 'add') $('#addAllowanceCode').addClass('is-invalid');
+                isValid = false;
+            }
+
+            if (!$(`#${prefix}EffectivityDate`).val()) {
+                $(`#${prefix}EffectivityDate`).addClass('is-invalid');
+                isValid = false;
+            }
+
+            // Only validate amount when user can actually see/edit it
+            if (config.canViewAmount) {
+                const amount = parseFloat($(`#${prefix}AllowanceAmount`).val());
+                if (isNaN(amount) || amount <= 0) {
+                    $(`#${prefix}AllowanceAmount`).addClass('is-invalid');
+                    $(`#${prefix}AllowanceAmount`).siblings('.invalid-feedback')
+                        .text('Allowance amount must be greater than 0');
+                    isValid = false;
+                }
+            }
+
+            return isValid;
+        }
+
+        function clearValidation(formSelector) {
+            $(`${formSelector} .form-control, ${formSelector} .form-select`).removeClass('is-invalid');
+        }
+
+        // ── UI Helpers ───────────────────────────────────────────────────────────
+        function updateTableView() {
+            table.ajax.reload(null, false);
+            if (config.canSaveAllowance) $('#btnAddAllowance').toggle(!isViewingDeleted);
+        }
+
+        function toggleButtonLoading($btn, loading, text = '') {
+            const iconMap = {
+                viewAllowance   : '<i class="fas fa-eye"></i>',
+                deleteAllowance : '<i class="fa fa-trash"></i>',
+                restoreAllowance: '<i class="fas fa-undo"></i>'
+            };
+
+            if (loading) {
+                if (!$btn.data('original-html')) $btn.data('original-html', $btn.html());
+                const icon = text ? '<i class="fas fa-spinner fa-spin"></i> ' : '<i class="fas fa-spinner fa-spin"></i>';
+                $btn.prop('disabled', true).html(icon + text);
+            } else {
+                const btnClass     = Object.keys(iconMap).find(cls => $btn.hasClass(cls));
+                const originalHtml = $btn.data('original-html') || iconMap[btnClass] || 'Save';
+                $btn.prop('disabled', false).html(originalHtml).removeData('original-html');
+            }
+        }
+
+        function showNotification(message, type) {
+            const types = { success: 'Success', error: 'Error', warning: 'Warning', info: 'Information' };
+            toastr[type](message, types[type] || 'Notification');
+        }
+    });
+</script>

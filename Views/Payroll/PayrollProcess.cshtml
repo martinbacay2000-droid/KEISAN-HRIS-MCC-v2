@@ -1,0 +1,487 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutFillow.cshtml";
+    ViewData["Title"] = "Payroll Process";
+}
+
+<div class="col-12">
+    <div class="card">
+        <div class="card-header">
+
+            <div class="row" style="width:100%;">
+                <h4 class="card-title">Payroll Process</h4>
+                <br> <br> <br>
+
+                <div class="row" style="margin-left:0px;width:100%;">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <h5>Select CutOff</h5>
+                            <select name="cutOff" id="cutOff" class="form-control"></select>
+                            <input type="hidden" name="cutOffType" id="cutOffType" />
+                            <input type="hidden" name="dateMonth" id="dateMonth" />
+                            <input type="hidden" name="dateYear" id="dateYear" />
+                            <input type="hidden" name="dateFrom" id="dateFrom" />
+                            <input type="hidden" name="dateTo" id="dateTo" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Company</h5>
+                            <select name="branch" id="filterBranch" class="form-control"></select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Department</h5>
+                            <select name="department" id="filterDepartment" class="form-control"></select>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <h5>&nbsp;</h5>
+                            <button type="button" class="btn btn-success w-100" id="btnProcess">
+                                <i class="fas fa-money-bill-wave"></i> Process Payroll
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="table-responsive">
+                    <table id="requestTable" class="display" style="min-width: 845px">
+                        <thead>
+                            <tr>
+                                <th class="text-center">
+                                    <input type="checkbox" id="checkAll">
+                                </th>
+                                <th>Employee No</th>
+                                <th>Employee Name</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+            @* <div class="row">
+                <div class="col-md-10"></div>
+                <div class="col-md-2 d-flex justify-content-end">
+                    <div class="form-group">
+                        <h5>&nbsp;</h5>
+                        <input type="button" class="btn btn-success" id="btnProcess" value="Process Payroll">
+                    </div>
+                </div>
+            </div> *@
+        </div>
+    </div>
+</div>
+@section Fillow_style
+{
+
+
+}
+
+@section Fillow_script
+{
+
+
+    <script>
+                $(document).ready(function () {
+                    //datepicker
+                $('.bt-datepicker').datepicker({
+                    format: 'yyyy/mm/dd',
+                    autoclose: true,
+                    todayHighlight: true    // Highlight today's date
+                });
+
+                        initializeFilterSelect2();
+
+
+                        const requestTable = $('#requestTable').DataTable({
+                            responsive: true,
+                            pageLength: -1,
+                            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                            ajax: {
+                            url: "/PayrollProcess/GetPayrollList",
+                            type: "GET",
+                            dataType: "json",
+                            data: function (d) {
+                                d.branch = $('#filterBranch').val() || 'ALL';      // fallback to ALL if null
+                                d.department = $('#filterDepartment').val() || '';
+                                d.cutOffType = $('#cutOffType').val() || '';
+                                d.dateYear = $('#dateYear').val() || '';
+                                d.dateMonth = $('#dateMonth').val() || '';
+                            }
+                        },
+                        columns: [
+                            {
+                                data: null,
+                                orderable: false,
+                                searchable: false,
+                                className: 'text-center',
+                                render: function (data, type, row) {
+                                    return `
+                                        <input type="checkbox" class="row-checkbox"
+                                               value="${row.employeeNo}">
+                                    `;
+                                }
+                            },
+                            { data: "employeeNo" },
+                            { data: "fullName" },
+                            { data: "statusName" }
+
+                        ],
+                        language: {
+                            paginate: {
+                            next: '<i class="fa fa-angle-double-right" aria-hidden="true"></i>',
+                            previous: '<i class="fa fa-angle-double-left" aria-hidden="true"></i>'
+                            }
+                        }
+                        });
+
+                        // Select all
+                        $('#checkAll').on('change', function () {
+                            const isChecked = $(this).is(':checked');
+                            $('.row-checkbox').prop('checked', isChecked);
+                        });
+
+                        // Uncheck "select all" if one row is unchecked
+                        $('#requestTable').on('change', '.row-checkbox', function () {
+                            if (!$(this).is(':checked')) {
+                                $('#checkAll').prop('checked', false);
+                            }
+                        });
+
+                        //apply filter when user chose a param
+                        // Use Select2's own event for Select2 dropdowns
+                        $('#filterBranch, #filterDepartment').on('select2:select select2:clear', function () {
+                            requestTable.ajax.reload(null, true);
+                        });
+
+                        // Keep native change for non-Select2 inputs
+                        $('#dateFrom, #dateTo').on('change', function () {
+                            requestTable.ajax.reload(null, true);
+                        });
+
+                        $(document).on('change', '#cutOff', function () {
+                            var obj = $("#cutOff").select2('data')[0];
+
+                            if (!obj) {
+                                console.warn('No cut-off selected');
+                                // Optional: clear input fields
+                                $('#dateYear, #dateFrom, #dateTo').val('');
+                                return;
+                            }
+
+                            console.log('Selected CutOff:', obj);
+
+                            // Safely set values if elements exist
+                            if (document.getElementById('dateYear')) document.getElementById('dateYear').value = obj.dateYear;
+                            if (document.getElementById('dateMonth')) document.getElementById('dateMonth').value = obj.dateMonth;
+                            if (document.getElementById('cutOffType')) document.getElementById('cutOffType').value = obj.cutOffType;
+                            if (document.getElementById('dateFrom')) document.getElementById('dateFrom').value = obj.dateFrom;
+                            if (document.getElementById('dateTo')) document.getElementById('dateTo').value = obj.dateTo;
+
+                            requestTable.ajax.reload(null, true);
+                        });
+
+                    $('#btnProcess').on('click', function () {
+
+
+                        if(!$('#cutOffType').val())
+                        {
+                            showNotification('Please select cutoff.', 'danger');
+                            return;
+                        }
+
+                        const selectedEmployees = getSelectedEmployees();
+
+                        if (selectedEmployees.length === 0) {
+                            showNotification('Please select at least one record.', 'warning');
+                            return;
+                        }
+
+                        loadProcessPayroll();
+                    });
+                    });
+
+        function getSelectedEmployees() {
+            let selected = [];
+
+            $('.row-checkbox:checked').each(function () {
+                selected.push($(this).val());
+            });
+
+            return selected;
+        }
+
+        var ctr = 0;
+                var selectedRows = [];
+
+        function loadProcessPayroll() {
+
+            var dtApi = $('#requestTable').DataTable();
+
+            // Build selected rows ONCE
+            if (ctr === 0) {
+                const selectedEmployees = getSelectedEmployees();
+
+                if (selectedEmployees.length === 0) {
+                    showNotification('Please select at least one record.', 'warning');
+                    return;
+                }
+
+                selectedRows = dtApi.rows().indexes().filter(function (idx) {
+                    return selectedEmployees.includes(
+                        dtApi.row(idx).data().employeeNo.toString()
+                    );
+                }).toArray();
+            }
+            
+            if (ctr >= selectedRows.length) {
+                ctr = 0;
+                selectedRows = [];
+                $('#btnProcess').val('Process');
+                showNotification('Process Completed.', 'info');
+                return;
+            }
+
+            $('#btnProcess').val(`Processing... ${ctr + 1}/${selectedRows.length}`);
+
+            const rowIndex = selectedRows[ctr];
+            var data = $.extend(true, {}, dtApi.row(rowIndex).data());
+
+            var model = {
+                cutOffType: $('#cutOffType').val(),
+                dateMonth: $('#dateMonth').val(),
+                dateYear: $('#dateYear').val(),
+                dateFrom: $('#dateFrom').val(),
+                dateTo: $('#dateTo').val(),
+                branchCode: $('#filterBranch').val(),
+                employeeNo: data.employeeNo
+            };
+
+            $.ajax({
+                type: "POST",
+                url: "/PayrollProcess/ProcessPayroll",
+                data: JSON.stringify(model),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+
+                beforeSend: function () {
+                    data.statusName = "<span class='badge badge-info'>Processing...</span>";
+                    dtApi.row(rowIndex).data(data).invalidate().draw(false);
+                },
+
+                success: function (r) {
+                    data.statusName = r.success
+                        ? "<span class='badge badge-success'>Completed</span>"
+                        : "<span class='badge badge-danger'>Failed</span>";
+
+                    if (!r.success) showNotification(r.message, 'error');
+
+                    dtApi.row(rowIndex).data(data).invalidate().draw(false);
+
+                    ctr++;
+                    loadProcessPayroll();
+                },
+
+                error: function (jqXHR, exception) {
+                    data.statusName = "<span class='badge badge-danger'>Failed</span>";
+                    dtApi.row(rowIndex).data(data).invalidate().draw(false);
+                    errorHandlingNotification(jqXHR.status, jqXHR.responseText, exception);
+
+                    ctr++;
+                    loadProcessPayroll();
+                }
+            });
+        }
+        // function loadProcessPayroll() {
+        //     var dtApi = $('#requestTable').DataTable();
+        //     var dtRecords = dtApi.rows({ order: 'applied', search: 'applied' }).data(); // consider sorting/filtering
+
+        //     if (ctr >= dtRecords.length) {
+        //         ctr = 0;
+        //         $('#btnProcess').val('Process');
+        //         showNotification('Process Completed.', 'info');
+        //         return;
+        //     }
+
+        //     $('#btnProcess').val("Processing... " + (ctr + 1) + "/" + dtRecords.length);
+
+        //     // Deep copy the current row
+        //     var data = $.extend(true, {}, dtRecords[ctr]);
+
+        //     var model = {
+        //         cutOffType: $('#cutOffType').val(),
+        //         dateMonth: $('#dateMonth').val(),
+        //         dateYear: $('#dateYear').val(),
+        //         dateFrom: $('#dateFrom').val(),
+        //         dateTo: $('#dateTo').val(),
+        //         branchCode: $('#filterBranch').val(),
+        //         employeeNo: data.employeeNo
+        //     };
+
+        //     $.ajax({
+        //         type: "POST",
+        //         url: '/PayrollProcess/ProcessPayroll',
+        //         data: JSON.stringify(model),
+        //         contentType: "application/json; charset=utf-8",
+        //         dataType: "json",
+
+        //         beforeSend: function () {
+        //             // Update status to Processing
+        //             data.statusName = "<span class='badge badge-info'>Processing...</span>";
+
+        //             // Find the row index by employeeNo (safer if table is sorted/filtered)
+        //             var rowIndex = dtApi.rows().indexes().filter(function(idx) {
+        //                 return dtApi.row(idx).data().employeeNo === data.employeeNo;
+        //             })[0];
+
+        //             if (rowIndex !== undefined) {
+        //                 dtApi.row(rowIndex).data(data).invalidate().draw(false);
+        //             }
+        //         },
+
+        //         error: function (jqXHR, exception) {
+        //             data.statusName = "<span class='badge badge-danger'>Failed</span>";
+
+        //             var rowIndex = dtApi.rows().indexes().filter(function(idx) {
+        //                 return dtApi.row(idx).data().employeeNo === data.employeeNo;
+        //             })[0];
+
+        //             if (rowIndex !== undefined) {
+        //                 dtApi.row(rowIndex).data(data).invalidate().draw(false);
+        //             }
+
+        //             errorHandlingNotification(jqXHR.status, jqXHR.responseText, exception);
+        //         },
+
+        //         success: function (r) {
+        //             data.statusName = r.success
+        //                 ? "<span class='badge badge-success'>Completed</span>"
+        //                 : "<span class='badge badge-danger'>Failed</span>";
+
+        //             if (!r.success) showNotification(r.message, 'error');
+
+        //             var rowIndex = dtApi.rows().indexes().filter(function(idx) {
+        //                 return dtApi.row(idx).data().employeeNo === data.employeeNo;
+        //             })[0];
+
+        //             if (rowIndex !== undefined) {
+        //                 dtApi.row(rowIndex).data(data).invalidate().draw(false);
+        //             }
+
+        //             ctr++;
+        //             loadProcessPayroll(); // process next row
+        //         }
+        //     });
+        // }
+
+
+
+
+                 function initializeFilterSelect2(){
+
+                             $('#cutOff').select2({
+                                placeholder: "Select CutOff",
+                                allowClear: true,
+                                ajax: {
+                                    url: '/Setup/GetOpenCutOff',
+                                    dataType: 'json',
+                                    delay: 250,
+                                    processResults: function (data) {
+                                        console.log(data)
+
+                                        var results = $.map(data, function(item) {
+                                            return {
+                                                id: item.dateYear + '-' + item.dateMonth + '-' + item.cutOffType + '-' + item.dateFrom + '-' + item.dateTo,
+                                                text: item.dateYear + '-' + item.dateMonth + '-' + ((item.cutOffType == '1') ? '1ST CUTOFF' : '2ND CUTOFF') +
+                                                      ' (' + item.dateFrom + '-' + item.dateTo + ')',
+
+                                                cutOffType: item.cutOffType,
+                                                dateMonth: item.dateMonth,
+                                                dateYear: item.dateYear,
+                                                dateFrom: item.dateFrom,
+                                                dateTo: item.dateTo
+                                            };
+                                        });
+
+                                        return {
+                                            results: results
+                                        };
+                                    }
+                                }
+                            });
+
+                            // branch
+                             $('#filterBranch').select2({
+                                placeholder: "Select Branch",
+                                allowClear: true,
+                                ajax: {
+                                    url: '/Setup/GetEmployeeBranch',
+                                    dataType: 'json',
+                                    delay: 250,
+                                    processResults: function (data) {
+                                        // Add "All" option manually
+                                        var allOption = {
+                                            id: 'ALL',
+                                            text: 'All Branches'
+                                        };
+
+                                        var results = $.map(data, function (item) {
+                                            return {
+                                                id: item.branchCode,
+                                                text: item.branchName
+                                            };
+                                        });
+
+                                        // Put "All" on top
+                                        results.unshift(allOption);
+
+                                        return {
+                                            results: results
+                                        };
+                                    }
+                                }
+                            });
+
+                             // department
+                             $('#filterDepartment').select2({
+                                placeholder: "Select Employee Department",
+                                allowClear: true,
+                                ajax: {
+                                    url: '/Setup/GetEmployeeDepartment',
+                                    dataType: 'json',
+                                    delay: 250,
+                                    processResults: function (data) {
+                                        // Map your results as usual
+                                        var results = $.map(data, function (item) {
+                                            return {
+                                                id: item.departmentCode,
+                                                text: item.departmentName
+                                            };
+                                        });
+
+                                        // Add the "All" option at the top
+                                        results.unshift({
+                                            id: 'ALL',
+                                            text: 'All Departments'
+                                        });
+
+                                        return {
+                                            results: results
+                                        };
+                                    }
+                                }
+                            });
+
+                        }
+
+    </script>
+
+}

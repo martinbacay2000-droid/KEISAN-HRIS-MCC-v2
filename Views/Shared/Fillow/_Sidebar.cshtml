@@ -1,0 +1,547 @@
+﻿@using KEISAN_HRIS_v2.Helpers
+
+
+<!--**********************************
+Sidebar start
+***********************************-->
+<div class="dlabnav">
+	<div class="dlabnav-scroll">
+		<ul class="metismenu" id="menu">
+
+			<!-- test -->
+			@* <li>
+				<a href="@Url.Action("Test", "test")">Biometrics
+					<i class="fas fa-home"></i>
+					<span class="nav-text">Test</span>
+				</a>
+			</li> *@
+
+			<!-- DashBoard -->
+			<li>
+				<a href="@Url.Action("Index", "Home")">
+					<i class="fas fa-home"></i>
+					<span class="nav-text">DashBoard</span>
+				</a>
+			</li>
+
+			<!-- Recruitment -->
+			@* <li hidden >
+				<a class="has-arrow " href="javascript:void(0)" aria-expanded="false">
+					<i class="fas fa-users"></i>
+					<span class="nav-text">Recruitment</span>
+				</a>
+				<ul aria-expanded="false">
+					<li><a href="@Url.Action("action", "ControllerHere")">Applicant Form</a></li>
+					<li><a href="@Url.Action("action", "ControllerHere")">Applicant List</a></li>
+				</ul>
+			</li> *@
+
+			<!-- Personnel -->
+			@if (AccessHelper.CanView(Context, "fileM"))
+			{
+				<li>
+					<a class="has-arrow " href="javascript:void(0)" aria-expanded="false">
+						<i class="fas fa-user"></i>
+						<span class="nav-text">Personnel Record</span>
+					</a>
+					<ul aria-expanded="false">
+						@if (AccessHelper.CanView(Context, "TbiometricsM"))
+						{
+							<li><a href="@Url.Action("Index", "Biometrics")">Biometrics</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "FemployeeM"))
+						{
+							<li><a href="@Url.Action("EmployeeProfile", "Users")">Employee List</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "FscheduleM"))
+						{
+							<li><a href="@Url.Action("Index", "EmployeeSchedule")">Employee Schedule</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "approverM"))
+						{
+							<li><a href="@Url.Action("EmployeeApproverSettings", "Users")">Employee Approver</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "FemployeeBenefitsSettingM"))
+						{
+							<li><a href="@Url.Action("EmployeeBenefitSettings", "Users")">Employee Benefit Settings</a></li>
+						}
+						
+						@* <li hidden><a href="@Url.Action("action", "ControllerHere")">Request Document</a></li> *@
+					</ul>
+				</li>
+			}
+
+			<!-- Training & Development -->
+			@* <li hidden>
+				<a class="has-arrow " href="javascript:void(0)" aria-expanded="false">
+					<i class="fas fa-book"></i>
+					<span class="nav-text">Training</span>
+				</a>
+				<ul aria-expanded="false">
+					<li><a href="@Url.Action("action", "ControllerHere")">Training List</a></li>
+					<li><a href="@Url.Action("action", "ControllerHere")">Training Application List</a></li>
+				</ul>
+			</li> *@
+
+			<!-- Time Keeping -->
+			@if (AccessHelper.CanView(Context, "timekeepingM"))
+			{
+				<li>
+					<a class="has-arrow " href="javascript:void(0)" aria-expanded="false">
+						<i class="fas fa-clock"></i>
+						<span class="nav-text">Time Keeping </span>
+					</a>
+					<ul aria-expanded="false">
+						@if (AccessHelper.CanView(Context, "TreviewDTRM"))
+						{
+							<li><a href="@Url.Action("Index", "ReviewDTR")">Review Daily Time Record</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "RchangeschedM"))
+						{
+							<li><a href="@Url.Action("Index", "ChangeScheduleRequest")">Change Schedule Request</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "RleaveM"))
+						{
+							<li><a href="@Url.Action("Index", "LeaveRequest")">Leave Request</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "RofficialbusinessM"))
+						{
+							<li><a href="@Url.Action("Index", "OBRequest")">Official Business Request</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "RovertimeM"))
+						{
+							<li><a href="@Url.Action("Index", "OvertimeRequest")">Overtime Request</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "RundertimeM"))
+						{
+							<li><a href="@Url.Action("Index", "UndertimeRequest")">Undertime Request</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "RoffsetCreditM"))
+						{
+							<li><a href="@Url.Action("Index", "OffsetCreditRequest")">Offset Credit Request</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "RoffsetApplicationM"))
+						{
+							<li><a href="@Url.Action("Index", "OffsetApplicationRequest")">Offset Application Request</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "RworkOnOffM"))
+						{
+							<li><a href="@Url.Action("Index", "WFHRequest")">Work From Home Request</a></li>
+						}													  																											
+					</ul>
+				</li>
+			}
+
+			<!-- Labor Employee Relation -->
+			@if (AccessHelper.CanView(Context, "LERelation"))
+			{
+				<li>
+					<a class="has-arrow " href="javascript:void(0)" aria-expanded="false">
+						<i class="fas fa-gavel"></i>
+						<span class="nav-text">LE Relation</span>
+					</a>
+					<ul aria-expanded="false">
+						@if (AccessHelper.CanView(Context, "FCommendation"))
+						{
+							<li><a href="@Url.Action("Index", "CommendationList")">Commendation List</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "FDisciplinaryAction"))
+						{
+							<li><a href="@Url.Action("Index", "DisciplinaryAction")">Disciplinary Action</a></li>
+						}
+					</ul>
+				</li>
+			}
+
+			<!-- Health Plan Benefits -->
+			@* <li hidden>
+				<a class="has-arrow " href="javascript:void(0)" aria-expanded="false">
+					<i class="fas fa-notes-medical"></i>
+					<span class="nav-text">Health Plan Benefits</span>
+				</a>
+				<ul aria-expanded="false">
+					<li><a href="@Url.Action("action", "ControllerHere")">Medical Availment</a></li>
+				</ul>
+			</li> *@
+
+			@if (AccessHelper.CanView(Context, "MMemo"))
+			{
+				<li>
+					<a class="has-arrow" href="javascript:void(0)" aria-expanded="false">
+						<i class="fas fa-file-alt"></i>
+						<span class="nav-text">Memo</span>
+					</a>
+					<ul aria-expanded="false">
+						<li><a href="@Url.Action("Index", "Memo")">Memo</a></li>
+					</ul>
+				</li>
+			}
+			<!-- Payroll -->
+			@if (AccessHelper.CanView(Context, "payrollM"))
+			{
+				<li>
+					<a class="has-arrow " href="javascript:void(0)" aria-expanded="false">
+						<i class="fas fa-file-invoice-dollar"></i>
+						<span class="nav-text">Payroll</span>
+					</a>
+					<ul aria-expanded="false">
+						@if (AccessHelper.CanView(Context, "RadjustmentM"))
+						{
+							<li><a href="@Url.Action("Index", "AdjustmentRequestList")">Adjustment</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "TpayrollProcessM"))
+						{
+							<li><a href="@Url.Action("Index", "PayrollProcess")">Process Payroll</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "TopenPayrollRegisterM"))
+						{
+							<li><a href="@Url.Action("Index", "PayrollRegister")">Payroll Register</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "TpostedPayrollRegisterM"))
+						{
+							<li><a href="@Url.Action("Index", "PayrollRegisterPosted")">Posted Payroll Register</a></li>
+						}
+						@* @if (AccessHelper.CanView(Context, "FemployeeM"))
+						{
+							<li hidden><a href="@Url.Action("action", "ControllerHere")">Other Deductions</a></li>
+						} *@
+						@* @if (AccessHelper.CanView(Context, "TbiometricsM"))
+						{
+							<li hidden><a href="@Url.Action("action", "ControllerHere")">Retroactive Adjustment</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "FemployeeM"))
+						{
+							<li hidden><a href="@Url.Action("action", "ControllerHere")">Performance Bonus</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "TbiometricsM"))
+						{
+							<li hidden><a href="@Url.Action("action", "ControllerHere")">The 13th Month</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "FemployeeM"))
+						{
+							<li hidden><a href="@Url.Action("action", "ControllerHere")">Separation Pay</a></li>
+						} *@
+					</ul>
+				</li>
+			}
+
+			<!-- Payslip -->
+			@if (AccessHelper.CanView(Context, "MPayslip"))
+			{
+				<li>
+					<a class="has-arrow " href="javascript:void(0)" aria-expanded="false">
+						<i class="fas fa-money-check-alt"></i>
+						<span class="nav-text">Payslip</span>
+					</a>
+					<ul aria-expanded="false">
+						@if (AccessHelper.CanView(Context, "FPayslip"))
+						{
+							<li><a href="@Url.Action("Index", "Payslip")">Payslip</a></li>
+						}
+					</ul>
+				</li>
+			}
+
+			@if (AccessHelper.CanView(Context, "reportM"))
+			{
+				<!-- Report -->
+				<li>
+					<a class="has-arrow " href="javascript:void(0)" aria-expanded="false">
+						<i class="fas fa-file-contract"></i>
+						<span class="nav-text">Report</span>
+					</a>
+					<ul aria-expanded="false">
+						@if (AccessHelper.CanView(Context, "RPTleaveRequestSummaryM"))
+						{
+							<li><a href="@Url.Action("Index", "LeaveSummary")">Leave Request Summary</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "RPTOvertimeRequestSummaryM"))
+						{
+							<li><a href="@Url.Action("Index", "OvertimeSummary")">Overtime Request Summary</a></li>
+						}
+						@* @if (AccessHelper.CanView(Context, "RPTmonthlyAttendanceM"))
+						{
+							<li><a href="@Url.Action("MonthlyAttendance", "ControllerHere")">Monthly Attendance</a></li>
+						} *@
+						@if (AccessHelper.CanView(Context, "RPTleaveBalanceM"))
+						{
+							<li><a href="@Url.Action("Index", "LeaveBalance")">Leave Balance</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "RPTSLmonetizationM"))
+						{
+							<li><a href="@Url.Action("Index", "LeaveMonetization")">Leave Monetization</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "RPTbirthdayM"))
+						{
+							<li><a href="@Url.Action("Index", "Birthday")">Birthday</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "RPTprobationarySchedM"))
+						{
+							<li><a href="@Url.Action("Index", "DueForProbationary")">Due for Probationary</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "RPTregularizationSchedM"))
+						{
+							<li><a href="@Url.Action("Index", "DueForRegularization")">Due for Regularization</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "RPTemployeeMasterListM"))
+						{
+							<li><a href="@Url.Action("Index", "EmployeeMasterList")">Employee Master List</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "RPTlicenseM"))
+						{
+							<li><a href="@Url.Action("Index", "LicenseExpiration")">License Expiration</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "RPTloanM"))
+						{
+							<li><a href="@Url.Action("Index", "LoanBalance")">Loan Report</a></li>
+						}
+						@* <li><a href="@Url.Action("PagibigContribution", "ControllerHere")">Pagibig Contribution</a></li>
+					<li><a href="@Url.Action("PhilhealthContribution", "ControllerHere")">Philhealth Contribution</a></li>
+					<li><a href="@Url.Action("SSSContribution", "ControllerHere")">SSS Contribution</a></li> *@
+						@if (AccessHelper.CanView(Context, "RPTalphalistM"))
+						{
+							<li><a href="@Url.Action("Index", "Alphalist")">Alphalist</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "RPTthe13thMonthM"))
+						{
+							<li><a href="@Url.Action("Index", "Month13")">13th Month Pay</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "RPTgovernmentContributionM"))
+						{
+							<li><a href="@Url.Action("Index", "GovernmentContri")">Government Contribution</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "RPTwithheldTaxM"))
+						{
+							@* <li><a href="@Url.Action("WithheldTax", "ControllerHere")">Withheld Tax</a></li> *@
+						}
+						@if (AccessHelper.CanView(Context, "RPTsssLoanM"))
+						{
+							@* <li><a href="@Url.Action("SSSLoan", "ControllerHere")">SSS Loan</a></li> *@
+						}
+						@if (AccessHelper.CanView(Context, "RPTpagibigLoanM"))
+						{
+							@* <li><a href="@Url.Action("PagibigLoan", "ControllerHere")">Pagibig Loan</a></li> *@
+						}
+						@if (AccessHelper.CanView(Context, "RPTemployeeContractExpirationM"))
+						{
+							<li><a href="@Url.Action("Index", "EmployeeContractExpiration")">Employee Contract Expiration</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "RPTgovernmentLoansM"))
+						{
+							<li><a href="@Url.Action("Index", "GovernmentLoans")">Government Loans</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "RPTAttendanceReportM"))
+						{
+							<li><a href="@Url.Action("Index", "AttendanceReport")">Attendance Report</a></li>
+						}
+					</ul>
+				</li>
+			}
+
+			@if (AccessHelper.CanView(Context, "uploadM"))
+			{
+
+			@* 	<!-- Upload -->
+				<li>
+					<a class="has-arrow " href="javascript:void(0)" aria-expanded="false">
+					<i class="fas fa-upload"></i>
+					<span class="nav-text">Upload</span>
+				</a>
+				<ul aria-expanded="false">
+					<li><a href="@Url.Action("action", "ControllerHere")">Upload DTR Summary</a></li>
+				</ul>
+			</li> *@
+			}
+
+
+			@if (AccessHelper.CanView(Context, "memoM"))
+			{
+
+				<!-- Upload -->
+				@* <li>
+					<a class="has-arrow " href="javascript:void(0)" aria-expanded="false">
+						<i class="fas fa-upload"></i>
+						<span class="nav-text">Upload</span>
+					</a>
+					<ul aria-expanded="false">
+						<li><a href="@Url.Action("action", "ControllerHere")">Memo</a></li>
+					</ul>
+				</li> *@
+			}
+
+			@if (AccessHelper.CanView(Context, "setupM"))
+			{
+				<!-- Setup -->
+				<li>
+					<a class="has-arrow " href="javascript:void(0)" aria-expanded="false">
+						<i class="fas fa-wrench"></i>
+						<span class="nav-text">Setup</span>
+					</a>
+					<ul aria-expanded="false">
+						@if (AccessHelper.CanView(Context, "SadjustmentM"))
+						{
+							<li><a href="@Url.Action("Index", "AdjustmentList")">Adjustment List</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "SallowanceM"))
+						{
+							<li><a href="@Url.Action("Index", "AllowanceList")">Allowance List</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "SattachmenttypeM"))
+						{
+							<li><a href="@Url.Action("Index", "AttachmentType")">Attachment Type List</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "SbankM"))
+						{
+							<li><a href="@Url.Action("Index", "BankList")">Bank List</a></li>
+						}
+						@* <li><a href="@Url.Action("Index", "BenefitsList")">Benefits List</a></li> *@
+						@if (AccessHelper.CanView(Context, "SbranchM"))
+						{
+							<li><a href="@Url.Action("Index", "BranchList")">Branch List</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "SCOEPurposeListM"))
+						{
+							<li><a href="@Url.Action("Index", "COEPurposeList")">COE Purpose List</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "ScommendationM"))
+						{
+							<li><a href="@Url.Action("Index", "Commendation")">Commendation</a></li>
+						}
+						@* <li><a href="@Url.Action("Index", "DivisionSchedule")">Division Schedule</a></li> *@
+						@if (AccessHelper.CanView(Context, "SdepartmentM"))
+						{
+							<li><a href="@Url.Action("Index", "DepartmentList")">Department List</a></li>
+						}
+						@* <li><a href="@Url.Action("Index", "DTRSettings")">DTR Settings</a></li> *@
+						@if (AccessHelper.CanView(Context, "SemploymentstatusM"))
+						{
+							<li><a href="@Url.Action("Index", "EmploymentStatusList")">Employment Status List</a></li>
+						}
+						@* <li><a href="@Url.Action("Index", "GovernmentTable")">Government Table</a></li> *@
+						@if (AccessHelper.CanView(Context, "SholidayM"))
+						{
+							<li><a href="@Url.Action("Index", "HolidayList")">Holiday List</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "SlocationListM"))
+						{
+							<li><a href="@Url.Action("Index", "LocationList")">Location List</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "SleaveM"))
+						{
+							<li><a href="@Url.Action("Index", "LeaveList")">Leave List</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "SloanM"))
+						{
+							<li><a href="@Url.Action("Index", "LoanList")">Loan List</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "SotherdeductionM"))
+						{
+							<li><a href="@Url.Action("Index", "OtherDeductionList")">Other Deduction List</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "SpositionM"))
+						{
+							<li><a href="@Url.Action("Index", "PositionList")">Position List</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "SprojectM"))
+						{
+							<li><a href="@Url.Action("Index", "ProjectList")">Project List</a></li> @* ADDED *@
+						}
+						@if (AccessHelper.CanView(Context, "SrankM"))
+						{
+							<li><a href="@Url.Action("Index", "RankList")">Rank List</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "Sreason4terminationM"))
+						{
+							<li><a href="@Url.Action("Index", "ReasonForSeparationList")">Reason for Separation List</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "SscheduletyeplistM"))
+						{
+							<li><a href="@Url.Action("Index", "ScheduleTypeList")">Schedule Type List</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "SunitListM"))
+						{
+							<li><a href="@Url.Action("Index", "UnitList")">Unit List</a></li>  @* ADDED *@
+						}
+						@if (AccessHelper.CanView(Context, "SuserM"))
+						{
+							<li><a href="@Url.Action("Index", "UserList")">User List</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "SroleM"))
+						{
+							<li><a href="@Url.Action("Index", "Role")">User Role</a></li>
+						}
+						@*<li><a href="@Url.Action("Index", "Signatories")">Signatories</a></li> *@
+					</ul>
+				</li>
+			}
+
+			<!-- Annoncement -->
+			@if (AccessHelper.CanView(Context, "AAnnouncementM"))
+				{
+					<li>
+						<a class="has-arrow " href="javascript:void(0)" aria-expanded="false">
+						<i class="fas fa-bullhorn"></i>
+						<span class="nav-text">Announcement</span>
+					</a>
+					<ul aria-expanded="false">
+							<li><a href="@Url.Action("Index", "AnnouncementList")">Announcement List</a></li>
+					</ul>
+				</li>
+			}
+			@if (AccessHelper.CanView(Context, "UUploaderM"))
+			{
+				<li>
+					<a class="has-arrow " href="javascript:void(0)" aria-expanded="false">
+					<i class="fas fa-file-upload"></i>
+					<span class="nav-text">Uploader</span>
+				</a>
+				<ul aria-expanded="false">
+						@if (AccessHelper.CanView(Context, "UadjustmentUploader"))
+						{
+							<li><a href="@Url.Action("Index", "AdjustmentRequestListImport")">Adjustment</a></li>
+						}
+						@* @if (AccessHelper.CanView(Context, "UscheduleUploader"))
+						{
+							<li><a href="@Url.Action("Index", "ChangeScheduleRequestImport")">Change Schedule Request</a></li>
+						} *@
+						@if (AccessHelper.CanView(Context, "UScheduleUploader"))
+						{
+							<li><a href="@Url.Action("Index", "EmployeeScheduleImport")">Employee Schedule</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "UleaveUploader"))
+						{
+							<li><a href="@Url.Action("Index", "LeaveRequestImport")">Leave</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "UloanUploader"))
+						{
+						<li><a href="@Url.Action("Index", "LoansImport")">Loans</a></li>
+						}
+				</ul>
+			</li>
+			}
+
+			<!-- Audit Trail -->
+			@if (AccessHelper.CanView(Context, "auditTrailM"))
+			{
+				<li>
+					<a class="has-arrow " href="javascript:void(0)" aria-expanded="false">
+						<i class="fas fa-clipboard-list"></i>
+						<span class="nav-text">Audit Trail</span>
+					</a>
+					<ul aria-expanded="false">
+						<li><a href="@Url.Action("Index", "AuditTrail")">Audit Trail</a></li>
+					</ul>
+				</li>
+			}
+
+
+		</ul>
+		<div class="copyright">
+			<p>KEISAN HRIS</p>
+			<span> 2025 All Rights Reserved</span>
+		</div>
+	</div>
+</div>
+<!--**********************************
+	Sidebar end
+***********************************-->

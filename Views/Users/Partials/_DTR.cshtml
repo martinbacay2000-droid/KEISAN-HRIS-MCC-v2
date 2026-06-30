@@ -1,0 +1,225 @@
+﻿@model KEISAN_HRIS_v2.Models.Users.EmployeeID
+
+<div class="card">
+    <div class="card-body">
+        <div class="row mb-3">
+            <div class="col-md-3">
+                <label for="dateFrom" class="form-label">Date From</label>
+                <div class="input-hasicon">
+                    <input type="text" id="dateFrom" class="form-control form-control-sm bt-datepicker" placeholder="mm/dd/yyyy">
+                    <div class="icon"><i class="far fa-calendar"></i></div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label for="dateTo" class="form-label">Date To</label>
+                <div class="input-hasicon">
+                    <input type="text" id="dateTo" class="form-control form-control-sm bt-datepicker" placeholder="mm/dd/yyyy">
+                    <div class="icon"><i class="far fa-calendar"></i></div>
+                </div>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button id="filterBtn" class="btn btn-primary btn-sm w-100">
+                    <i class="fa fa-filter me-1"></i> Filter
+                </button>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button id="clearFilterBtn" class="btn btn-warning btn-sm w-100">
+                    <i class="fa fa-times me-1"></i> Clear
+                </button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table id="dtrTable" class="display" style="min-width: 845px; width:100% !important;">
+                <thead>
+                    <tr>
+                        <th>Date In</th>
+                        <th>Date Out</th>
+                        <th>Time In</th>
+                        <th>Time Out</th>
+                        <th>Terminal</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    .input-hasicon {
+        position: relative;
+    }
+
+        .input-hasicon .icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            pointer-events: none;
+        }
+
+        .input-hasicon .form-control {
+            padding-right: 35px;
+        }
+
+    .bt-datepicker {
+        background-color: #fff;
+        cursor: pointer;
+    }
+
+    #dtrTable thead th {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    #dtrTable tbody td {
+        vertical-align: middle;
+    }
+
+        #dtrTable tbody td:nth-child(3),
+        #dtrTable tbody td:nth-child(4) {
+            text-align: center;
+            font-family: 'Courier New', monospace;
+            font-weight: 500;
+        }
+
+        #dtrTable tbody td:nth-child(5) {
+            text-align: center;
+        }
+</style>
+
+<script>
+    $(document).ready(function () {
+
+        MODULE = 'FSdtrM';
+        access = ROLE_ACCESS?.[MODULE];
+
+        // Initialize datepicker with mm/dd/yyyy format
+        $('.bt-datepicker').datepicker({
+            format: 'mm/dd/yyyy',
+            autoclose: true,
+            todayHighlight: true,
+            clearBtn: true,
+            orientation: 'bottom auto'
+        });
+
+        // Initialize DataTable
+        var table = $('#dtrTable').DataTable({
+            responsive: true,
+            processing: true,
+            ajax: {
+                url: "/DTR/GetDTRList",
+                type: "GET",
+                datatype: "json",
+                data: function (d) {
+                    d.employeeNo = '@Model.id';
+                    d.dateFrom = $('#dateFrom').val();
+                    d.dateTo = $('#dateTo').val();
+                },
+                error: function(xhr, error, code) {
+                    console.error('Error loading DTR data:', error);
+                }
+            },
+            columns: [
+                {
+                    data: "biometricsDate",
+                    width: "12%",
+                    className: "text-center"
+                },
+                {
+                    data: "biometricsDateOut",
+                    width: "12%",
+                    className: "text-center",
+                    render: function(data) {
+                        return data || '-';
+                    }
+                },
+                {
+                    data: "biometricsTimeIn",
+                    width: "12%",
+                    className: "text-center",
+                    render: function(data) {
+                        return data || '-';
+                    }
+                },
+                {
+                    data: "biometricsTimeOut",
+                    width: "12%",
+                    className: "text-center",
+                    render: function(data) {
+                        return data || '-';
+                    }
+                },
+                {
+                    data: "biometricsDeviceLog",
+                    width: "20%",
+                    className: "text-center",
+                    render: function(data) {
+                        return data || '-';
+                    }
+                },
+                {
+                    data: "remarks",
+                    width: "32%",
+                    render: function(data) {
+                        if (!data) return '-';
+                        return `<span class="badge bg-info">${data}</span>`;
+                    }
+                }
+            ],
+            order: [[0, 'desc']],
+            pageLength: 25,
+            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+            language: {
+                paginate: {
+                    next: '<i class="fa fa-angle-double-right" aria-hidden="true"></i>',
+                    previous: '<i class="fa fa-angle-double-left" aria-hidden="true"></i>'
+                },
+                emptyTable: "No DTR records found",
+                processing: "Loading DTR records...",
+                search: "Search:",
+                lengthMenu: "Show _MENU_ entries",
+                info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                infoEmpty: "Showing 0 to 0 of 0 entries",
+                infoFiltered: "(filtered from _MAX_ total entries)"
+            }
+        });
+
+        // Filter button click event
+        $('#filterBtn').on('click', function () {
+            var dateFrom = $('#dateFrom').val();
+            var dateTo = $('#dateTo').val();
+
+            // Validate date range
+            if (dateFrom && dateTo) {
+                var from = new Date(dateFrom);
+                var to = new Date(dateTo);
+
+                if (from > to) {
+                    toastr.warning('Date From cannot be later than Date To');
+                    return;
+                }
+            }
+
+            table.ajax.reload();
+        });
+
+        // Clear filter button
+        $('#clearFilterBtn').on('click', function() {
+            $('#dateFrom').val('');
+            $('#dateTo').val('');
+            table.ajax.reload();
+        });
+
+        // Allow Enter key to trigger filter
+        $('#dateFrom, #dateTo').on('keypress', function(e) {
+            if (e.which === 13) {
+                $('#filterBtn').click();
+            }
+        });
+    });
+</script>

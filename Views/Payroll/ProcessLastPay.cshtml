@@ -1,0 +1,902 @@
+﻿﻿@{
+Layout = "~/Views/Shared/_LayoutFillow.cshtml";
+ViewData["Title"] = "Process Last Pay";
+}
+
+<div class="col-12">
+    <div class="card">
+        <div class="card-header">
+
+            <div class="row" style="width:100%;">
+                <h4 class="card-title">Process Last Pay</h4>
+                <br><br><br>
+                <div class="row" style="margin-left:0px;width:100%;">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <h5>Resigned Employees:</h5>
+                            <select name="filterEmployee" id="filterEmployee" class="form-control"></select>
+                            <input type="hidden" name="employmentStatus" id="employmentStatus" />
+                            <input type="hidden" name="dateHired" id="dateHired" />
+                            <input type="hidden" name="dateResigned" id="dateResigned" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <h5>Details:</h5>
+                            <p id="empInfo"></p>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4" style="display:none">
+                        <div class="form-group">
+                            <h5>Select CutOff</h5>
+                            <select name="cutOff" id="cutOff" class="form-control"></select>
+                            <input type="hidden" name="cutOffType" id="cutOffType" />
+                            <input type="hidden" name="dateMonth" id="dateMonth" />
+                            <input type="hidden" name="dateYear" id="dateYear" />
+                            <input type="hidden" name="dateFrom" id="dateFrom" />
+                            <input type="hidden" name="dateTo" id="dateTo" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row" style="margin-top:40px;">
+                    <div class="col-md-4">
+                        <div class="form-check custom-checkbox mb-3">
+                            <input type="checkbox" class="form-check-input" id="lastCutoff" name="lastCutoff" disabled>
+                            <label class="form-check-label" for="lastCutoff">Include Last Payroll Cutoff</label>
+                            <input type="hidden" id="amount_netpay" />
+                            <input type="hidden" id="lastcutoff_cutOffTypeCode" />
+                            <input type="hidden" id="lastcutoff_dateMonth" />
+                            <input type="hidden" id="lastcutoff_dateYear" />
+                            <input type="hidden" id="lastcutoff_statusName" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row" id="rw_lastcutoff" style="display:none">
+                    <div class="col-md-1"></div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <p id="empInfo_cutoff">Cutoff: 10000</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <input type="button" class="btn btn-warning" id="btnPrintLastPay" value="Print Last Pay">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-check custom-checkbox mb-3">
+                            <input type="checkbox" class="form-check-input" id="lastAdjustment" name="lastAdjustment" disabled>
+                            <label class="form-check-label" for="lastAdjustment">Include Last Pay Adjustment</label>
+                            <input type="hidden" id="amount_adjustment" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row" id="rw_adjustment" style="display:none">
+                    <div class="col-md-1"></div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <p id="empInfo_adjustment">Total Last Pay Adjustment: 10000</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row" style="display:none">
+                    <div class="col-md-4">
+                        <div class="form-check custom-checkbox mb-3">
+                            <input type="checkbox" class="form-check-input" id="lastDeduction" name="lastDeduction" disabled>
+                            <label class="form-check-label" for="lastDeduction">Include Last Pay Deductions</label>
+                            <input type="hidden" id="amount_deduction" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row" id="rw_lastdeduction" style="display:none">
+                    <div class="col-md-1"></div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <p id="empInfo_deduction">Total Last Pay Deduction: 10000</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-check custom-checkbox mb-3">
+                            <input type="checkbox" class="form-check-input" id="month13" name="month13" disabled>
+                            <label class="form-check-label" for="month13">Include 13th Month Pay</label>
+                            <input type="hidden" id="amount_13thmonth" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row" id="rw_13thmonth" style="display:none">
+                    <div class="col-md-1"></div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <p id="empInfo_13th">13th Month Pay: 10000</p>
+                            <br>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <input type="button" class="btn btn-warning" id="btn13thMonth" value="View Details / Print">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-check custom-checkbox mb-3">
+                            <input type="checkbox" class="form-check-input" id="taxRefund" name="taxRefund" disabled>
+                            <label class="form-check-label" for="taxRefund">Include Tax Refund</label>
+                            <input type="hidden" id="amount_tax" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row" id="rw_tax" style="display:none">
+                    <div class="col-md-1"></div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <p id="empInfo_tax">Tax Refund: 10000</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-check custom-checkbox mb-3">
+                            <input type="checkbox" class="form-check-input" id="slConversion" name="slConversion" disabled>
+                            <label class="form-check-label" for="slConversion">SL Conversion</label>
+                            <input type="hidden" id="amount_sl" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row" id="rw_sl" style="display:none">
+                    <div class="col-md-1"></div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <p id="empInfo_sl">SL Conversion: 10000</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-check custom-checkbox mb-3">
+                            <input type="checkbox" class="form-check-input" id="vlConversion" name="vlConversion" disabled>
+                            <label class="form-check-label" for="vlConversion">VL Conversion</label>
+                            <input type="hidden" id="amount_vl" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row" id="rw_vl" style="display:none">
+                    <div class="col-md-1"></div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <p id="empInfo_vl">VL Conversion: 10,000</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label for="remarks">Remarks</label>
+                            <textarea class="form-control" id="remarks" name="remarks" rows="3" disabled></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="form-group">
+                        <p id="empInfo_lastpay"><b>Total Last Pay: </b></p>
+                        <input type="hidden" id="lastPayAmount" />
+                        <p id="empInfo_lastpayStatus"><b>Status : </b></p>
+                    </div>
+                </div>
+                <div class="col-md-4 d-flex justify-content-end">
+                    <div class="form-group">
+                        <input type="button" class="btn btn-warning" id="btnPrint" value="Print Last Pay">
+                        <input type="button" class="btn btn-success" id="btnProcess" value="Process Last Pay">
+                        <input type="button" class="btn btn-primary" id="btnPost" value="Post Last Pay">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Fillow_style
+{
+
+
+}
+
+@section Fillow_script
+{
+    <script>
+        $(document).ready(function () {
+
+            // datepicker
+            $('.bt-datepicker').datepicker({
+                format: 'yyyy/mm/dd',
+                autoclose: true,
+                todayHighlight: true
+            });
+
+            initializeFilterSelect2();
+
+            $("#lastCutoff").change(function () {
+                var employeeNo = $('#filterEmployee').val();
+                var htmlView = "<span style='color:red;'>No record found.</span>";
+                $('#empInfo_cutoff').html(htmlView);
+
+                $("#btnPayslip").hide();
+
+                $.ajax({
+                    url: '/ProcessLastPay/GetLastCutoff',
+                    type: 'GET',
+                    data: { employeeNo: employeeNo },
+                    dataType: 'json',
+                    success: function (response) {
+                        console.log(response);
+
+                    if (response.data && response.data.length > 0) {
+                        var record = response.data[0];
+                        var amount = parseFloat(record.amount_netpay || 0).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+
+                        htmlView = "Cutoff: <b>" + record.cutOffType + "</b><br>" +
+                                   "Net Pay: <b>" + amount + "</b><br>";
+
+                        $("#btnPayslip").show();
+                        $("#amount_netpay").val(record.amount_netpay);
+                        $("#lastcutoff_cutOffTypeCode").val(record.cutOffTypeCode);
+                        $("#lastcutoff_dateMonth").val(record.dateMonth);
+                        $("#lastcutoff_dateYear").val(record.dateYear);
+                        $("#lastcutoff_statusName").val(record.statusName);
+                    }
+
+                        $('#empInfo_cutoff').html(htmlView);
+                    }
+                });
+
+                if ($(this).is(":checked")) {
+                    $("#rw_lastcutoff").show();
+                } else {
+                    $("#rw_lastcutoff").hide();
+                    $("#amount_netpay").val(0);
+                }
+
+                computeTotalLastPay();
+            });
+
+            $("#lastAdjustment").change(function () {
+                var employeeNo = $('#filterEmployee').val();
+                var htmlView = "<span style='color:red;'>No record found.</span>";
+                $('#empInfo_adjustment').html(htmlView);
+
+                $.ajax({
+                    url: '/ProcessLastPay/GetLastPayAdjustment',
+                    type: 'GET',
+                    data: { employeeNo: employeeNo },
+                    dataType: 'json',
+                    success: function (response) {
+                        console.log(response);
+
+                        if (response.data && response.data.length > 0 && response.data[0].otherEmployeePayable != 0) {
+                            var record = response.data[0];
+                            var amount = parseFloat(record.otherEmployeePayable || 0).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+
+                            htmlView = "Total Last Pay Adjustment: <b>" + amount + "</b>";
+
+                            $("#amount_adjustment").val(record.otherEmployeePayable);
+                        }
+
+                        $('#empInfo_adjustment').html(htmlView);
+                    }
+                });
+
+                if ($(this).is(":checked")) {
+                    $("#rw_adjustment").show();
+                } else {
+                    $("#rw_adjustment").hide();
+                    $("#amount_adjustment").val(0);
+                }
+
+                computeTotalLastPay();
+            });
+
+            $("#lastDeduction").change(function () {
+                var employeeNo = $('#filterEmployee').val();
+                var htmlView = "<span style='color:red;'>Last pay deduction not found.</span>";
+                $('#empInfo_deduction').html(htmlView);
+
+                $.ajax({
+                    url: '/ProcessLastPay/GetLastPayDeduction',
+                    type: 'GET',
+                    data: { employeeNo: employeeNo },
+                    dataType: 'json',
+                    success: function (response) {
+                        console.log(response);
+
+                        if (response.data && response.data.length > 0 && response.data[0].otherEmployeeReceivable > 0) {
+                            var record = response.data[0];
+                            var amount = parseFloat(record.otherEmployeeReceivable || 0).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+
+                            htmlView = "Total Last Pay Deduction: <b>" + amount + "</b>";
+
+                            $("#amount_deduction").val(record.otherEmployeeReceivable);
+                        }
+
+                        $('#empInfo_deduction').html(htmlView);
+                    }
+                });
+
+                if ($(this).is(":checked")) {
+                    $("#rw_lastdeduction").show();
+                } else {
+                    $("#rw_lastdeduction").hide();
+                }
+
+                computeTotalLastPay();
+            });
+
+            $("#month13").change(function () {
+                var employeeNo = $('#filterEmployee').val();
+                var htmlView = "<span style='color:red;'>No record found.</span>";
+                $('#empInfo_13th').html(htmlView);
+
+                $("#btnDeduction").hide();
+
+                $.ajax({
+                    url: '/ProcessLastPay/Get13thMonthPay',
+                    type: 'GET',
+                    data: { employeeNo: employeeNo },
+                    dataType: 'json',
+                    success: function (response) {
+                        console.log(response);
+
+                        if (response.data && response.data.length > 0 && response.data[0].amount_13thmonth > 0) {
+                            var record = response.data[0];
+                            var amount = parseFloat(record.amount_13thmonth || 0).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+
+                            htmlView = "13th Month Pay: <b>" + amount + "</b>";
+
+                            $("#btn13th").show();
+                            $("#amount_13thmonth").val(record.amount_13thmonth);
+                            $('#empInfo_13th').html(htmlView);
+                        }
+                    }
+                });
+
+                if ($(this).is(":checked")) {
+                    $("#rw_13thmonth").show();
+                } else {
+                    $("#rw_13thmonth").hide();
+                    $("#amount_13thmonth").val(0);
+                }
+
+                computeTotalLastPay();
+            });
+
+            $("#taxRefund").change(function () {
+                var employeeNo = $('#filterEmployee').val();
+                var htmlView = "<span style='color:red;'>No record found.</span>";
+                $('#empInfo_tax').html(htmlView);
+
+                $.ajax({
+                    url: '/ProcessLastPay/GetTaxRefund',
+                    type: 'GET',
+                    data: { employeeNo: employeeNo },
+                    dataType: 'json',
+                    success: function (response) {
+                        console.log(response);
+
+                        if (response.data && response.data.length > 0 && response.data[0].amount_taxRefund > 0) {
+                            var record = response.data[0];
+                            var amount = parseFloat(record.amount_taxRefund || 0).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+
+                            htmlView = "Tax Refund: <b>" + amount + "</b>";
+
+                            $("#amount_tax").val(record.amount_taxRefund);
+                            $('#empInfo_tax').html(htmlView);
+                        }
+                    }
+                });
+
+                if ($(this).is(":checked")) {
+                    $("#rw_tax").show();
+                } else {
+                    $("#rw_tax").hide();
+                    $("#amount_tax").val(0);
+                }
+
+                computeTotalLastPay();
+            });
+
+            $("#slConversion").change(function () {
+                var employeeNo = $('#filterEmployee').val();
+                var htmlView = "<span style='color:red;'>No record found.</span>";
+                $('#empInfo_sl').html(htmlView);
+
+                $.ajax({
+                    url: '/ProcessLastPay/GetSLConversion',
+                    type: 'GET',
+                    data: { employeeNo: employeeNo },
+                    dataType: 'json',
+                    success: function (response) {
+                        console.log(response);
+
+                        if (response.data && response.data.length > 0 && response.data[0].amount_sl > 0) {
+                            var record = response.data[0];
+                            var amount = parseFloat(record.amount_sl || 0).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+
+                            htmlView = "SL Conversion: <b>" + amount + "</b>";
+
+                            $("#amount_sl").val(record.amount_sl);
+                            $('#empInfo_sl').html(htmlView);
+                        }
+                    }
+                });
+
+                if ($(this).is(":checked")) {
+                    $("#rw_sl").show();
+                } else {
+                    $("#rw_sl").hide();
+                    $("#amount_Sl").val(0);
+                }
+
+                computeTotalLastPay();
+            });
+
+            $("#vlConversion").change(function () {
+                var employeeNo = $('#filterEmployee').val();
+                var htmlView = "<span style='color:red;'>No record found.</span>";
+                $('#empInfo_vl').html(htmlView);
+
+                $.ajax({
+                    url: '/ProcessLastPay/GetVLConversion',
+                    type: 'GET',
+                    data: { employeeNo: employeeNo },
+                    dataType: 'json',
+                    success: function (response) {
+                        console.log(response);
+
+                        if (response.data && response.data.length > 0 && response.data[0].amount_vl > 0) {
+                            var record = response.data[0];
+                            var amount = parseFloat(record.amount_vl || 0).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+
+                            htmlView = "VL Conversion: <b>" + amount + "</b>";
+
+                            $("#amount_vl").val(record.amount_vl);
+                            $('#empInfo_vl').html(htmlView);
+                        }
+                    }
+                });
+
+                if ($(this).is(":checked")) {
+                    $("#rw_vl").show();
+                } else {
+                    $("#rw_vl").hide();
+                    $("#amount_vl").val(0);
+                }
+
+                computeTotalLastPay();
+            });
+
+            $(document).on('select2:select', '#filterEmployee', function (e) {
+                var obj = e.params.data;
+
+                if (!obj) {
+                    console.warn('No selected employee');
+                    $('#empInfo').html('');
+                    return;
+                }
+
+                $('#employmentStatus').val(obj.empStatus);
+                $('#dateHired').val(obj.dateHired);
+                $('#dateResigned').val(obj.dateResigned);
+
+                $('#empInfo').html(
+                    "Status: <b>" + obj.empStatus + "</b><br>" +
+                    "Date Hired: <b>" + obj.dateHired + "</b><br>" +
+                    "Date Resigned: <b>" + obj.dateResigned + "</b><br>"
+                );
+
+                $('#empInfo_lastpayStatus').html(
+                    "<b>Status: <span style='color:red;'>" + obj.lastPayStatus + "</span></b>"
+                );
+
+                if (Number(obj.amount_lastcutoff) != 0) {
+                    $('#lastCutoff').prop('checked', true).trigger('change');
+                } else {
+                    $('#lastCutoff').prop('checked', false).trigger('change');
+                }
+
+                if (Number(obj.amount_adjustment) != 0) {
+                    $('#lastAdjustment').prop('checked', true).trigger('change');
+                } else {
+                    $('#lastAdjustment').prop('checked', false).trigger('change');
+                }
+
+                if (Number(obj.amount_13thmonth) != 0) {
+                    $('#month13').prop('checked', true).trigger('change');
+                } else {
+                    $('#month13').prop('checked', false).trigger('change');
+                }
+
+                if (Number(obj.amount_taxRefund) != 0) {
+                    $('#taxRefund').prop('checked', true).trigger('change');
+                } else {
+                    $('#taxRefund').prop('checked', false).trigger('change');
+                }
+
+                if (Number(obj.amount_sl) != 0) {
+                    $('#slConversion').prop('checked', true).trigger('change');
+                } else {
+                    $('#slConversion').prop('checked', false).trigger('change');
+                }
+
+                if (Number(obj.amount_vl) != 0) {
+                    $('#vlConversion').prop('checked', true).trigger('change');
+                } else {
+                    $('#vlConversion').prop('checked', false).trigger('change');
+                }
+
+                // format with commas
+                const formatted = obj.lastPayAmount.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                });
+
+                $('#empInfo_lastpay').html(
+                    "<b>Total Last Pay: " + formatted + "</b>"
+                );
+
+                if (obj.lastPayStatus == "Posted") {
+                    $('#btnPost').prop('disabled', true);
+                    $('#btnProcess').prop('disabled', true);
+                } else {
+                    $('#btnPost').prop('disabled', false);
+                    $('#btnProcess').prop('disabled', false);
+                }
+
+                const disabled = obj.lastPayStatus !== "Open";
+                [
+                    "#lastCutoff",
+                    "#lastAdjustment",
+                    "#lastDeduction",
+                    "#month13",
+                    "#taxRefund",
+                    "#remarks",
+                    "#vlConversion",
+                    "#slConversion"
+                ].forEach(id => {
+                    document.querySelector(id).disabled = disabled;
+                });
+            });
+
+            $('#btnProcess').on('click', function () {
+
+                const checkboxes = [
+                    'lastCutoff',
+                    'lastAdjustment',
+                    'month13',
+                    'taxRefund',
+                    'slConversion',
+                    'vlConversion'
+                ];
+
+                const hasChecked = checkboxes.some(function (id) {
+                    return $('#' + id).is(':checked');
+                });
+
+                if (!hasChecked) {
+                    showNotification('Please select at least one item.', 'danger');
+                    return;
+                }
+
+                var employeeno = $('#filterEmployee').val();
+                var lastPayAmount = parseFloat($('#lastPayAmount').val()) || 0;
+
+                var amount_netpay     = $('#lastCutoff').is(':checked')     ? (parseFloat($('#amount_netpay').val())     || 0) : 0;
+                var amount_adjustment = $('#lastAdjustment').is(':checked') ? (parseFloat($('#amount_adjustment').val()) || 0) : 0;
+                var amount_13thmonth  = $('#month13').is(':checked')        ? (parseFloat($('#amount_13thmonth').val())  || 0) : 0;
+
+                var employmentStatus = $('#employmentStatus').val() || "";
+
+                var dateHired = $('#dateHired').val()
+                    ? new Date($('#dateHired').val()).toISOString().split('T')[0]
+                    : null;
+
+                var dateResigned = $('#dateResigned').val()
+                    ? new Date($('#dateResigned').val()).toISOString().split('T')[0]
+                    : null;
+
+                var amount_tax = $('#taxRefund').is(':checked')    ? (parseFloat($('#amount_tax').val()) || 0) : 0;
+                var amount_sl  = $('#slConversion').is(':checked') ? (parseFloat($('#amount_sl').val())  || 0) : 0;
+                var amount_vl  = $('#vlConversion').is(':checked') ? (parseFloat($('#amount_vl').val())  || 0) : 0;
+
+                var remarks = $('#remarks').val() || "";
+
+                if (!employeeno) {
+                    showNotification('Please select employee.', 'danger');
+                    return;
+                }
+                if (!dateHired) {
+                    showNotification('Please input Date Hired.', 'danger');
+                    return;
+                }
+                if (!dateResigned) {
+                    showNotification('Please input Date Resigned.', 'danger');
+                    return;
+                }
+
+                var model = {
+                    employeeNo:       employeeno,
+                    amount_netpay:    amount_netpay,
+                    amount_adjustment: amount_adjustment,
+                    amount_13thmonth: amount_13thmonth,
+                    amount_taxRefund: amount_tax,
+                    amount_sl:        amount_sl,
+                    amount_vl:        amount_vl,
+                    employmentStatus: employmentStatus,
+                    dateHired:        dateHired,
+                    dateResigned:     dateResigned,
+                    lastPayAmount:    lastPayAmount,
+                    remarks:          remarks
+                };
+
+                $.ajax({
+                    type: "POST",
+                    url: "/ProcessLastPay/ProcessLastPayAmount",
+                    data: JSON.stringify(model),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (r) {
+                        if (r.success) {
+                            showNotification(r.message, 'success');
+                        } else {
+                            showNotification(r.message, 'danger');
+                        }
+                    },
+                    error: function () {
+                        showNotification('Something went wrong.', 'danger');
+                    }
+                });
+            });
+
+        }); // end document.ready
+
+        $('#btnPrintLastPay').on('click', function () {
+            var employeeNo   = $('#filterEmployee').val();
+            var cutOffType   = $('#lastcutoff_cutOffTypeCode').val();
+            var dateMonth    = $('#lastcutoff_dateMonth').val();
+            var dateYear     = $('#lastcutoff_dateYear').val();
+            var statusName   = $('#lastcutoff_statusName').val();
+
+            if (!employeeNo || !cutOffType || !dateMonth || !dateYear) {
+                showNotification('Last cutoff payslip details are not available.', 'warning');
+                return;
+            }
+
+            var $btn        = $(this);
+            var originalVal = $btn.val();
+            $btn.prop('disabled', true).val('Generating PDF...');
+
+            var url = '/PayrollRegisterPdf/PreviewPdf'
+                + '?employeeNo='  + encodeURIComponent(employeeNo)
+                + '&cutOffType='  + encodeURIComponent(cutOffType)
+                + '&dateMonth='   + encodeURIComponent(dateMonth)
+                + '&dateYear='    + encodeURIComponent(dateYear)
+                + '&statusName='  + encodeURIComponent(statusName || 'Posted');
+
+            window.open(url, '_blank');
+
+            setTimeout(function () {
+                $btn.prop('disabled', false).val(originalVal);
+            }, 1200);
+        });
+
+        $('#btnPrint').on('click', function () {
+            var employeeNo = $('#filterEmployee').val();
+
+            if (!employeeNo) {
+                showNotification('Please select an employee first.', 'warning');
+                return;
+            }
+
+            var $btn        = $(this);
+            var originalVal = $btn.val();
+            $btn.prop('disabled', true).val('Generating PDF...');
+
+            var url = '/LastPayPdf/PreviewPdf'
+                + '?employeeNo='        + encodeURIComponent(employeeNo)
+                + '&amountLastCutoff='  + encodeURIComponent($('#amount_netpay').val()      || 0)
+                + '&amountAdjustment='  + encodeURIComponent($('#amount_adjustment').val()  || 0)
+                + '&amount13th='        + encodeURIComponent($('#amount_13thmonth').val()   || 0)
+                + '&amountTax='         + encodeURIComponent($('#amount_tax').val()         || 0)
+                + '&amountSL='          + encodeURIComponent($('#amount_sl').val()          || 0)
+                + '&amountVL='          + encodeURIComponent($('#amount_vl').val()          || 0)
+                + '&lastPayAmount='     + encodeURIComponent($('#lastPayAmount').val()      || 0)
+                + '&statusName='        + encodeURIComponent($('#empInfo_lastpayStatus').find('span').text() || 'Open')
+                + '&includeLastCutoff=' + encodeURIComponent($('#lastCutoff').is(':checked'))
+                + '&includeAdjustment=' + encodeURIComponent($('#lastAdjustment').is(':checked'))
+                + '&include13th='       + encodeURIComponent($('#month13').is(':checked'))
+                + '&includeTax='        + encodeURIComponent($('#taxRefund').is(':checked'))
+                + '&includeSL='         + encodeURIComponent($('#slConversion').is(':checked'))
+                + '&includeVL='         + encodeURIComponent($('#vlConversion').is(':checked'));
+
+            window.open(url, '_blank');
+
+            setTimeout(function () {
+                $btn.prop('disabled', false).val(originalVal);
+            }, 1200);
+        });
+
+        $('#btnPost').on('click', function () {
+            Swal.fire({
+                title: "Are you sure?",
+                text: "Do you want to continue posting the last pay? This action cannot be undone.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#6c757d",
+                confirmButtonText: "Yes, post it",
+                cancelButtonText: "Cancel"
+            }).then((result) => {
+
+                if (!result.isConfirmed) return;
+
+                var model = {
+                    employeeNo: $('#filterEmployee').val()
+                };
+
+                $.ajax({
+                    type: "POST",
+                    url: "/ProcessLastPay/PostLastPay",
+                    data: JSON.stringify(model),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (r) {
+                        if (r.success) {
+                            showNotification(r.message, 'success');
+
+                            $('#empInfo_lastpayStatus').html(
+                                "<b>Status: <span style='color:red;'>Posted</span></b>"
+                            );
+
+                            [
+                                "#lastCutoff",
+                                "#lastAdjustment",
+                                "#lastDeduction",
+                                "#month13",
+                                "#taxRefund",
+                                "#remarks",
+                                "#vlConversion",
+                                "#slConversion"
+                            ].forEach(id => {
+                                document.querySelector(id).disabled = true;
+                            });
+
+                            $('#btnPost').prop('disabled', true);
+
+                        } else {
+                            showNotification(r.message, 'danger');
+                        }
+                    },
+                    error: function () {
+                        showNotification('Something went wrong.', 'danger');
+                    }
+                });
+            });
+        });
+
+        $('#btn13thMonth').on('click', function () {
+            var employeeNo = $('#filterEmployee').val();
+
+            if (!employeeNo) {
+                showNotification('Please select an employee first.', 'warning');
+                return;
+            }
+
+            var $btn        = $(this);
+            var originalVal = $btn.val();
+            $btn.prop('disabled', true).val('Generating PDF...');
+
+            var url = '/ThirteenthMonthPdf/PreviewPdf'
+                + '?employeeNo=' + encodeURIComponent(employeeNo);
+
+            window.open(url, '_blank');
+
+            setTimeout(function () {
+                $btn.prop('disabled', false).val(originalVal);
+            }, 1200);
+        });
+
+        function initializeFilterSelect2() {
+            $('#filterEmployee').select2({
+                placeholder: "-- Select Employee --",
+                allowClear: true,
+                ajax: {
+                    url: '/ProcessLastPay/GetEmployeeList',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            search: params.term
+                        };
+                    },
+                    processResults: function (data) {
+                        var results = $.map(data, function (item) {
+                            return {
+                                id:                item.employeeNo,
+                                text:              item.employeeName,
+                                dateHired:         item.dateHired,
+                                dateResigned:      item.dateResigned,
+                                empStatus:         item.empStatus,
+                                amount_lastcutoff: item.amount_lastcutoff,
+                                amount_adjustment: item.amount_adjustment,
+                                amount_13thmonth:  item.amount_13thmonth,
+                                amount_taxRefund:  item.amount_taxRefund,
+                                amount_sl:         item.amount_sl,
+                                amount_vl:         item.amount_vl,
+                                lastPayAmount:     item.lastPayAmount,
+                                lastPayStatus:     item.lastPayStatus
+                            };
+                        });
+
+                        return {
+                            results: results
+                        };
+                    }
+                }
+            });
+        }
+
+        function computeTotalLastPay() {
+            let total = 0;
+
+            if ($('#lastCutoff').is(':checked')) {
+                total += parseFloat($('#amount_netpay').val()) || 0;
+            }
+            if ($('#lastAdjustment').is(':checked')) {
+                total += parseFloat($('#amount_adjustment').val()) || 0;
+            }
+            if ($('#month13').is(':checked')) {
+                total += parseFloat($('#amount_13thmonth').val()) || 0;
+            }
+            if ($('#taxRefund').is(':checked')) {
+                total += parseFloat($('#amount_tax').val()) || 0;
+            }
+            if ($('#slConversion').is(':checked')) {
+                total += parseFloat($('#amount_sl').val()) || 0;
+            }
+            if ($('#vlConversion').is(':checked')) {
+                total += parseFloat($('#amount_vl').val()) || 0;
+            }
+
+            // format with commas
+            const formatted = total.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+
+            $('#empInfo_lastpay').html("<b>Total Last Pay: " + formatted + "</b>");
+            $("#lastPayAmount").val(total);
+        }
+    </script>
+}

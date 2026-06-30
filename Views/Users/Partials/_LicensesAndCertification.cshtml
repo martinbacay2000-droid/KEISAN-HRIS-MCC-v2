@@ -1,0 +1,541 @@
+﻿@model List<KEISAN_HRIS_v2.Models.Users.LicensesAndCertificationInfo>
+
+<div class="card-header">
+    <div class="row" style="width:100%;">
+        <div class="row" style="margin-left:0px;width:100%;">
+            <div class="col-md-3">
+                <div class="form-group">
+                    <h5>Record Status</h5>
+                    <select name="filterRecordStatus" id="filterRecordStatus" class="form-control">
+                        <option value="active" selected>ACTIVE</option>
+                        <option value="inactive">INACTIVE</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-6"></div>
+            <div class="col-md-3 d-flex justify-content-end align-items-end">
+                <div class="form-group">
+                    <button type="button" class="btn btn-primary" id="btnAddLicense">
+                        <i class="fa fa-plus"></i> New License/Certificate
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card-body">
+    <div class="table-responsive">
+        <table id="licensesAndCertificationTable" class="display" style="min-width: 900px">
+            <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>License/Certificate No.</th>
+                    <th>Description</th>
+                    <th>Registration Date</th>
+                    <th>Issue Date</th>
+                    <th>Valid Until</th>
+                    <th>Date Added</th>
+                    <th>Added By</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<!-- Add License/Certificate Modal -->
+<div class="modal fade" id="addLicenseModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">New License/Certificate</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addLicenseForm">
+                    <input type="hidden" id="addEmployeeNoHidden" name="EmployeeNo" value="@ViewBag.EmployeeNo" />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">License/Certificate No. <span class="text-danger">*</span></label>
+                            <input type="text" id="addLicenseNo" name="LicenseAndCertificateNo" class="form-control alphanum" maxlength="255" required />
+                            <div class="invalid-feedback">Please enter license/certificate number.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Description <span class="text-danger">*</span></label>
+                            <input type="text" id="addDescription" name="LicenseAndCertificateDescription" class="form-control alphanum" maxlength="255" required />
+                            <div class="invalid-feedback">Please enter description.</div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Registration Date</label>
+                            <div class="input-hasicon">
+                                <input type="text" id="addRegistrationDate" name="RegistrationDate" class="form-control bt-datepicker" />
+                                <div class="icon"><i class="far fa-calendar"></i></div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Issue Date</label>
+                            <div class="input-hasicon">
+                                <input type="text" id="addIssueDate" name="IssueDate" class="form-control bt-datepicker" />
+                                <div class="icon"><i class="far fa-calendar"></i></div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Valid Until</label>
+                            <div class="input-hasicon">
+                                <input type="text" id="addValidUntil" name="ValidUntil" class="form-control bt-datepicker" />
+                                <div class="icon"><i class="far fa-calendar"></i></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Remarks</label>
+                            <textarea id="addRemarks" name="LicenseRemarks" class="form-control alphanum" rows="3" maxlength="500"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btnSaveNewLicense" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View/Edit License/Certificate Modal -->
+<div class="modal fade" id="viewLicenseModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewModalTitle">View License/Certificate</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="viewLicenseForm">
+                    <input type="hidden" id="viewLicenseId" name="Id" />
+                    <input type="hidden" id="viewEmployeeNoHidden" name="EmployeeNo" value="@ViewBag.EmployeeNo" />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">License/Certificate No. <span class="text-danger edit-required d-none">*</span></label>
+                            <input type="text" id="viewLicenseNo" name="LicenseAndCertificateNo" class="form-control alphanum" maxlength="255" readonly />
+                            <div class="invalid-feedback">Please enter license/certificate number.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Description <span class="text-danger edit-required d-none">*</span></label>
+                            <input type="text" id="viewDescription" name="LicenseAndCertificateDescription" class="form-control alphanum" maxlength="255" readonly />
+                            <div class="invalid-feedback">Please enter description.</div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Registration Date</label>
+                            <div class="input-hasicon">
+                                <input type="text" id="viewRegistrationDate" name="RegistrationDate" class="form-control bt-datepicker" readonly />
+                                <div class="icon"><i class="far fa-calendar"></i></div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Issue Date</label>
+                            <div class="input-hasicon">
+                                <input type="text" id="viewIssueDate" name="IssueDate" class="form-control bt-datepicker" readonly />
+                                <div class="icon"><i class="far fa-calendar"></i></div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Valid Until</label>
+                            <div class="input-hasicon">
+                                <input type="text" id="viewValidUntil" name="ValidUntil" class="form-control bt-datepicker" readonly />
+                                <div class="icon"><i class="far fa-calendar"></i></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Remarks</label>
+                            <textarea id="viewRemarks" name="LicenseRemarks" class="form-control alphanum" rows="3" maxlength="500" readonly></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="btnEditLicense">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+                <button type="button" class="btn btn-success d-none" id="btnSaveLicense">Save</button>
+                <button type="button" class="btn btn-danger d-none" id="btnCancelEdit">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .table-responsive {
+        border-radius: 0.375rem;
+    }
+
+    #licensesAndCertificationTable_wrapper .dataTables_length,
+    #licensesAndCertificationTable_wrapper .dataTables_filter {
+        margin-bottom: 1rem;
+    }
+
+    #licensesAndCertificationTable_wrapper .dataTables_info,
+    #licensesAndCertificationTable_wrapper .dataTables_paginate {
+        margin-top: 1rem;
+    }
+
+    #licensesAndCertificationTable .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .modal-content {
+        border-radius: 0.5rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+
+    .form-control:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+
+    .invalid-feedback {
+        display: none;
+    }
+
+    .form-control.is-invalid {
+        border-color: #dc3545;
+    }
+
+        .form-control.is-invalid ~ .invalid-feedback {
+            display: block;
+        }
+
+    .input-hasicon {
+        position: relative;
+    }
+
+        .input-hasicon .icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+
+        .input-hasicon input {
+            padding-right: 35px;
+        }
+
+    .text-danger {
+        color: #dc3545 !important;
+    }
+
+    .form-control[readonly] {
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+    }
+
+    .edit-mode .form-control[readonly],
+    .edit-mode textarea[readonly] {
+        background-color: #ffffff;
+        border-color: #ced4da;
+    }
+
+    .card-header {
+        border-bottom: none !important;
+    }
+
+    .table th,
+    .table td {
+        vertical-align: middle;
+    }
+
+    #licensesAndCertificationTable .btn-sm i {
+        font-size: 0.875rem;
+    }
+
+    #licensesAndCertificationTable .d-flex.gap-1 {
+        gap: 0.25rem !important;
+    }
+</style>
+
+<script>
+        $(document).ready(function () {
+
+        MODULE = 'FSLicencesAndCertificationM';
+            access = ROLE_ACCESS?.[MODULE];
+
+        if (access != 'READWRITE' && access != 'FULL') {
+            $('#btnAddLicense, #btnEditLicense').hide();
+        }
+
+        // CONFIGURATION
+        const config = {
+            toastr: { positionClass: "toast-top-right", timeOut: 5000, closeButton: true, progressBar: true, preventDuplicates: true },
+            endpoints: {
+                list: "/LicensesAndCertification/GetLicensesAndCertificationList",
+                deleted: "/LicensesAndCertification/GetDeletedLicenses",
+                get: "/LicensesAndCertification/GetLicenseById",
+                save: "/LicensesAndCertification/SaveLicenseAndCertificate",
+                delete: "/LicensesAndCertification/InactiveLicense",
+                restore: "/LicensesAndCertification/RestoreLicense"
+            },
+            datepickerFormat: 'yyyy/mm/dd',
+            employeeNo: '@ViewBag.EmployeeNo'
+        };
+
+        toastr.options = config.toastr;
+        let isViewingDeleted = false;
+
+        // Get today's date
+        const today = new Date();
+
+        // INITIALIZATION
+        $('.bt-datepicker').datepicker({ format: config.datepickerFormat, autoclose: true });
+
+        // Restrict past dates for Registration and Issue Date
+        $('#addRegistrationDate, #addIssueDate, #viewRegistrationDate, #viewIssueDate').datepicker({
+            format: config.datepickerFormat,
+            endDate: today,
+            autoclose: true,
+            todayHighlight: true
+        });
+
+        const table = initializeDataTable();
+
+        // Auto-refresh table every hour
+        setInterval(() => { if (table && !$('.modal').is(':visible')) table.ajax.reload(null, false); }, 3600000);
+
+        // EVENT HANDLERS - FILTERS
+        $('#filterRecordStatus').on('change', function () {
+            isViewingDeleted = $(this).val() === 'inactive';
+            table.ajax.reload(null, false);
+            $('#btnAddLicense').toggle(!isViewingDeleted);
+        }).select2({ selectOnClose: true, minimumResultsForSearch: Infinity });
+
+        // EVENT HANDLERS - ADD MODAL
+        $('#btnAddLicense').click(() => { resetForm('add'); $('#addLicenseModal').modal('show'); });
+        $('#btnSaveNewLicense').click(() => { if (validateForm('add')) saveLicense(false); });
+
+        // EVENT HANDLERS - VIEW/EDIT MODAL
+        $(document).on('click', '.viewLicense', function (e) {
+            e.preventDefault();
+            const id = $(this).data('id'), $btn = $(this);
+            toggleButtonLoading($btn, true);
+            $.get(config.endpoints.get, { id })
+                .done(r => { if (r.success) { resetForm('view'); setViewMode(); populateViewForm(r.data); $('#viewLicenseModal').modal('show'); } else showNotification(r.message, 'error'); })
+                .fail(() => showNotification('Unable to load license/certificate data', 'error'))
+                .always(() => toggleButtonLoading($btn, false));
+        });
+
+        $('#btnEditLicense').click(() => {
+            $('#viewModalTitle').text('Edit License/Certificate');
+            $('#viewLicenseModal .modal-body').addClass('edit-mode');
+            $('#viewLicenseNo, #viewDescription, #viewRegistrationDate, #viewIssueDate, #viewValidUntil, #viewRemarks').prop('readonly', false);
+            $('#viewRegistrationDate, #viewIssueDate').datepicker({ format: config.datepickerFormat, endDate: today, autoclose: true, todayHighlight: true });
+            $('#viewValidUntil').datepicker({ format: config.datepickerFormat, autoclose: true });
+            $('.edit-required').removeClass('d-none');
+            $('#btnEditLicense').addClass('d-none');
+            $('#btnSaveLicense, #btnCancelEdit').removeClass('d-none');
+            $('#viewLicenseNo').focus();
+        });
+
+        $('#btnCancelEdit').click(() => { $.get(config.endpoints.get, { id: $('#viewLicenseId').val() }).done(r => { if (r.success) { resetForm('view'); setViewMode(); populateViewForm(r.data); } }); });
+        $('#btnSaveLicense').click(() => { if (validateForm('view')) saveLicense(true); });
+
+        // EVENT HANDLERS - DELETE/RESTORE
+        $(document).on('click', '.deleteLicense', function (e) {
+            e.preventDefault();
+            deleteWithReason({
+                title: 'Inactive License/Certificate',
+                text: 'Are you sure you want to inactive this license/certificate record?',
+                url: config.endpoints.delete,
+                id: $(this).data('id'),
+                button: $(this),
+                table: table
+            });
+        });
+
+        $(document).on('click', '.restoreLicense', function (e) {
+            e.preventDefault();
+            const id = $(this).data('id'), $btn = $(this);
+            Swal.fire({
+                title: 'Restore Record',
+                text: 'Are you sure you want to restore this license/certificate record?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Restore',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#6c757d',
+                allowOutsideClick: false,
+                allowEscapeKey: false
+            }).then(result => { if (result.isConfirmed) { toggleButtonLoading($btn, true); $.post(config.endpoints.restore, { id }).done(r => { if (r.success) { table.ajax.reload(null, false); showNotification(r.message, 'success'); } else showNotification(r.message, 'error'); }).fail(() => showNotification('Unable to restore license/certificate. Please try again.', 'error')).always(() => toggleButtonLoading($btn, false)); } });
+        });
+
+        // EVENT HANDLERS - MODAL LIFECYCLE
+        $('#addLicenseModal, #viewLicenseModal').on('hidden.bs.modal', function() { resetForm($(this).attr('id').includes('add') ? 'add' : 'view'); if ($(this).attr('id').includes('view')) setViewMode(); });
+
+        // EVENT HANDLERS - KEYBOARD
+        $('#addLicenseForm, #viewLicenseForm').on('keypress', function(e) { if (e.which === 13 && !$(e.target).is('textarea')) { e.preventDefault(); $(this).attr('id').includes('add') ? $('#btnSaveNewLicense').click() : $('#viewLicenseModal .modal-body').hasClass('edit-mode') && $('#btnSaveLicense').click(); } });
+
+        // EVENT HANDLERS - VALIDATION
+        $('#addLicenseNo, #viewLicenseNo, #addDescription, #viewDescription').on('input', function() { $(this).removeClass('is-invalid'); });
+
+        // EVENT HANDLERS - DATE VALIDATION
+        $('#addRegistrationDate, #viewRegistrationDate, #addIssueDate, #viewIssueDate, #addValidUntil, #viewValidUntil').on('change', function() {
+            const prefix = $(this).attr('id').startsWith('add') ? 'add' : 'view';
+            validateDates(prefix);
+        });
+
+        // INITIALIZATION FUNCTIONS
+        function initializeDataTable() {
+            return $('#licensesAndCertificationTable').DataTable({
+                processing: true,
+                serverSide: false,
+                ajax: {
+                    url: config.endpoints.list,
+                    type: "GET",
+                    data: d => { d.employeeNo = config.employeeNo; d.isactive = isViewingDeleted ? '0' : '1'; },
+                    datatype: "json",
+                    error: () => showNotification('Error loading data. Please refresh the page.', 'error')
+                },
+                columns: [
+                    {
+                        data: "id", width: "12%", orderable: false,
+                        render: (data) => {
+                            if (isViewingDeleted) {
+                                return access === 'FULL' ? `<div class="d-flex gap-1"><button type="button" class="btn btn-sm btn-success shadow-sm restoreLicense" data-id="${data}" title="Restore"><i class="fas fa-undo"></i></button></div>` : '';
+                            }
+                            const viewbtn = `<button type="button" class="btn btn-sm btn-primary shadow-sm viewLicense" data-id="${data}" title="View"><i class="fas fa-eye"></i></button>`;
+                            const deletebtn = access === 'FULL' ? `<button type="button" class="btn btn-sm btn-danger shadow-sm deleteLicense" data-id="${data}" title="Delete"><i class="fa fa-trash"></i></button>` : '';
+                            return `<div class="d-flex gap-1">${viewbtn}${deletebtn}</div>`;
+                        }
+                    },
+                    { data: "licenseAndCertificateNo", width: "15%" },
+                    { data: "licenseAndCertificateDescription", width: "20%" },
+                    { data: "registrationDate", width: "12%" },
+                    { data: "issueDate", width: "12%" },
+                    { data: "validUntil", width: "12%" },
+                    { data: "dtAdded", width: "10%" },
+                    { data: "addedByUser", width: "10%" }
+                ],
+                order: [[1, 'asc']],
+                pageLength: 25,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                language: {
+                    processing: "Loading...",
+                    emptyTable: "No license/certificate records found",
+                    zeroRecords: "No matching license/certificate records found",
+                    paginate: { next: '<i class="fa fa-angle-double-right"></i>', previous: '<i class="fa fa-angle-double-left"></i>' }
+                }
+            });
+        }
+
+        // DATA OPERATIONS
+        function saveLicense(isEdit) {
+            const prefix = isEdit ? 'view' : 'add';
+            const formData = {
+                ...(isEdit && { Id: parseInt($(`#${prefix}LicenseId`).val()) }),
+                EmployeeNo: $(`#${prefix}EmployeeNoHidden`).val(),
+                LicenseAndCertificateNo: $(`#${prefix}LicenseNo`).val(),
+                LicenseAndCertificateDescription: $(`#${prefix}Description`).val(),
+                RegistrationDate: $(`#${prefix}RegistrationDate`).val() || '',
+                IssueDate: $(`#${prefix}IssueDate`).val() || '',
+                ValidUntil: $(`#${prefix}ValidUntil`).val() || '',
+                LicenseRemarks: $(`#${prefix}Remarks`).val() || '',
+                IsActive: true
+            };
+            const $saveBtn = isEdit ? $('#btnSaveLicense') : $('#btnSaveNewLicense');
+            toggleButtonLoading($saveBtn, true, 'Saving...');
+            $.ajax({
+                url: config.endpoints.save,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(formData),
+                success: r => { if (r.success) { isEdit && setViewMode(); $(`#${isEdit ? 'view' : 'add'}LicenseModal`).modal('hide'); table.ajax.reload(null, false); showNotification(r.message, 'success'); } else showNotification(r.message, 'error'); },
+                error: () => showNotification('Unable to save license/certificate. Please try again.', 'error'),
+                complete: () => toggleButtonLoading($saveBtn, false)
+            });
+        }
+
+        function populateViewForm(data) {
+            $('#viewLicenseId').val(data.id);
+            $('#viewLicenseNo').val(data.licenseAndCertificateNo);
+            $('#viewDescription').val(data.licenseAndCertificateDescription);
+            $('#viewRegistrationDate').val(data.registrationDate || '');
+            $('#viewIssueDate').val(data.issueDate || '');
+            $('#viewValidUntil').val(data.validUntil || '');
+            $('#viewRemarks').val(data.licenseRemarks || '');
+        }
+
+        function resetForm(prefix) {
+            $(`#${prefix}LicenseForm`)[0].reset();
+            $(`#${prefix}LicenseForm .form-control`).removeClass('is-invalid');
+            $(`#btnSave${prefix === 'view' ? 'License' : 'NewLicense'}`).prop('disabled', false).html('Save');
+        }
+
+        function setViewMode() {
+            $('#viewModalTitle').text('View License/Certificate');
+            $('#viewLicenseModal .modal-body').removeClass('edit-mode');
+            $('#viewLicenseNo, #viewDescription, #viewRegistrationDate, #viewIssueDate, #viewValidUntil, #viewRemarks').prop('readonly', true);
+            $('#viewRegistrationDate, #viewIssueDate, #viewValidUntil').datepicker('remove');
+            $('.edit-required').addClass('d-none');
+            $('#btnEditLicense').removeClass('d-none');
+            $('#btnSaveLicense, #btnCancelEdit').addClass('d-none');
+            $('#viewLicenseForm .form-control').removeClass('is-invalid');
+        }
+
+        function validateForm(prefix) {
+            let isValid = true;
+            ['LicenseNo', 'Description'].forEach(field => {
+                if (!$(`#${prefix}${field}`).val()) { $(`#${prefix}${field}`).addClass('is-invalid'); isValid = false; }
+            });
+            if (!validateDates(prefix)) isValid = false;
+            return isValid;
+        }
+
+        function validateDates(prefix) {
+            const regDate = $(`#${prefix}RegistrationDate`).val();
+            const issueDate = $(`#${prefix}IssueDate`).val();
+            const validUntil = $(`#${prefix}ValidUntil`).val();
+
+            // Issue date cannot be before registration date
+            if (regDate && issueDate && new Date(issueDate) < new Date(regDate)) {
+                showNotification('Issue date cannot be earlier than registration date.', 'warning');
+                return false;
+            }
+
+            // Valid until cannot be before issue date
+            if (issueDate && validUntil && new Date(validUntil) < new Date(issueDate)) {
+                showNotification('Valid until date cannot be earlier than issue date.', 'warning');
+                return false;
+            }
+
+            return true;
+        }
+
+        function toggleButtonLoading($btn, loading, text = '') {
+            const iconMap = { 'viewLicense': '<i class="fas fa-eye"></i>', 'deleteLicense': '<i class="fa fa-trash"></i>', 'restoreLicense': '<i class="fas fa-undo"></i>' };
+            if (loading) {
+                $btn.data('original-html', $btn.html()).prop('disabled', true).html((text ? '<i class="fas fa-spinner fa-spin"></i> ' : '<i class="fas fa-spinner fa-spin"></i>') + text);
+            } else {
+                const btnClass = Object.keys(iconMap).find(cls => $btn.hasClass(cls));
+                $btn.prop('disabled', false).html($btn.data('original-html') || iconMap[btnClass] || 'Save').removeData('original-html');
+            }
+        }
+
+        function showNotification(message, type) {
+            const types = { success: 'Success', error: 'Error', warning: 'Warning', info: 'Information' };
+            toastr[type](message, types[type] || 'Notification');
+        }
+    });
+</script>

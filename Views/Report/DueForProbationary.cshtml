@@ -1,0 +1,116 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutFillow.cshtml";
+    ViewData["Title"] = "Due For Probationary";
+}
+
+<div class="col-12">
+    <div class="card">
+        <div class="card-header">
+            <div class="row" style="width:100%;">
+                <h4 class="card-title">Due For Probationary</h4>
+                <br> <br> <br>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="EmployeeTable" class="display" style="min-width: 845px">
+                    <thead>
+                        <tr>
+                            <th>Employee Name</th>
+                            <th>Probationary Date</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Fillow_style
+{
+    <style>
+        .badge {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-info {
+            background-color: #e91e63;
+            color: white;
+        }
+    </style>
+}
+
+@section Fillow_script
+{
+    <script>
+        $(document).ready(function () {
+            // Datepicker
+            $('.bt-datepicker').datepicker({
+                format: 'yyyy-mm-dd',
+                autoclose: true,
+                todayHighlight: true
+            });
+
+            let EmployeeTable;
+
+            function initDataTable() {
+                if ($.fn.DataTable.isDataTable('#EmployeeTable')) {
+                    EmployeeTable.clear().destroy();
+                }
+
+                EmployeeTable = $('#EmployeeTable').DataTable({
+                    responsive: true,
+                    pageLength: 10,
+                    lengthMenu: [
+                        [10, 25, 50, -1],
+                        [10, 25, 50, "All"]
+                    ],
+                    ajax: {
+                        url: '/DueForProbationary/GetReportList',
+                        type: 'GET',
+                        dataType: 'json',
+                        data: function(d) {
+                            d.dateMonth = $('#dateMonth').val() || "ALL";
+                        },
+                        error: function(xhr, error, thrown) {
+                            console.error("AJAX Error:", xhr.responseText);
+                        }
+                    },
+                    columns: [
+                        {
+                            data: "employeeName",
+                            width: "40%"
+                        },
+                        {
+                            data: "probationaryDate",
+                            width: "30%"
+                        },
+                        {
+                            data: "status",
+                            width: "30%",
+                            render: function(data, type, row) {
+                                if (!data) return '';
+                                return `<span class="badge badge-info">${data}</span>`;
+                            }
+                        }
+                    ],
+                    order: [[1, 'asc']], // Sort by probationary date by default
+                    language: {
+                        paginate: {
+                            next: '<i class="fa fa-angle-double-right" aria-hidden="true"></i>',
+                            previous: '<i class="fa fa-angle-double-left" aria-hidden="true"></i>'
+                        }
+                    },
+                    dom: 'Blfrtip'
+                });
+            }
+
+            initDataTable();
+        });
+    </script>
+}

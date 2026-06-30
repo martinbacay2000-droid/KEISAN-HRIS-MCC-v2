@@ -1,0 +1,704 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutFillow.cshtml";
+    ViewData["Title"] = "Payroll Register";
+}
+
+<div class="col-12">
+    <div class="card">
+
+        <div class="card-header">
+            <div class="row" style="width:100%;">
+                <h4 class="card-title">Open Payroll Register</h4>
+                <br /><br /><br />
+
+                <div class="row" style="margin-left:0px;width:100%;">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <h5>Select CutOff</h5>
+                            <select name="cutOff" id="cutOff" class="form-control"></select>
+                            <input type="hidden" name="cutOffType" id="cutOffType" />
+                            <input type="hidden" name="dateMonth" id="dateMonth" />
+                            <input type="hidden" name="dateYear" id="dateYear" />
+                            <input type="hidden" name="dateFrom" id="dateFrom" />
+                            <input type="hidden" name="dateTo" id="dateTo" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Company</h5>
+                            <select name="branch" id="filterBranch" class="form-control"></select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Department</h5>
+                            <select name="department" id="filterDepartment" class="form-control"></select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <h5>&nbsp;</h5>
+                            <div class="d-flex flex-column align-items-end gap-1">
+                                <button type="button" class="btn btn-warning" id="btnExportToExcel" style="white-space: nowrap;">
+                                    <i class="fas fa-file-excel"></i> Export to Excel
+                                </button>
+                                <br>
+                                <button type="button" class="btn btn-success" id="btnProcess" style="white-space: nowrap;">
+                                    <i class="fas fa-check-circle"></i> Post Register
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="row">
+                <div class="table-responsive">
+                    <table id="requestTable" class="display" style="min-width:845px">
+                        <thead>
+                            <tr>
+                                <th>Payslip</th>
+                                <th>Employee No</th>
+                                <th>Employee Name</th>
+                                <th>Department</th>
+                                <th>Daily Rate</th>
+                                <th>Days Worked</th>
+                                <th>Basic Pay</th>
+                                <th>Late(mins)</th>
+                                <th>Late Amount</th>
+                                <th>Undertime(mins)</th>
+                                <th>Undertime Amount</th>
+                                <th>Days Absent</th>
+                                <th>Absent Amount</th>
+                                <th>OT(hrs)</th>
+                                <th>LH BASIC</th>
+                                <th>LH ND</th>
+                                <th>LH OT</th>
+                                <th>RD BASIC</th>
+                                <th>REG ND</th>
+                                <th>REG NDOT</th>
+                                <th>REG OT</th>
+                                <th>SH BASIC</th>
+                                <th>SH ND</th>
+                                <th>SH OT</th>
+                                <th>OT Pay</th>
+                                <th>Total Allowance</th>
+                                <th>Adjustment Taxable</th>
+                                <th>Adjustment NonTax</th>
+                                <th>Gross Income</th>
+                                <th>SSS</th>
+                                <th>SSS WISP</th>
+                                <th>PHI</th>
+                                <th>PIF</th>
+                                <th>TAX</th>
+                                <th>Reg Basic AL</th>
+                                <th>Tardy AL</th>
+                                <th>Undertime AL</th>
+                                <th>Absent AL</th>
+                                <th>Salary Adj AL</th>
+                                <th>LH Basic AL</th>
+                                <th>LH ND AL</th>
+                                <th>LH OT AL </th>
+                                <th>RD Basic AL</th>
+                                <th>REG ND AL</th>
+                                <th>REG NDOT AL</th>
+                                <th>REG OT AL</th>
+                                <th>SH BASIC AL</th>
+                                <th>SH ND AL</th>
+                                <th>SH OT AL</th>
+                                <th>SH ND OT AL</th>
+                                @* <th>Cash Advance</th> *@
+                                <th>SSS Salary Loan</th>
+                                <th>SSS Calamity Loan</th>
+                                <th>HDMF Salary Loan</th>
+                                <th>HDMF Calamity Loan</th>
+                                <th>China Bank Savings Loan</th>
+                                <th>HMO Dependent</th>
+                                <th>Employee Ledger</th>
+                                <th>Other Loan1</th>
+                                <th>Other Loan2</th>
+                                <th>Other Loan3</th>
+                                <th>Other Loan4</th>
+                                <th>Other Deduction</th>
+                                <th>Total Deduction</th>
+                                <th>NET PAY</th>
+                                <th>Bank</th>
+                                <th>Account No</th>
+                            </tr>
+                        </thead>
+                        <tfoot>
+                            <tr>
+                                <th></th> <!-- Payslip -->
+                                <th></th> <!-- Employee No -->
+                                @* <th class="dt-right fw-bold">TOTAL:</th> *@
+                                <th style="text-align:right">TOTAL:</th> <!-- Employee Name -->
+                                <th></th> <!-- Department -->
+                                <!-- Daily Rate → Total MBOS (indexes 3–63) -->
+                                <th></th> <!-- Daily Rate -->
+                                <th></th> <!-- Days Worked -->
+                                <th></th> <!-- Basic Pay -->
+                                <th></th> <!-- Late(mins) -->
+                                <th></th> <!-- Late Amount -->
+                                <th></th> <!-- Undertime(mins) -->
+                                <th></th> <!-- Undertime Amount -->
+                                <th></th> <!-- Days Absent -->
+                                <th></th> <!-- Absent Amount -->
+                                <th></th> <!-- OT(hrs) -->
+                                <th></th> <!-- LH BASIC -->
+                                <th></th> <!-- LH ND -->
+                                <th></th> <!-- LH OT -->
+                                <th></th> <!-- RD BASIC -->
+                                <th></th> <!-- REG ND -->
+                                <th></th> <!-- REG NDOT -->
+                                <th></th> <!-- REG OT -->
+                                <th></th> <!-- SH BASIC -->
+                                <th></th> <!-- SH ND -->
+                                <th></th> <!-- SH OT -->
+                                <th></th> <!-- OT Pay -->
+                                <th></th> <!-- Total Allowance -->
+                                <th></th> <!-- Adjustment Taxable -->
+                                <th></th> <!-- Adjustment NonTax -->
+                                <th></th> <!-- Gross Income -->
+                                <th></th> <!-- SSS -->
+                                <th></th> <!-- SSS WISP -->
+                                <th></th> <!-- PHI -->
+                                <th></th> <!-- PIF -->
+                                <th></th> <!-- TAX -->
+                                <th></th> <!-- Reg Basic AL -->
+                                <th></th> <!-- Tardy AL -->
+                                <th></th> <!-- Undertime AL -->
+                                <th></th> <!-- Absent AL -->
+                                <th></th> <!-- Salary Adj AL -->
+                                <th></th> <!-- LH Basic AL -->
+                                <th></th> <!-- LH ND AL -->
+                                <th></th> <!-- LH OT AL -->
+                                <th></th> <!-- RD Basic AL -->
+                                <th></th> <!-- REG ND AL -->
+                                <th></th> <!-- REG NDOT AL -->
+                                <th></th> <!-- REG OT AL -->
+                                <th></th> <!-- SH BASIC AL -->
+                                <th></th> <!-- SH ND AL -->
+                                <th></th> <!-- SH OT AL -->
+                                <th></th> <!-- SH ND OT AL -->
+                                @* <th></th> Cash Advance *@
+                                <th></th> <!-- SSS Salary Loan -->
+                                <th></th> <!-- SSS Calamity Loan -->
+                                <th></th> <!-- HDMF Salary Loan -->
+                                <th></th> <!-- HDMF Calamity Loan -->
+                                <th></th> <!-- China Bank Savings Loan -->
+                                <th></th> <!-- HMO Dependent -->
+                                <th></th> <!-- Employee Ledger -->
+                                <th></th> <!-- Other Loan1 -->
+                                <th></th> <!-- Other Loan2 -->
+                                <th></th> <!-- Other Loan3 -->
+                                <th></th> <!-- Other Loan4 -->
+                                <th></th> <!-- Total Deduction -->
+                                <th></th> <!-- NET PAY -->
+                                <th></th> <!-- Bank -->
+                                <th></th> <!-- Account No -->
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        @* <div class="card-footer">
+            <div class="row">
+                <div class="col-12 d-flex justify-content-end">
+                    <button type="button" class="btn btn-success" id="btnProcess">
+                        <i class="fas fa-check-circle"></i> Post Register
+                    </button>
+                </div>
+            </div>
+        </div> *@
+
+    </div>
+</div>
+
+@section Fillow_style {
+}
+
+@section Fillow_script {
+    <script>
+        $(document).ready(function () {
+
+            // ── Datepicker ────────────────────────────────────────────────────
+            $('.bt-datepicker').datepicker({
+                format: 'yyyy/mm/dd',
+                autoclose: true,
+                todayHighlight: true
+            });
+
+            initializeFilterSelect2();
+
+            const moneyFmt = $.fn.dataTable.render.number(',', '.', 2);
+
+            // ── DataTable ─────────────────────────────────────────────────────
+            const requestTable = $('#requestTable').DataTable({
+                //responsive: true,
+                ajax: {
+                    url: "/PayrollRegister/GetPayrollList",
+                    type: "GET",
+                    dataType: "json",
+                    data: function (d) {
+                        d.branch     = $('#filterBranch').val();
+                        d.department = $('#filterDepartment').val();
+                        d.cutOffType = $('#cutOffType').val();
+                        d.dateYear   = $('#dateYear').val();
+                        d.dateMonth  = $('#dateMonth').val();
+                        d.statusName = 'Open';
+                    }
+                },
+                columnDefs: [
+                    { targets: 0, className: "dt-center" },
+                    { targets: [1, 2, 3], className: "dt-left" },  
+                    {
+                        targets: [
+                            4,5,6,7,8,9,10,11,12,13,14,15,16,17,
+                            18,19,20,21,22,23,24,25,26,
+                            27,28,29,30,31,32,33,34,35,36,37,
+                            38,39,40,41,42,43,44,45,46,47,48,49,50,51,
+                            52,53,54,55,56,57,58,59,60,61,62,63,64
+                        ],
+                        className: "dt-right"
+                    }
+                ],
+                footerCallback: function (row, data, start, end, display) {
+                    const api = this.api();
+
+                    // helper: convert formatted numbers to float
+                    const num = function (i) {
+                        return typeof i === 'string' ? i.replace(/,/g, '') * 1
+                             : typeof i === 'number' ? i
+                             : 0;
+                    };
+
+                    // columns to total (0-based index)
+                    const totalCols = [
+                        4, 6, 8, 10, 12, 14, 15, 16, 17, 18,   
+                        19, 20, 21, 22, 23, 24, 25, 26,
+                        27, 28, 29, 30, 31, 32, 33,
+                        34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51,
+                        52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64
+                    ];
+
+                    totalCols.forEach(function (colIdx) {
+                        const total = api
+                            .column(colIdx, { page: 'current' })
+                            .data()
+                            .reduce(function (a, b) { return num(a) + num(b); }, 0);
+
+                        $(api.column(colIdx).footer()).html(
+                            $.fn.dataTable.render.number(',', '.', 2).display(total)
+                        );
+                    });
+                },
+                columns: [
+                    // Payslip column - Print PDF button
+                    {
+                        data: null,
+                        width: "5%",
+                        orderable: false,
+                        className: "dt-center",
+                        render: function (data, type, row) {
+                            return `<button class="btn btn-sm btn-warning shadow-sm printPayrollRegister"
+                                            data-employeeno="${row.employeeNo}"
+                                            data-cutofftype="${$('#cutOffType').val()}"
+                                            data-datemonth="${$('#dateMonth').val()}"
+                                            data-dateyear="${$('#dateYear').val()}"
+                                            title="Print Payslip">
+                                        <i class="fas fa-print"></i>
+                                    </button>`;
+                        }
+                    },
+                    { data: "employeeNo" },
+                    { data: "fullName" },
+                    { data: "departmentName" },
+                    { data: "dailyRate",            render: moneyFmt },
+                    { data: "presentCount" },
+                    { data: "basicPaySemi",          render: moneyFmt },
+                    { data: "renderLate" },
+                    { data: "amountLate",            render: moneyFmt },
+                    { data: "renderUndertime" },
+                    { data: "amountUndertime",       render: moneyFmt },
+                    { data: "absentCount" },
+                    { data: "absentAmount",          render: moneyFmt },
+                    { data: "renderOT" },
+                    { data: "amountL",               render: moneyFmt },
+                    { data: "amountNSDL",            render: moneyFmt },
+                    { data: "amountOTL",             render: moneyFmt },
+                    { data: "amountREST",            render: moneyFmt },
+                    { data: "amountNSD",             render: moneyFmt },
+                    { data: "amountNSDOT",           render: moneyFmt },
+                    { data: "amountOT",              render: moneyFmt },
+                    { data: "amountS",               render: moneyFmt },
+                    { data: "amountNSDS",            render: moneyFmt },
+                    { data: "amountOTS",             render: moneyFmt },
+                    { data: "nonBasicPay",           render: moneyFmt },
+                    { data: "totalAllowance",        render: moneyFmt },
+                    { data: "otherIncome",           render: moneyFmt },
+                    { data: "otherEmployeePayable",  render: moneyFmt },
+                    { data: "grossIncome",           render: moneyFmt },
+                    { data: "deductionSSSemployee",  render: moneyFmt },
+                    { data: "deductionWISPemployee", render: moneyFmt },
+                    { data: "deductionPHIemployee",  render: moneyFmt },
+                    { data: "deductionPIFemployee",  render: moneyFmt },
+                    { data: "withHeldTax",           render: moneyFmt },
+                    { data: "reg_basic_al",          render: moneyFmt },
+                    { data: "tardy_al",              render: moneyFmt },
+                    { data: "undertime_al",          render: moneyFmt },
+                    { data: "absent_al",             render: moneyFmt },
+                    { data: "salary_adjustment_al",  render: moneyFmt },
+                    { data: "lh_basic_al",           render: moneyFmt },
+                    { data: "lh_nd_al",              render: moneyFmt },
+                    { data: "lh_ot_al",              render: moneyFmt },
+                    { data: "rd_basic_al",           render: moneyFmt },
+                    { data: "reg_nd_al",             render: moneyFmt },
+                    { data: "reg_ndot_al",           render: moneyFmt },
+                    { data: "reg_ot_al",             render: moneyFmt },
+                    { data: "sh_basic_al",           render: moneyFmt },
+                    { data: "sh_nd_al",              render: moneyFmt },
+                    { data: "sh_ot_al",              render: moneyFmt },
+                    { data: "sh_ndot_al",            render: moneyFmt },
+                    // { data: "cashadvance", render: moneyFmt },
+                    { data: "sssLoan",               render: moneyFmt },
+                    { data: "sssCalamity",           render: moneyFmt },
+                    { data: "hdmfLoan",              render: moneyFmt },
+                    { data: "hdmfCalamity",          render: moneyFmt },
+                    { data: "csbLoan",               render: moneyFmt },
+                    { data: "hmoLoan",               render: moneyFmt },
+                    { data: "employeeLedger",        render: moneyFmt },
+                    { data: "otherLoan1",            render: moneyFmt },
+                    { data: "otherLoan2",            render: moneyFmt },
+                    { data: "otherLoan3",            render: moneyFmt },
+                    { data: "otherLoan4",            render: moneyFmt },
+                    { data: "otherEmployeeReceivable", render: moneyFmt },
+                    { data: "totalDeduction",        render: moneyFmt },
+                    { data: "totalNetPay",           render: moneyFmt },
+                    { data: "bankCode" },
+                    { data: "accountNo" }
+                ],
+                language: {
+                    paginate: {
+                        next:     '<i class="fa fa-angle-double-right" aria-hidden="true"></i>',
+                        previous: '<i class="fa fa-angle-double-left" aria-hidden="true"></i>'
+                    }
+                }
+            });
+
+            // ── Reload table on filter change ─────────────────────────────────
+            $('#filterStatusName, #filterBranch, #filterDepartment, #dateFrom, #dateTo')
+                .on('change', function () {
+                    requestTable.ajax.reload(null, true);
+                });
+
+            // ── CutOff change ─────────────────────────────────────────────────
+            $(document).on('change', '#cutOff', function () {
+                var obj = $("#cutOff").select2('data')[0];
+
+                if (!obj) {
+                    console.warn('No cut-off selected');
+                    // Optional: clear input fields
+                    $('#dateYear, #dateFrom, #dateTo').val('');
+                    return;
+                }
+
+                console.log('Selected CutOff:', obj);
+
+                // Safely set values if elements exist
+                if (document.getElementById('dateYear'))   document.getElementById('dateYear').value   = obj.dateYear;
+                if (document.getElementById('dateMonth'))  document.getElementById('dateMonth').value  = obj.dateMonth;
+                if (document.getElementById('cutOffType')) document.getElementById('cutOffType').value = obj.cutOffType;
+                if (document.getElementById('dateFrom'))   document.getElementById('dateFrom').value   = obj.dateFrom;
+                if (document.getElementById('dateTo'))     document.getElementById('dateTo').value     = obj.dateTo;
+
+                requestTable.ajax.reload(null, true);
+            });
+
+            // ── EVENT HANDLER - EXPORT TO EXCEL ──────────────────────────────
+            $('#btnExportToExcel').click(function () {
+                const $btn = $(this);
+
+                // Validate data availability
+                if (requestTable.rows({ search: 'applied' }).count() === 0) {
+                    showNotification('No data available to export.', 'warning');
+                    return;
+                }
+
+                // Capture current DataTable sort state
+                // Column 0 is the Payslip button (not sortable), default to col 1 (employeeNo)
+                const orderInfo  = requestTable.order()[0] || [1, 'asc'];
+                const sortColIdx = orderInfo[0];
+                const sortDir    = orderInfo[1]; // 'asc' or 'desc'
+
+                // Map DataTable column index → server-side field name
+                // Index 0 = Payslip button (skip → fall back to fullName)
+                const colIndexToField = {
+                    1:  'employeeNo',
+                    2:  'fullName',
+                    3:  'departmentName',
+                    4:  'dailyRate',
+                    5:  'presentCount',
+                    6:  'basicPaySemi',
+                    7:  'totalRenderLate',
+                    8:  'totalAmountLate',
+                    9:  'totalRenderUndertime',
+                    10: 'totalAmountUndertime',
+                    11: 'absentCount',
+                    12: 'absentAmount',
+                    13: 'renderOT',
+                    14: 'amountL',
+                    15: 'amountNSDL',
+                    16: 'amountOTL',
+                    17: 'amountREST',
+                    18: 'amountNSD',
+                    19: 'amountNSDOT',
+                    20: 'amountOT',
+                    21: 'amountS',
+                    22: 'amountNSDS',
+                    23: 'amountOTS',
+                    24: 'nonBasicPay',
+                    25: 'totalAllowance',
+                    26: 'otherIncome',
+                    27: 'otherEmployeePayable',
+                    28: 'grossIncome',
+                    29: 'deductionSSSemployee',
+                    30: 'deductionWISPemployee',
+                    31: 'deductionPHIemployee',
+                    32: 'deductionPIFemployee',
+                    33: 'withHeldTax',
+                    34: 'reg_basic_al',
+                    35: 'tardy_al',
+                    36: 'undertime_al',
+                    37: 'absent_al',
+                    38: 'salary_adjustment_al',
+                    39: 'lh_basic_al',
+                    40: 'lh_nd_al',
+                    41: 'lh_ot_al',
+                    42: 'rd_basic_al',
+                    43: 'reg_nd_al',
+                    44: 'reg_ndot_al',
+                    45: 'reg_ot_al',
+                    46: 'sh_basic_al',
+                    47: 'sh_nd_al',
+                    48: 'sh_ot_al',
+                    49: 'sh_ndot_al',
+                    50: 'sssLoan',
+                    51: 'sssCalamity',
+                    52: 'hdmfLoan',
+                    53: 'hdmfCalamity',
+                    54: 'csbLoan',
+                    55: 'hmoLoan',
+                    56: 'employeeLedger',
+                    57: 'otherLoan1',
+                    58: 'otherLoan2',
+                    59: 'otherLoan3',
+                    60: 'otherLoan4',
+                    61: 'otherEmployeeReceivable',
+                    62: 'totalDeduction',
+                    63: 'totalNetPay',
+                    64: 'bankCode',
+                    65: 'accountNo'
+                };
+
+                const sortColumn = colIndexToField[sortColIdx] || 'employeeNo';
+
+                // Build export URL — no offset/limit, export all filtered rows
+                const params = new URLSearchParams({
+                    branch:        $('#filterBranch').val()     || '',
+                    department:    $('#filterDepartment').val() || '',
+                    dateMonth:     $('#dateMonth').val()        || '',
+                    dateYear:      $('#dateYear').val()         || '',
+                    cutOffType:    $('#cutOffType').val()       || '',
+                    statusName:    'Open',
+                    sortColumn:    sortColumn,
+                    sortDirection: sortDir
+                });
+
+                // Loading state
+                const originalHtml = $btn.html();
+                $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Exporting...');
+
+                // Trigger download
+                const link = document.createElement('a');
+                link.href = `/PayrollRegisterExport/ExportToExcel?${params.toString()}`;
+                link.download = '';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                // Reset button
+                setTimeout(() => {
+                    $btn.prop('disabled', false).html(originalHtml);
+                }, 1500);
+            });
+
+            // ── EVENT HANDLER - POST REGISTER ────────────────────────────────
+            $('#btnProcess').on('click', function () {
+                if ($('#cutOffType').val() == '') {
+                    showNotification('Please select cutoff.', 'danger');
+                    return;
+                }
+
+                Swal.fire({
+                    title: 'Continue post payroll?',
+                    text: 'You will not be able to revert this.',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Confirm',
+                    cancelButtonText: 'Cancel',
+                    reverseButtons: false,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    customClass: {
+                        popup:         'swal-custom-popup',
+                        title:         'swal-custom-title',
+                        htmlContainer: 'swal-custom-text',
+                        confirmButton: 'swal-custom-confirm',
+                        cancelButton:  'swal-custom-cancel'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        var model = {
+                            cutOffType: $('#cutOffType').val(),
+                            dateMonth:  $('#dateMonth').val(),
+                            dateYear:   $('#dateYear').val(),
+                            dateFrom:   $('#dateFrom').val(),
+                            dateTo:     $('#dateTo').val(),
+                            branchCode: $('#filterBranch').val()
+                        };
+
+                        $.ajax({
+                            url:         '/PayrollRegister/PostPayroll',
+                            type:        'POST',
+                            contentType: 'application/json',
+                            data:        JSON.stringify(model),
+                            success: function (response) {
+                                showNotification(response.message, 'success');
+
+                                document.getElementById('dateYear').value   = "";
+                                document.getElementById('dateMonth').value  = "";
+                                document.getElementById('cutOffType').value = "";
+
+                                requestTable.ajax.reload(null, true);
+                            },
+                            error: function () {
+                                showNotification('Unable to post. Please try again.', 'error');
+                            }
+                        });
+                    }
+                });
+            });
+
+            // ── SELECT2 INITIALIZATIONS ───────────────────────────────────────
+            function initializeFilterSelect2() {
+
+                $('#cutOff').select2({
+                    placeholder: "Select CutOff",
+                    allowClear: true,
+                    ajax: {
+                        url: '/Setup/GetOpenCutOff',
+                        dataType: 'json',
+                        delay: 250,
+                        processResults: function (data) {
+                            console.log(data);
+                            var results = $.map(data, function (item) {
+                                return {
+                                    id:   item.dateYear + '-' + item.dateMonth + '-' + item.cutOffType + '-' + item.dateFrom + '-' + item.dateTo,
+                                    text: item.dateYear + '-' + item.dateMonth + '-' +
+                                          ((item.cutOffType == '1') ? '1ST CUTOFF' : '2ND CUTOFF') +
+                                          ' (' + item.dateFrom + '-' + item.dateTo + ')',
+                                    cutOffType: item.cutOffType,
+                                    dateMonth:  item.dateMonth,
+                                    dateYear:   item.dateYear,
+                                    dateFrom:   item.dateFrom,
+                                    dateTo:     item.dateTo
+                                };
+                            });
+                            return { results: results };
+                        }
+                    }
+                });
+
+                // branch
+                $('#filterBranch').select2({
+                    placeholder: "Select Branch",
+                    allowClear: true,
+                    ajax: {
+                        url: '/Setup/GetEmployeeBranch',
+                        dataType: 'json',
+                        delay: 250,
+                        processResults: function (data) {
+                            // Add "All" option manually
+                            var results = $.map(data, function (item) {
+                                return { id: item.branchCode, text: item.branchName };
+                            });
+                            // Put "All" on top
+                            results.unshift({ id: 'ALL', text: 'All Branches' });
+                            return { results: results };
+                        }
+                    }
+                });
+
+                // department
+                $('#filterDepartment').select2({
+                    placeholder: "Select Employee Department",
+                    allowClear: true,
+                    ajax: {
+                        url: '/Setup/GetEmployeeDepartment',
+                        dataType: 'json',
+                        delay: 250,
+                        processResults: function (data) {
+                            // Map your results as usual
+                            var results = $.map(data, function (item) {
+                                return { id: item.departmentCode, text: item.departmentName };
+                            });
+                            // Add the "All" option at the top
+                            results.unshift({ id: 'ALL', text: 'All Departments' });
+                            return { results: results };
+                        }
+                    }
+                });
+
+                // EVENT HANDLER - PRINT PDF
+                $(document).on('click', '.printPayrollRegister', function (e) {
+                    e.preventDefault();
+
+                    const employeeNo = $(this).data('employeeno');
+                    const cutOffType = $(this).data('cutofftype');
+                    const dateMonth  = $(this).data('datemonth');
+                    const dateYear   = $(this).data('dateyear');
+                    const statusName = "Open";
+                    const $btn       = $(this);
+
+                    // Validate required data
+                    if (!employeeNo || !cutOffType || !dateMonth || !dateYear) {
+                        showNotification('Missing payroll period information. Please select a cutoff.', 'warning');
+                        return;
+                    }
+
+                    // Show loading state
+                    const originalHtml = $btn.html();
+                    $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+
+                    // Open PDF in new tab
+                    const url = `/PayrollRegisterPdf/PreviewPdf?employeeNo=${encodeURIComponent(employeeNo)}&cutOffType=${encodeURIComponent(cutOffType)}&dateMonth=${encodeURIComponent(dateMonth)}&dateYear=${encodeURIComponent(dateYear)}&statusName=${encodeURIComponent(statusName)}`;
+                    window.open(url, '_blank');
+
+                    // Reset button after short delay
+                    setTimeout(() => {
+                        $btn.prop('disabled', false).html(originalHtml);
+                    }, 1000);
+                });
+
+            } // end initializeFilterSelect2
+
+        }); // end $(document).ready
+    </script>
+}

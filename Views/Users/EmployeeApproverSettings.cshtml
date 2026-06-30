@@ -1,0 +1,928 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutFillow.cshtml";
+    ViewData["Title"] = "Approver Setup";
+}
+
+<div class="col-12">
+    <div class="card">
+        <div class="card-header">
+            <div class="row" style="width:100%;">
+                <h4 class="card-title">Approver Setup</h4>
+                <br> <br> <br>
+
+                <div class="row date-range" style="margin-left:0px;width:100%;">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Select Approver</h5>
+                            <select name="approverList" id="approverList" class="form-control" required>
+                                <option value="">Select Approver...</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <h5>Approver Level</h5>
+                            <select name="approverLevel" id="approverLevel" class="form-control">
+                                <option value="1" selected>Level 1</option>
+                                <option value="2">Level 2</option>
+                                <option value="3">Level 3</option>
+                                <option value="4">Level 4</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Filter By</h5>
+                            <select name="listType" id="listType" class="form-control">
+                                <option value="1" selected>Employment Status</option>
+                                <option value="2">Branch</option>
+                                <option value="3">Department</option>
+                                <option value="4">Rank/Position</option>
+                                <option value="6">Individual Employee</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="checkAll" style="cursor: pointer;">
+                            <label class="form-check-label" for="checkAll" style="cursor: pointer;">
+                                Assign to ALL Employees
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <!-- Tables Section -->
+            <div class="row">
+                <!-- Available List -->
+                <div class="col-md-6">
+                    <div class="card border">
+                        <div class="card-header bg-primary text-white">
+                            <h6 class="mb-0">
+                                <span id="availableListTitle">Available Items</span>
+                            </h6>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table id="availableTable" class="table table-hover table-sm mb-0" style="width:100%">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th style="width: 100px;" id="employeeCountHeader">Employees</th>
+                                            <th style="width: 80px;" class="text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assigned List -->
+                <div class="col-md-6">
+                    <div class="card border border-primary">
+                        <div class="card-header bg-primary text-white">
+                            <h6 class="mb-0">
+                                <span id="assignedListTitle">Assigned Items</span>
+                            </h6>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table id="assignedTable" class="table table-hover table-sm mb-0" style="width:100%">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th style="width: 100px;" id="employeeCountHeaderAssigned">Employees</th>
+                                            <th style="width: 80px;" class="text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-flex justify-content-end gap-2">
+                                <button id="saveBtn" class="btn btn-success" style="display:none;">
+                                    Save Changes
+                                </button>
+                                <button id="cancelBtn" class="btn btn-danger" style="display:none;">
+                                    Cancel
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Approver Summary Table -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card border">
+                        <div class="card-header bg-primary text-white">
+                            <h6 class="mb-0">Approver Summary - All Levels</h6>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table id="approverSummaryTable" class="table table-hover table-sm mb-0" style="width:100%">
+                                    <thead>
+                                        <tr>
+                                            <th>Approver</th>
+                                            <th>Level</th>
+                                            <th>Assignment Type</th>
+                                            <th>Assigned To</th>
+                                            <th>Employee Count</th>
+                                            <th style="width: 100px;" class="text-center">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Fillow_style
+{
+    <style>
+        .select2-container {
+            width: 100% !important;
+        }
+
+        .table-responsive {
+            border-radius: 0.375rem;
+        }
+
+        .table-hover tbody tr {
+            transition: background-color 0.2s ease;
+        }
+
+            .table-hover tbody tr:hover {
+                background-color: #f8f9fa;
+                cursor: pointer;
+            }
+
+        .action-btn {
+            transition: all 0.2s ease;
+        }
+
+        .card {
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+
+        .card-header {
+            border-bottom: none !important;
+        }
+
+        .form-check-input:checked {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+
+        .badge-count {
+            background-color: #6c757d;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .swal2-popup {
+            border-radius: 15px !important;
+        }
+
+        /* DataTables custom styling */
+        #availableTable_wrapper .dataTables_length,
+        #availableTable_wrapper .dataTables_filter,
+        #assignedTable_wrapper .dataTables_length,
+        #assignedTable_wrapper .dataTables_filter {
+            padding: 0.75rem 1rem;
+        }
+
+        #availableTable_wrapper .dataTables_info,
+        #availableTable_wrapper .dataTables_paginate,
+        #assignedTable_wrapper .dataTables_info,
+        #assignedTable_wrapper .dataTables_paginate {
+            padding: 0.75rem 1rem;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            padding: 0.25rem 0.5rem;
+            margin: 0 0.1rem;
+            border-radius: 0.25rem;
+        }
+
+        /* Summary Table Styling */
+        #approverSummaryTable tbody tr {
+            font-size: 0.9rem;
+        }
+
+        #approverSummaryTable .badge-level {
+            padding: 0.35rem 0.6rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        #approverSummaryTable .badge-type {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.7rem;
+        }
+
+        .action-icon {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        #approverSummaryTable_wrapper .dataTables_length,
+        #approverSummaryTable_wrapper .dataTables_filter {
+            margin-bottom: 1rem;
+        }
+
+        #approverSummaryTable_wrapper .dataTables_info,
+        #approverSummaryTable_wrapper .dataTables_paginate {
+            margin-top: 1rem;
+        }
+
+        /* Card header titles - white font */
+        .card-header h6,
+        .card-header h6 span,
+        .card-header .mb-0 {
+            color: #ffffff !important;
+        }
+
+        #availableTable tbody td strong,
+        #assignedTable tbody td strong,
+        #approverSummaryTable tbody td strong {
+            font-weight: normal !important;
+        }
+
+        #availableTable thead tr th,
+        #assignedTable thead tr th {
+            background-color: #6b5b95 !important; /* darker purple */
+            color: #ffffff !important;
+        }
+
+        #approverSummaryTable thead tr th {
+            background-color: #6b5b95 !important;
+            color: #ffffff !important;
+        }
+
+        #approverSummaryTable thead tr:nth-child(2) th {
+            background-color: #6b5b95 !important; /* even darker purple for sub-headers */
+            color: #ffffff !important;
+        }
+    </style>
+}
+
+@section Fillow_script
+{
+    <script>
+        $(document).ready(function () {
+            // CONFIGURATION
+            MODULE = 'approverM';
+            access = ROLE_ACCESS?.[MODULE];
+
+            if (access != 'READWRITE' && access != 'FULL') {
+                $('#saveBtn').hide();
+            }
+
+            const config = {
+                toastr: {
+                    positionClass: "toast-top-right",
+                    timeOut: 5000,
+                    closeButton: true,
+                    progressBar: true,
+                    preventDuplicates: true
+                },
+                endpoints: {
+                    approvers: "/Approver/GetApproverList",
+                    available: "/Approver/GetAvailableEmployees",
+                    assigned: "/Approver/GetAssignedEmployees",
+                    checkAll: "/Approver/GetIfCheckedAll",
+                    save: "/Approver/SaveSelectedEmployees"
+                }
+            };
+
+            toastr.options = config.toastr;
+
+            let availableTable;
+            let assignedTable;
+            let approverSummaryTable;
+            let hasChanges = false;
+
+            // INITIALIZATION
+            initializeSelect2();
+            initializeTables();
+            initializeSummaryTable();
+
+            // EVENT HANDLERS
+
+            // Approver or Level change
+            $('#approverList, #approverLevel').on('change', function () {
+                checkIfAllSelected();
+                reloadTables();
+                hideButtons();
+            });
+
+            // List Type change
+            $('#listType').on('change', function () {
+                updateTableTitles();
+                updateTableHeaders();
+                reloadTables();
+                hideButtons();
+            });
+
+            // Check All toggle
+            $('#checkAll').on('change', function () {
+                const isChecked = $(this).is(':checked');
+                const approverNo = $('#approverList').val();
+                const approverLevel = $('#approverLevel').val();
+
+                if (!approverNo) {
+                    Swal.fire({
+                        title: 'No Approver Selected',
+                        text: 'Please select an approver first.',
+                        icon: 'warning',
+                        confirmButtonText: 'OK'
+                    });
+                    $(this).prop('checked', false);
+                    return;
+                }
+
+                Swal.fire({
+                    title: isChecked ? 'Assign to ALL Employees?' : 'Remove ALL Assignment?',
+                    text: isChecked
+                        ? 'This will override all individual assignments and apply this approver to ALL employees.'
+                        : 'This will remove the ALL assignment. Individual assignments will need to be set manually.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, proceed',
+                    cancelButtonText: 'Cancel',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (!result.isConfirmed) {
+                        $('#checkAll').prop('checked', !isChecked);
+                        return;
+                    }
+
+                    if (isChecked) {
+                        // Hide tables
+                        $('#availableTable, #assignedTable').closest('.dataTables_wrapper').hide();
+
+                        // Save ALL assignment
+                        const data = [{
+                            employeeNo: "ALL",
+                            approverNo: approverNo,
+                            approverLevel: approverLevel,
+                            typeList: 5,
+                            addedByUser: sessemployeeNo || 'SYSTEM'
+                        }];
+
+                        saveAssignments(data);
+                    } else {
+                        // Show tables
+                        $('#availableTable, #assignedTable').closest('.dataTables_wrapper').show();
+
+                        // Delete ALL assignment
+                        const data = [{
+                            employeeNo: null,
+                            approverNo: approverNo,
+                            approverLevel: approverLevel,
+                            typeList: 5
+                        }];
+
+                        saveAssignments(data, true);
+                    }
+                });
+            });
+
+            // Add to assigned list
+            $(document).on('click', '.btn-add', function () {
+                const row = availableTable.row($(this).closest('tr'));
+                const rowData = row.data();
+
+                if (!rowData) return;
+
+                // Move to assigned table
+                assignedTable.row.add(rowData).draw();
+                row.remove().draw();
+
+                hasChanges = true;
+                showButtons();
+            });
+
+            // Remove from assigned list
+            $(document).on('click', '.btn-remove', function () {
+                const row = assignedTable.row($(this).closest('tr'));
+                const rowData = row.data();
+
+                if (!rowData) return;
+
+                // Move back to available table
+                availableTable.row.add(rowData).draw();
+                row.remove().draw();
+
+                hasChanges = true;
+                showButtons();
+            });
+
+            // Save button
+            $('#saveBtn').on('click', function () {
+                if (!hasChanges) {
+                    showNotification('No changes to save', 'info');
+                    return;
+                }
+
+                const assignedData = assignedTable.rows().data().toArray();
+                const approverNo = $('#approverList').val();
+                const approverLevel = $('#approverLevel').val();
+                const typeList = $('#listType').val();
+
+                if (!approverNo) {
+                    showNotification('Please select an approver', 'error');
+                    return;
+                }
+
+                const data = assignedData.length > 0
+                    ? assignedData.map(item => ({
+                        employeeNo: item.code,
+                        approverNo: approverNo,
+                        approverLevel: approverLevel,
+                        typeList: parseInt(typeList),
+                        addedByUser: sessemployeeNo || 'SYSTEM'
+                    }))
+                    : [{
+                        employeeNo: null,
+                        approverNo: approverNo,
+                        approverLevel: approverLevel,
+                        typeList: parseInt(typeList)
+                    }];
+
+                saveAssignments(data);
+            });
+
+            // Cancel button
+            $('#cancelBtn').on('click', function () {
+                reloadTables();
+                hideButtons();
+                hasChanges = false;
+            });
+
+            // FUNCTIONS
+
+            function initializeSummaryTable() {
+                approverSummaryTable = $('#approverSummaryTable').DataTable({
+                    processing: true,
+                    serverSide: false,
+                    ajax: {
+                        url: "/Approver/GetApproverSummary",
+                        type: "GET",
+                        dataSrc: 'data'
+                    },
+                    columns: [
+                        {
+                            data: 'approverName',
+                            render: function (data, type, row) {
+                                return `<strong>${data || 'N/A'}</strong><br><small class="text-muted">${row.approverNo || ''}</small>`;
+                            }
+                        },
+                        {
+                            data: 'approverLevel',
+                            className: 'text-center',
+                            render: function (data) {
+                                const colors = ['primary', 'success', 'warning', 'danger'];
+                                const color = colors[data - 1] || 'secondary';
+                                return `<span class="badge badge-level bg-${color}">Level ${data}</span>`;
+                            }
+                        },
+                        {
+                            data: 'typeList',
+                            render: function (data) {
+                                const types = {
+                                    1: { text: 'Employment Status', color: 'info' },
+                                    2: { text: 'Branch', color: 'primary' },
+                                    3: { text: 'Department', color: 'success' },
+                                    4: { text: 'Position', color: 'warning' },
+                                    5: { text: 'ALL Employees', color: 'danger' },
+                                    6: { text: 'Individual', color: 'info' }
+                                };
+                                const type = types[data] || { text: 'Unknown', color: 'dark' };
+                                return `<span class="badge badge-type bg-${type.color}">${type.text}</span>`;
+                            }
+                        },
+                        {
+                            data: 'assignedTo',
+                            render: function (data, type, row) {
+                                if (row.typeList === 5) {
+                                    return '<strong class="text-danger">ALL EMPLOYEES</strong>';
+                                }
+                                return data || 'N/A';
+                            }
+                        },
+                        {
+                            data: 'employeeCount',
+                            className: 'text-center',
+                            render: function (data) {
+                                return `<span class="badge-count">${data || 0}</span>`;
+                            }
+                        },
+                        {
+                            data: null,
+                            className: 'text-center',
+                            orderable: false,
+                            render: function (data, type, row) {
+                                return `
+                                    <button class="btn btn-sm btn-danger action-icon btn-delete-assignment"
+                                            data-id="${row.id}"
+                                            data-approver="${row.approverName}"
+                                            title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                `;
+                            }
+                        }
+                    ],
+                    pageLength: 10,
+                    lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                    order: [[0, 'asc'], [1, 'asc']],
+                    language: {
+                        emptyTable: "No approver assignments found",
+                        zeroRecords: "No matching records found",
+                        paginate: {
+                            next: '<i class="fa fa-angle-double-right"></i>',
+                            previous: '<i class="fa fa-angle-double-left"></i>'
+                        }
+                    }
+                });
+
+                // Event handler for delete
+                $(document).on('click', '.btn-delete-assignment', function (e) {
+                    e.preventDefault();
+                    const approverName = $(this).data('approver');
+
+                    deleteWithReason({
+                        title: 'Delete Assignment?',
+                        text: `Are you sure you want to remove this assignment for <strong>${approverName}</strong>?`,
+                        url: '/Approver/RemoveApproverAssignment',
+                        id: $(this).data('id'),
+                        button: $(this),
+                        postData: {
+                            id: $(this).data('id'),
+                            deletedByUser: sessemployeeNo || 'SYSTEM'
+                        },
+                        onSuccess: function () {
+                            reloadSummaryTable();
+                            reloadTables();
+                        }
+                    });
+                });
+            }
+
+            function reloadSummaryTable() {
+                if ($.fn.DataTable.isDataTable('#approverSummaryTable')) {
+                    approverSummaryTable.ajax.reload(null, false);
+                }
+            }
+
+            function initializeSelect2() {
+                $('#approverList').select2({
+                    placeholder: "Select Approver",
+                    allowClear: true,
+                    ajax: {
+                        url: config.endpoints.approvers,
+                        dataType: 'json',
+                        delay: 250,
+                        data: function (params) {
+                            return {
+                                searchTerm: params.term || ''
+                            };
+                        },
+                        processResults: function (data) {
+                            return {
+                                results: $.map(data, function (item) {
+                                    return {
+                                        id: item.employeeNo,
+                                        text: item.employeeName
+                                    };
+                                })
+                            };
+                        }
+                    }
+                });
+
+                // Initialize Approver Level Select2
+                $('#approverLevel').select2({
+                    minimumResultsForSearch: Infinity,
+                    placeholder: "Select Level"
+                });
+
+                // Initialize Filter By Select2
+                $('#listType').select2({
+                    minimumResultsForSearch: Infinity,
+                    placeholder: "Select Filter Type"
+                });
+            }
+
+            function initializeTables() {
+                const listType = $('#listType').val();
+                const isIndividualEmployee = listType === '6';
+
+                // Available Table
+                availableTable = $('#availableTable').DataTable({
+                    processing: true,
+                    serverSide: false,
+                    ajax: {
+                        url: config.endpoints.available,
+                        type: "GET",
+                        data: function (d) {
+                            return {
+                                approverNo: $('#approverList').val(),
+                                approverLevel: $('#approverLevel').val(),
+                                listType: $('#listType').val()
+                            };
+                        },
+                        dataSrc: 'data'
+                    },
+                    columns: [
+                        {
+                            data: 'name',
+                            render: function (data, type, row) {
+                                if (listType === '6') {
+                                    return `<strong>${data || 'N/A'}</strong><br><small class="text-muted">${row.code || ''}</small>`;
+                                }
+                                return `<strong>${data || 'N/A'}</strong>`;
+                            }
+                        },
+                        {
+                            data: 'employeeCount',
+                            className: 'text-center',
+                            visible: !isIndividualEmployee,
+                            render: function (data) {
+                                return `<span class="badge-count">${data || 0}</span>`;
+                            }
+                        },
+                        {
+                            data: null,
+                            className: 'text-center',
+                            orderable: false,
+                            render: function () {
+                                return `
+                                    <button class="btn btn-sm btn-success action-btn btn-add" title="Add">
+                                        <i class="fas fa-plus-circle"></i>
+                                    </button>
+                                `;
+                            }
+                        }
+                    ],
+                    pageLength: 10,
+                    lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                    language: {
+                        emptyTable: "No items available",
+                        zeroRecords: "No matching items found",
+                        paginate: {
+                            next: '<i class="fa fa-angle-double-right"></i>',
+                            previous: '<i class="fa fa-angle-double-left"></i>'
+                        }
+                    }
+                });
+
+                // Assigned Table
+                assignedTable = $('#assignedTable').DataTable({
+                    processing: true,
+                    serverSide: false,
+                    ajax: {
+                        url: config.endpoints.assigned,
+                        type: "GET",
+                        data: function (d) {
+                            return {
+                                approverNo: $('#approverList').val(),
+                                approverLevel: $('#approverLevel').val(),
+                                listType: $('#listType').val()
+                            };
+                        },
+                        dataSrc: 'data'
+                    },
+                    columns: [
+                        {
+                            data: 'name',
+                            render: function (data, type, row) {
+                                if (listType === '6') {
+                                    return `<strong>${data || 'N/A'}</strong><br><small class="text-muted">${row.code || ''}</small>`;
+                                }
+                                return `<strong>${data || 'N/A'}</strong>`;
+                            }
+                        },
+                        {
+                            data: 'employeeCount',
+                            className: 'text-center',
+                            visible: !isIndividualEmployee,
+                            render: function (data) {
+                                return `<span class="badge-count">${data || 0}</span>`;
+                            }
+                        },
+                        {
+                            data: null,
+                            className: 'text-center',
+                            orderable: false,
+                            render: function () {
+                                return `
+                                    <button class="btn btn-sm btn-danger action-btn btn-remove" title="Remove">
+                                        <i class="fas fa-minus-circle"></i>
+                                    </button>
+                                `;
+                            }
+                        }
+                    ],
+                    pageLength: 10,
+                    lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                    language: {
+                        emptyTable: "No items assigned",
+                        zeroRecords: "No matching items found",
+                        paginate: {
+                            next: '<i class="fa fa-angle-double-right"></i>',
+                            previous: '<i class="fa fa-angle-double-left"></i>'
+                        }
+                    }
+                });
+            }
+
+            function reloadTables() {
+                const listType = $('#listType').val();
+                const isIndividualEmployee = listType === '6';
+
+                // Update column visibility
+                if (availableTable) {
+                    availableTable.column(1).visible(!isIndividualEmployee);
+                }
+                if (assignedTable) {
+                    assignedTable.column(1).visible(!isIndividualEmployee);
+                }
+
+                if ($.fn.DataTable.isDataTable('#availableTable')) {
+                    availableTable.ajax.reload(null, false);
+                }
+                if ($.fn.DataTable.isDataTable('#assignedTable')) {
+                    assignedTable.ajax.reload(null, false);
+                }
+            }
+
+            function checkIfAllSelected() {
+                const approverNo = $('#approverList').val();
+                const approverLevel = $('#approverLevel').val();
+
+                if (!approverNo) return;
+
+                $.ajax({
+                    url: config.endpoints.checkAll,
+                    type: 'GET',
+                    data: { approverNo, approverLevel },
+                    success: function (response) {
+                        if (response.isAll) {
+                            $('#checkAll').prop('checked', true);
+                            $('#availableTable, #assignedTable').closest('.dataTables_wrapper').hide();
+                        } else {
+                            $('#checkAll').prop('checked', false);
+                            $('#availableTable, #assignedTable').closest('.dataTables_wrapper').show();
+                        }
+                    },
+                    error: function () {
+                        console.error("Failed to check 'ALL' status.");
+                    }
+                });
+            }
+
+            function updateTableTitles() {
+                const listType = $('#listType').val();
+                let title = 'Items';
+
+                switch (listType) {
+                    case '1': title = 'Employment Status'; break;
+                    case '2': title = 'Branches'; break;
+                    case '3': title = 'Departments'; break;
+                    case '4': title = 'Ranks/Positions'; break;
+                    case '6': title = 'Employees'; break;
+                }
+
+                $('#availableListTitle').text(`Available ${title}`);
+                $('#assignedListTitle').text(`Assigned ${title}`);
+            }
+
+            function updateTableHeaders() {
+                const listType = $('#listType').val();
+                const isIndividualEmployee = listType === '6';
+
+                if (isIndividualEmployee) {
+                    $('#employeeCountHeader, #employeeCountHeaderAssigned').hide();
+                } else {
+                    $('#employeeCountHeader, #employeeCountHeaderAssigned').show();
+                }
+            }
+
+            function saveAssignments(data, isRemoval = false) {
+                const $btn = $('#saveBtn');
+                toggleButtonLoading($btn, true, 'Saving...');
+
+                $.ajax({
+                    url: config.endpoints.save,
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function (response) {
+                        if (response.success) {
+                            showNotification(response.message, 'success');
+                            reloadTables();
+                            reloadSummaryTable();
+                            hideButtons();
+                            hasChanges = false;
+
+                            if (isRemoval) {
+                                checkIfAllSelected();
+                            }
+                        } else {
+                            showNotification(response.message, 'error');
+                        }
+                    },
+                    error: function () {
+                        showNotification('Error saving assignments', 'error');
+                    },
+                    complete: function () {
+                        toggleButtonLoading($btn, false);
+                    }
+                });
+            }
+
+            function deleteAssignment(id, reason) {
+                $.ajax({
+                    url: '/Approver/RemoveApproverAssignment',
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        reason: reason,
+                        deletedByUser: sessemployeeNo || 'SYSTEM'
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            showNotification(response.message, 'success');
+                            reloadSummaryTable();
+                            reloadTables();
+                        } else {
+                            showNotification(response.message, 'error');
+                        }
+                    },
+                    error: function () {
+                        showNotification('Error deleting assignment', 'error');
+                    }
+                });
+            }
+
+            function showButtons() {
+                $('#saveBtn, #cancelBtn').slideDown(200);
+            }
+
+            function hideButtons() {
+                $('#saveBtn, #cancelBtn').slideUp(200);
+            }
+
+            function toggleButtonLoading($btn, loading, text = '') {
+                if (loading) {
+                    if (!$btn.data('original-html')) {
+                        $btn.data('original-html', $btn.html());
+                    }
+                    const icon = '<i class="fas fa-spinner fa-spin me-1"></i>';
+                    $btn.prop('disabled', true).html(icon + (text || 'Processing...'));
+                } else {
+                    const originalHtml = $btn.data('original-html') || 'Save';
+                    $btn.prop('disabled', false).html(originalHtml).removeData('original-html');
+                }
+            }
+
+            function showNotification(message, type) {
+                const types = {
+                    success: 'Success',
+                    error: 'Error',
+                    warning: 'Warning',
+                    info: 'Information'
+                };
+                toastr[type](message, types[type] || 'Notification');
+            }
+
+            // Initialize on load
+            updateTableTitles();
+            updateTableHeaders();
+            validationinputs();
+        });
+    </script>
+}

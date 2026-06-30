@@ -1,0 +1,1103 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutFillow.cshtml";
+    ViewData["Title"] = "Memo";
+}
+
+<div class="col-12">
+    <div class="card">
+        <div class="card-header">
+            <div class="row" style="width:100%;">
+                <h4 class="card-title">Memo</h4>
+                <br /><br /><br />
+
+                <div class="row" style="margin-left:0px;width:100%;margin-bottom:20px;">
+                    <div class="col-md-2">
+                        <h5>Month</h5>
+                        <select id="filterMonth" class="form-control select2">
+                            <option value="">All Months</option>
+                            <option value="01">January</option>
+                            <option value="02">February</option>
+                            <option value="03">March</option>
+                            <option value="04">April</option>
+                            <option value="05">May</option>
+                            <option value="06">June</option>
+                            <option value="07">July</option>
+                            <option value="08">August</option>
+                            <option value="09">September</option>
+                            <option value="10">October</option>
+                            <option value="11">November</option>
+                            <option value="12">December</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <h5>Year</h5>
+                        <div class="input-hasicon">
+                            <input type="text" id="filterYear" class="form-control 
+"
+                                   value="@DateTime.Now.Year" readonly placeholder="Select Year">
+                            <div class="icon"><i class="far fa-calendar"></i></div>
+                        </div>
+                    </div>
+                    <div class="col d-flex align-items-end mb-1">
+                        <button id="btnAddNewMemo" class="btn btn-primary ms-auto" style="width:160px;">
+                            <i class="fa fa-plus"></i> New Memo
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="memoTable" class="display" style="min-width:845px">
+                    <thead>
+                        <tr>
+                            <th>Action</th>
+                            <th>Series No</th>
+                            <th>Title</th>
+                            <th>Effectivity Date</th>
+                            <th>Created By</th>
+                            <th>Attachments</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════════════════════
+             ADD MEMO MODAL
+        ══════════════════════════════════════════════════════════════════ -->
+        <div class="modal fade" id="addMemoModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add Memo</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addMemoForm">
+
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label class="form-label">Series Number <span class="text-danger">*</span></label>
+                                    <input class="form-control" id="addSeriesNo" name="SeriesNo" required>
+                                    <div class="invalid-feedback">Please input Series Number.</div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label class="form-label">Title <span class="text-danger">*</span></label>
+                                    <input class="form-control" id="addTitle" name="Title" required>
+                                    <div class="invalid-feedback">Please input Title.</div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label class="form-label">Effectivity Date <span class="text-danger">*</span></label>
+                                    <input class="form-control bt-datepicker" id="addEffectivityDate" name="EffectivityDate" placeholder="yyyy-mm-dd" required>
+                                    <div class="invalid-feedback">Please select an effectivity date.</div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Remarks</label>
+                                <textarea class="form-control" id="addRemarks" name="Remarks" rows="4" maxlength="1000" placeholder="Enter remarks for the memo..."></textarea>
+                            </div>
+
+                            <!-- ── Recipient Section ── -->
+                            <hr />
+                            <h6 class="mb-3 text-primary"><i class="fas fa-users me-1"></i> Memo Recipients <span class="text-danger">*</span></h6>
+
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="addChkAllEmployees">
+                                    <label class="form-check-label fw-semibold" for="addChkAllEmployees">
+                                        Send to ALL Employees
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div id="addRecipientControls">
+                                <div class="row g-2 align-items-end">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Recipient Type <span class="text-danger">*</span></label>
+                                        <select id="addRecipientType" class="form-select">
+                                            <option value="">-- Select Type --</option>
+                                            <option value="INDIVIDUAL">Individual Employee(s)</option>
+                                            <option value="EMPLOYMENT_STATUS">Employment Status</option>
+                                            <option value="BRANCH">Branch</option>
+                                            <option value="DEPARTMENT">Department</option>
+                                            <option value="RANK">Rank / Position</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-8" id="addRecipientPickerCol">
+                                        <!-- Rendered dynamically based on type -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Attachments -->
+                            <hr class="mt-4" />
+                            <div class="mb-3">
+                                <label class="form-label">Attachments</label>
+                                <input type="file" class="form-control" id="addAttachment" name="Attachments" multiple
+                                       accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                                <small class="text-muted">Allowed: PDF, JPG, PNG, DOC, DOCX (Max 5 MB each)</small>
+                                <div id="addFileList" class="mt-2"></div>
+                            </div>
+
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="btnSaveMemo">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════════════════════
+             VIEW / EDIT MEMO MODAL
+        ══════════════════════════════════════════════════════════════════ -->
+        <div class="modal fade" id="viewMemoModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="viewModalTitle">View Memo</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="viewMemoForm">
+                            <input type="hidden" id="viewMemoId" name="Id">
+
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label class="form-label">Series Number <span class="text-danger edit-required d-none">*</span></label>
+                                    <input class="form-control" id="viewSeriesNo" name="SeriesNo" readonly>
+                                    <div class="invalid-feedback">Please input Series Number.</div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label class="form-label">Title <span class="text-danger edit-required d-none">*</span></label>
+                                    <input class="form-control" id="viewTitle" name="Title" readonly>
+                                    <div class="invalid-feedback">Please input Title.</div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label class="form-label">Effectivity Date <span class="text-danger edit-required d-none">*</span></label>
+                                    <input class="form-control" id="viewEffectivityDate" name="EffectivityDate" placeholder="yyyy-mm-dd" readonly>
+                                    <div class="invalid-feedback">Please select an effectivity date.</div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Remarks</label>
+                                <textarea class="form-control" id="viewRemarks" name="Remarks" rows="4" maxlength="1000" readonly></textarea>
+                            </div>
+
+                            <!-- ── Recipients ── -->
+                            <hr />
+                            <h6 class="mb-2 text-primary"><i class="fas fa-users me-1"></i> Memo Recipients</h6>
+
+                            <!-- VIEW MODE: read-only resolved employee list -->
+                            <div id="viewRecipientsReadOnly">
+                                <div id="viewRecipientSummary" class="mb-2"></div>
+                                <div id="viewRecipientList"></div>
+                            </div>
+
+                            <!-- EDIT MODE: same controls as Add modal -->
+                            <div id="viewRecipientsEditMode" class="d-none">
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="viewChkAllEmployees">
+                                        <label class="form-check-label fw-semibold" for="viewChkAllEmployees">
+                                            Send to ALL Employees
+                                        </label>
+                                    </div>
+                                </div>
+                                <div id="viewRecipientControls">
+                                    <div class="row g-2 align-items-end">
+                                        <div class="col-md-4">
+                                            <label class="form-label">Recipient Type <span class="text-danger">*</span></label>
+                                            <select id="viewRecipientType" class="form-select">
+                                                <option value="">-- Select Type --</option>
+                                                <option value="INDIVIDUAL">Individual Employee(s)</option>
+                                                <option value="EMPLOYMENT_STATUS">Employment Status</option>
+                                                <option value="BRANCH">Branch</option>
+                                                <option value="DEPARTMENT">Department</option>
+                                                <option value="RANK">Rank / Position</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-8" id="viewRecipientPickerCol">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Attachments -->
+                            <hr class="mt-4" />
+                            <div class="mb-3">
+                                <label class="form-label">Attachments</label>
+                                <div id="currentAttachments" class="mb-2"></div>
+                                <input type="file" class="form-control d-none" id="viewAttachment" name="Attachments" multiple
+                                       accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                                <small class="text-muted d-none edit-mode-only">Allowed: PDF, JPG, PNG, DOC, DOCX (Max 5 MB each)</small>
+                                <div id="viewFileList" class="mt-2 d-none edit-mode-only"></div>
+                            </div>
+
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary d-none" id="btnEditMemo">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button type="button" class="btn btn-success d-none" id="btnSaveEditMemo">Save</button>
+                        <button type="button" class="btn btn-danger d-none" id="btnCancelEdit">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════════════════════
+             VIEW ATTACHMENTS MODAL
+        ══════════════════════════════════════════════════════════════════ -->
+        <div class="modal fade" id="viewAttachmentModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">View Attachments</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="attachmentList"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /card -->
+</div><!-- /col-12 -->
+@section Fillow_style
+{
+    <style>
+        .table-responsive {
+            border-radius: 0.375rem;
+        }
+
+        #memoTable_wrapper .dataTables_length,
+        #memoTable_wrapper .dataTables_filter {
+            margin-bottom: 1rem;
+        }
+
+        #memoTable_wrapper .dataTables_info,
+        #memoTable_wrapper .dataTables_paginate {
+            margin-top: 1rem;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .modal-content {
+            border-radius: 0.5rem;
+            box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13,110,253,0.25);
+        }
+
+        .form-control[readonly] {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        .edit-mode .form-control[readonly] {
+            background-color: #ffffff;
+            border-color: #ced4da;
+        }
+
+        .invalid-feedback {
+            display: none;
+        }
+
+        .form-control.is-invalid {
+            border-color: #dc3545;
+        }
+
+            .form-control.is-invalid ~ .invalid-feedback {
+                display: block;
+            }
+
+        .card-header {
+            border-bottom: none !important;
+        }
+
+        .yearpicker {
+            cursor: pointer;
+        }
+
+        .ui-datepicker-calendar {
+            display: none;
+        }
+
+        .attachment-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            background-color: #f8f9fa;
+        }
+
+            .attachment-item a {
+                text-decoration: none;
+                color: #0d6efd;
+            }
+
+                .attachment-item a:hover {
+                    text-decoration: underline;
+                }
+
+        /* Recipient rule summary pill */
+        .recipient-rule-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #e8f4fd;
+            border: 1px solid #90caf9;
+            color: #0d47a1;
+            border-radius: 20px;
+            padding: 5px 14px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        /* Individual recipient rows in view mode */
+        .recipient-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 10px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 0.875rem;
+        }
+
+            .recipient-row:last-child {
+                border-bottom: none;
+            }
+
+            .recipient-row i {
+                color: #6c757d;
+                width: 16px;
+            }
+
+        .recipients-box {
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            max-height: 220px;
+            overflow-y: auto;
+            background: #fafafa;
+        }
+
+        /* Select2 inside modals */
+        .select2-container--default .select2-selection--multiple {
+            min-height: 38px;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+        }
+
+        .select2-container--default.select2-container--focus .select2-selection--multiple {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13,110,253,0.25);
+        }
+
+        .select2-container--default .select2-selection--single {
+            height: 38px;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+        }
+
+            .select2-container--default .select2-selection--single .select2-selection__rendered {
+                line-height: 36px;
+                padding-left: 12px;
+            }
+
+            .select2-container--default .select2-selection--single .select2-selection__arrow {
+                height: 36px;
+            }
+    </style>
+}
+
+@section Fillow_script
+{
+    <script>
+        $(document).ready(function () {
+
+            // ── MODULE + ROLE ACCESS ─────────────────────────────────────────
+            MODULE = 'MMemo';
+            access = ROLE_ACCESS?.[MODULE];
+
+            if (access !== 'READWRITE' && access !== 'FULL') {
+                $('#btnAddNewMemo').hide();
+            }
+
+            // ── CONFIGURATION ────────────────────────────────────────────────
+            const config = {
+                toastr: {
+                    positionClass: "toast-top-right",
+                    timeOut: 5000,
+                    closeButton: true,
+                    progressBar: true,
+                    preventDuplicates: true
+                },
+                endpoints: {
+                    list:               "/Memo/GetMemoList",
+                    get:                "/Memo/GetMemo",
+                    attachments:        "/Memo/GetAttachments",
+                    recipients:         "/Memo/GetRecipients",
+                    add:                "/Memo/AddMemo",
+                    update:             "/Memo/UpdateMemo",
+                    delete:             "/Memo/DeleteMemo",
+                    employees:          "/Memo/GetEmployeeListForMemo",
+                    employmentStatuses: "/Memo/GetEmploymentStatusList",
+                    branches:           "/Memo/GetBranchListForMemo",
+                    departments:        "/Memo/GetDepartmentListForMemo",
+                    ranks:              "/Memo/GetRankListForMemo"
+                }
+            };
+
+            toastr.options = config.toastr;
+
+            // Friendly label map
+            const typeLabels = {
+                ALL:               'All Employees',
+                INDIVIDUAL:        'Individual Employee(s)',
+                EMPLOYMENT_STATUS: 'Employment Status',
+                BRANCH:            'Branch',
+                DEPARTMENT:        'Department',
+                RANK:              'Rank / Position'
+            };
+
+            // ── DATEPICKER ───────────────────────────────────────────────────
+            $('.bt-datepicker').datepicker('destroy').datepicker({
+                format: 'yyyy-mm-dd', autoclose: true, todayHighlight: true
+            });
+
+            $('#filterYear').datepicker({
+                format: 'yyyy', viewMode: 'years', minViewMode: 'years',
+                autoclose: true, orientation: 'bottom'
+            }).on('changeDate', () => table.ajax.reload(null, false));
+
+            // ── FILE INPUT BADGE RENDERER ────────────────────────────────────
+            function bindFileInput(inputId, listId) {
+                const input    = document.getElementById(inputId);
+                const fileList = document.getElementById(listId);
+                if (!input || !fileList) return;
+                input.addEventListener('change', () => {
+                    fileList.innerHTML = '';
+                    Array.from(input.files).forEach((file, index) => {
+                        const span = document.createElement('span');
+                        span.className = 'badge bg-primary me-1 mb-1 d-inline-flex align-items-center';
+                        span.style.cssText = 'cursor:pointer;padding:0.4rem 0.6rem;';
+                        const fileName = document.createElement('span');
+                        fileName.textContent = file.name;
+                        fileName.style.marginRight = '0.4rem';
+                        fileName.addEventListener('click', () => window.open(URL.createObjectURL(file)));
+                        const removeBtn = document.createElement('span');
+                        removeBtn.textContent = '×';
+                        removeBtn.style.cssText = 'cursor:pointer;font-weight:bold;margin-left:0.3rem;';
+                        removeBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            const dt = new DataTransfer();
+                            Array.from(input.files).filter((_, i) => i !== index).forEach(f => dt.items.add(f));
+                            input.files = dt.files;
+                            span.remove();
+                        });
+                        span.appendChild(fileName);
+                        span.appendChild(removeBtn);
+                        fileList.appendChild(span);
+                    });
+                });
+            }
+
+            bindFileInput('addAttachment', 'addFileList');
+            bindFileInput('viewAttachment', 'viewFileList');
+
+            // ════════════════════════════════════════════════════════════════
+            // RECIPIENT PICKER HELPERS
+            // prefix = 'add' or 'view'
+            // ════════════════════════════════════════════════════════════════
+
+            const endpointMap = {
+                EMPLOYMENT_STATUS: () => config.endpoints.employmentStatuses,
+                BRANCH:            () => config.endpoints.branches,
+                DEPARTMENT:        () => config.endpoints.departments,
+                RANK:              () => config.endpoints.ranks
+            };
+
+            // Render the appropriate picker widget into *PickerCol
+            function renderRecipientPicker(prefix, preselectCode) {
+                const type   = $(`#${prefix}RecipientType`).val();
+                const $col   = $(`#${prefix}RecipientPickerCol`);
+                const parent = `#${prefix}MemoModal`;
+
+                $col.empty();
+                if (!type) return;
+
+                if (type === 'INDIVIDUAL') {
+                    $col.html(`
+                        <label class="form-label">Select Employee(s) <span class="text-danger">*</span></label>
+                        <select id="${prefix}RecipientEmployees" class="form-control" multiple style="width:100%"></select>`);
+
+                    const $sel = $(`#${prefix}RecipientEmployees`).select2({
+                        placeholder:    'Search and select employee(s)...',
+                        allowClear:     true,
+                        dropdownParent: $(parent),
+                        width:          '100%',
+                        ajax: {
+                            url:      config.endpoints.employees,
+                            dataType: 'json',
+                            delay:    300,
+                            data:     params => ({ searchTerm: params.term || '' }),
+                            processResults: data => ({
+                                results: data.map(e => ({ id: e.employeeNo, text: e.employeeName }))
+                            })
+                        }
+                    });
+
+                    // Pre-select employees when editing
+                    if (preselectCode) {
+                        const empNos = preselectCode.split(',').map(s => s.trim()).filter(Boolean);
+                        if (empNos.length > 0) {
+                            // Load names for pre-selected employees
+                            $.get(config.endpoints.employees, { searchTerm: '' }, allEmps => {
+                                empNos.forEach(no => {
+                                    const found = allEmps.find(e => e.employeeNo === no);
+                                    if (found && $sel.find(`option[value="${no}"]`).length === 0) {
+                                        $sel.append(new Option(found.employeeName, no, true, true));
+                                    }
+                                });
+                                $sel.trigger('change');
+                            }).fail(() => {
+                                // If search fails, set values directly and let Select2 show IDs
+                                empNos.forEach(no => {
+                                    if ($sel.find(`option[value="${no}"]`).length === 0)
+                                        $sel.append(new Option(no, no, true, true));
+                                });
+                                $sel.trigger('change');
+                            });
+                        }
+                    }
+
+                } else {
+                    // Bulk: single select dropdown
+                    $col.html(`
+                        <label class="form-label">Select ${typeLabels[type]} <span class="text-danger">*</span></label>
+                        <select id="${prefix}RecipientBulkValue" class="form-control" style="width:100%">
+                            <option value="">Loading...</option>
+                        </select>`);
+
+                    $.get(endpointMap[type](), data => {
+                        const $sel = $(`#${prefix}RecipientBulkValue`);
+                        $sel.empty().append(`<option value="">-- Select ${typeLabels[type]} --</option>`);
+                        data.forEach(item => $sel.append(`<option value="${item.code}">${item.name}</option>`));
+
+                        $sel.select2({
+                            placeholder:    `Select ${typeLabels[type]}`,
+                            allowClear:     true,
+                            dropdownParent: $(parent),
+                            width:          '100%'
+                        });
+
+                        if (preselectCode) $sel.val(preselectCode).trigger('change');
+                    });
+                }
+            }
+
+            // Collect recipient fields into a plain object
+            function collectRecipient(prefix) {
+                if ($(`#${prefix}ChkAllEmployees`).is(':checked'))
+                    return { RecipientType: 'ALL', RecipientTypeCode: '' };
+
+                const type = $(`#${prefix}RecipientType`).val();
+                if (!type) return null;
+
+                if (type === 'INDIVIDUAL') {
+                    const vals = $(`#${prefix}RecipientEmployees`).val() || [];
+                    return { RecipientType: 'INDIVIDUAL', RecipientTypeCode: vals.join(',') };
+                }
+
+                const code = $(`#${prefix}RecipientBulkValue`).val() || '';
+                return { RecipientType: type, RecipientTypeCode: code };
+            }
+
+            // Client-side validation for recipient fields
+            function validateRecipient(prefix) {
+                if ($(`#${prefix}ChkAllEmployees`).is(':checked')) return true;
+
+                const type = $(`#${prefix}RecipientType`).val();
+                if (!type) { showNotification('Please select a recipient type.', 'error'); return false; }
+
+                if (type === 'INDIVIDUAL') {
+                    const vals = $(`#${prefix}RecipientEmployees`).val() || [];
+                    if (!vals.length) { showNotification('Please select at least one employee recipient.', 'error'); return false; }
+                } else {
+                    const code = $(`#${prefix}RecipientBulkValue`).val();
+                    if (!code) { showNotification(`Please select a ${typeLabels[type]}.`, 'error'); return false; }
+                }
+                return true;
+            }
+
+            // ALL toggle events
+            $('#addChkAllEmployees').on('change', function () {
+                $('#addRecipientControls').toggle(!$(this).is(':checked'));
+            });
+
+            $('#viewChkAllEmployees').on('change', function () {
+                $('#viewRecipientControls').toggle(!$(this).is(':checked'));
+            });
+
+            // Type dropdown changes
+            $('#addRecipientType').on('change', function () { renderRecipientPicker('add', null); });
+            $('#viewRecipientType').on('change', function () { renderRecipientPicker('view', null); });
+
+            // ════════════════════════════════════════════════════════════════
+            // DATATABLE
+            // ════════════════════════════════════════════════════════════════
+            const table = $('#memoTable').DataTable({
+                processing: true,
+                serverSide: false,
+                ajax: {
+                    url:     config.endpoints.list,
+                    type:    'GET',
+                    data:    () => ({ month: $('#filterMonth').val(), year: $('#filterYear').val() }),
+                    dataSrc: json => json.data,
+                    error:   () => showNotification('Error loading data. Please refresh the page.', 'error')
+                },
+                columns: [
+                    {
+                        data: null, orderable: false, width: '10%',
+                        render: (data, type, row) => {
+                            let viewBtn = '', deleteBtn = '';
+                            if (access === 'READ' || access === 'READWRITE' || access === 'FULL')
+                                viewBtn = `<button class="btn btn-sm btn-primary viewMemo" data-id="${row.id}" title="View"><i class="fas fa-eye"></i></button>`;
+                            if (access === 'READWRITE' || access === 'FULL')
+                                deleteBtn = `<button class="btn btn-sm btn-danger delete-btn ms-1" data-id="${row.id}" title="Delete"><i class="fas fa-times"></i></button>`;
+                            return `<div class="d-flex gap-1">${viewBtn}${deleteBtn}</div>`;
+                        }
+                    },
+                    { data: 'seriesNo',        render: d => d || '' },
+                    { data: 'title',           render: d => d || '' },
+                    { data: 'effectivityDate', render: d => d || '' },
+                    { data: 'createdBy',       render: d => d || '' },
+                    {
+                        data: null, orderable: false, width: '8%',
+                        render: (data, type, row) =>
+                            `<button class="btn btn-sm btn-outline-primary viewAttachmentBtn" data-id="${row.id}" title="View Attachments">
+                                 <i class="fas fa-paperclip"></i>
+                             </button>`
+                    }
+                ],
+                order: [],
+                pageLength: 25,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+                language: {
+                    processing: 'Loading...', emptyTable: 'No memos found',
+                    zeroRecords: 'No matching memos found',
+                    paginate: {
+                        next: '<i class="fa fa-angle-double-right"></i>',
+                        previous: '<i class="fa fa-angle-double-left"></i>'
+                    }
+                }
+            });
+
+            $('#filterMonth').on('change', () => table.ajax.reload(null, false));
+
+            // ════════════════════════════════════════════════════════════════
+            // ADD MODAL
+            // ════════════════════════════════════════════════════════════════
+            $('#btnAddNewMemo').on('click', () => {
+                resetAddForm();
+                $('#addMemoModal').modal('show');
+            });
+
+            $('#btnSaveMemo').on('click', () => {
+                if (!validateForm('#addMemoForm', ['addSeriesNo', 'addTitle', 'addEffectivityDate'])) return;
+                if (!validateRecipient('add')) return;
+
+                const recipient = collectRecipient('add');
+                if (!recipient) { showNotification('Please complete recipient selection.', 'error'); return; }
+
+                const formData = buildFormData({
+                    SeriesNo:          $('#addSeriesNo').val(),
+                    Title:             $('#addTitle').val(),
+                    EffectivityDate:   $('#addEffectivityDate').val(),
+                    Remarks:           $('#addRemarks').val(),
+                    RecipientType:     recipient.RecipientType,
+                    RecipientTypeCode: recipient.RecipientTypeCode
+                }, document.getElementById('addAttachment').files);
+
+                saveRequest(config.endpoints.add, formData, '#btnSaveMemo', true);
+            });
+
+            // ════════════════════════════════════════════════════════════════
+            // VIEW / EDIT MODAL
+            // ════════════════════════════════════════════════════════════════
+            $(document).on('click', '.viewMemo', function (e) {
+                e.preventDefault();
+                const id = $(this).data('id');
+                const $btn = $(this);
+                toggleButtonLoading($btn, true);
+
+                $.get(config.endpoints.get, { id })
+                    .done(data => {
+                        if (!data) { showNotification('Unable to load memo data.', 'error'); return; }
+                        resetViewForm();
+                        populateViewForm(data);
+                        setViewMode();
+                        loadCurrentAttachments(data.id);
+                        loadRecipientsReadOnly(data.id);
+                        $('#viewMemoModal').modal('show');
+                    })
+                    .fail(() => showNotification('Unable to load memo data.', 'error'))
+                    .always(() => toggleButtonLoading($btn, false));
+            });
+
+            $('#btnEditMemo').on('click', function () {
+                setEditMode();
+            });
+
+            $('#btnCancelEdit').on('click', () => {
+                const id = $('#viewMemoId').val();
+                $.get(config.endpoints.get, { id }).done(data => {
+                    if (data) {
+                        populateViewForm(data);
+                        loadCurrentAttachments(data.id);
+                        loadRecipientsReadOnly(data.id);
+                        setViewMode();
+                        clearValidation('#viewMemoForm');
+                    }
+                });
+            });
+
+            $('#btnSaveEditMemo').on('click', () => {
+                if (!validateForm('#viewMemoForm', ['viewSeriesNo', 'viewTitle', 'viewEffectivityDate'])) return;
+                if (!validateRecipient('view')) return;
+
+                const recipient = collectRecipient('view');
+                if (!recipient) { showNotification('Please complete recipient selection.', 'error'); return; }
+
+                const formData = buildFormData({
+                    Id:                $('#viewMemoId').val(),
+                    SeriesNo:          $('#viewSeriesNo').val(),
+                    Title:             $('#viewTitle').val(),
+                    EffectivityDate:   $('#viewEffectivityDate').val(),
+                    Remarks:           $('#viewRemarks').val(),
+                    RecipientType:     recipient.RecipientType,
+                    RecipientTypeCode: recipient.RecipientTypeCode
+                }, document.getElementById('viewAttachment').files);
+
+                saveRequest(config.endpoints.update, formData, '#btnSaveEditMemo', false);
+            });
+
+            // ════════════════════════════════════════════════════════════════
+            // DELETE
+            // ════════════════════════════════════════════════════════════════
+            $('#memoTable').on('click', '.delete-btn', function () {
+                const id = $(this).data('id');
+                if (!id) return;
+                deleteWithReason({
+                    title: 'Delete Memo', text: 'Are you sure you want to delete this memo?',
+                    url: config.endpoints.delete, id, button: $(this), table
+                });
+            });
+
+            // ════════════════════════════════════════════════════════════════
+            // VIEW ATTACHMENTS
+            // ════════════════════════════════════════════════════════════════
+            $(document).on('click', '.viewAttachmentBtn', function (e) {
+                e.preventDefault();
+                loadAttachmentsList($(this).data('id'));
+                $('#viewAttachmentModal').modal('show');
+            });
+
+            // ════════════════════════════════════════════════════════════════
+            // MODAL LIFECYCLE
+            // ════════════════════════════════════════════════════════════════
+            $('#addMemoModal').on('hidden.bs.modal', resetAddForm);
+            $('#viewMemoModal').on('hidden.bs.modal', () => {
+                resetViewForm();
+                setViewMode();
+                resetAllButtons();
+            });
+
+            // ════════════════════════════════════════════════════════════════
+            // RECIPIENT READ-ONLY LOADER
+            // Calls GetRecipients which returns resolved employees from e_basicinfo
+            // ════════════════════════════════════════════════════════════════
+            function loadRecipientsReadOnly(memoId) {
+                const $summary = $('#viewRecipientSummary');
+                const $list    = $('#viewRecipientList');
+                $summary.html('<small class="text-muted"><i class="fas fa-spinner fa-spin me-1"></i>Loading recipients...</small>');
+                $list.empty();
+
+                $.get(config.endpoints.recipients, { memoId }, response => {
+                    $summary.empty();
+                    $list.empty();
+
+                    const rType = (response.recipientType || '').toUpperCase();
+                    const label = typeLabels[rType] || rType;
+
+                    // Show rule pill
+                    $summary.html(`
+                        <div class="recipient-rule-pill">
+                            <i class="fas fa-filter"></i>
+                            <span>Type: <strong>${label}</strong></span>
+                            ${response.recipientTypeCode && rType !== 'ALL' && rType !== 'INDIVIDUAL'
+                                ? `<span class="ms-1">— <em>${response.recipientTypeCode}</em></span>`
+                                : ''}
+                            <span class="ms-2 badge bg-primary">${(response.data || []).length} employee(s)</span>
+                        </div>`);
+
+                    if (!response.data || response.data.length === 0) {
+                        $list.html('<small class="text-muted">No recipients found within your access scope.</small>');
+                        return;
+                    }
+
+                    const rows = response.data.map(r =>
+                        `<div class="recipient-row">
+                            <i class="fas fa-user-circle"></i>
+                            <span>${r.employeeName}</span>
+                            <small class="text-muted ms-auto">${r.employeeNo}</small>
+                         </div>`
+                    ).join('');
+
+                    $list.html(`<div class="recipients-box">${rows}</div>`);
+                }).fail(() => {
+                    $summary.html('<small class="text-danger">Failed to load recipients.</small>');
+                });
+            }
+
+            // ════════════════════════════════════════════════════════════════
+            // FORM HELPERS
+            // ════════════════════════════════════════════════════════════════
+            function populateViewForm(data) {
+                $('#viewMemoId').val(data.id);
+                $('#viewSeriesNo').val(data.seriesNo);
+                $('#viewTitle').val(data.title);
+                $('#viewEffectivityDate').val(data.effectivityDate);
+                $('#viewRemarks').val(data.remarks);
+            }
+
+            function setViewMode() {
+                $('#viewModalTitle').text('View Memo');
+                $('#viewMemoModal .modal-body').removeClass('edit-mode');
+                $('#viewSeriesNo, #viewTitle, #viewEffectivityDate, #viewRemarks').prop('readonly', true);
+                $('.edit-required').addClass('d-none');
+                $('#viewAttachment').addClass('d-none');
+                $('.edit-mode-only').addClass('d-none');
+                $('#viewFileList').addClass('d-none').empty();
+
+                // Recipient: show read-only, hide edit controls
+                $('#viewRecipientsReadOnly').show();
+                $('#viewRecipientsEditMode').addClass('d-none');
+
+                if (access === 'READWRITE' || access === 'FULL')
+                    $('#btnEditMemo').removeClass('d-none');
+                else
+                    $('#btnEditMemo').addClass('d-none');
+
+                $('#btnSaveEditMemo, #btnCancelEdit').addClass('d-none');
+                clearValidation('#viewMemoForm');
+            }
+
+            function setEditMode() {
+                $('#viewModalTitle').text('Edit Memo');
+                $('#viewMemoModal .modal-body').addClass('edit-mode');
+                $('#viewSeriesNo, #viewTitle, #viewEffectivityDate, #viewRemarks').prop('readonly', false);
+                $('.edit-required').removeClass('d-none');
+                $('#viewAttachment').removeClass('d-none');
+                $('.edit-mode-only').removeClass('d-none');
+                $('#viewFileList').removeClass('d-none');
+
+                $('#viewEffectivityDate').datepicker('destroy').datepicker({
+                    format: 'yyyy-mm-dd', autoclose: true, todayHighlight: true
+                });
+
+                // Recipient: hide read-only, show edit controls + pre-populate
+                $('#viewRecipientsReadOnly').hide();
+                $('#viewRecipientsEditMode').removeClass('d-none');
+
+                const memoId = $('#viewMemoId').val();
+                $.get(config.endpoints.get, { id: memoId }).done(data => {
+                    if (!data) return;
+                    const rType = (data.recipientType || '').toUpperCase();
+                    const rCode = data.recipientTypeCode || '';
+
+                    if (rType === 'ALL') {
+                        $('#viewChkAllEmployees').prop('checked', true).trigger('change');
+                    } else {
+                        $('#viewChkAllEmployees').prop('checked', false);
+                        $('#viewRecipientControls').show();
+                        $('#viewRecipientType').val(rType);
+                        // Render picker then preselect
+                        renderRecipientPicker('view', rCode);
+                    }
+                });
+
+                $('#btnEditMemo').addClass('d-none');
+                $('#btnSaveEditMemo, #btnCancelEdit').removeClass('d-none');
+            }
+
+            function resetAddForm() {
+                $('#addMemoForm')[0].reset();
+                document.getElementById('addAttachment').value = '';
+                document.getElementById('addFileList').innerHTML = '';
+                clearValidation('#addMemoForm');
+                $('#btnSaveMemo').prop('disabled', false).html('Save');
+                $('#addChkAllEmployees').prop('checked', false);
+                $('#addRecipientControls').show();
+                $('#addRecipientType').val('');
+                $('#addRecipientPickerCol').empty();
+            }
+
+            function resetViewForm() {
+                $('#viewMemoForm')[0].reset();
+                $('#currentAttachments').empty();
+                document.getElementById('viewAttachment').value = '';
+                document.getElementById('viewFileList').innerHTML = '';
+                clearValidation('#viewMemoForm');
+                $('#btnSaveEditMemo').prop('disabled', false).html('Save');
+                $('#viewChkAllEmployees').prop('checked', false);
+                $('#viewRecipientControls').show();
+                $('#viewRecipientType').val('');
+                $('#viewRecipientPickerCol').empty();
+                $('#viewRecipientSummary').empty();
+                $('#viewRecipientList').empty();
+            }
+
+            function resetAllButtons() {
+                $('#btnEditMemo').prop('disabled', false).html('<i class="fas fa-edit"></i> Edit');
+            }
+
+            function buildFormData(fields, files) {
+                const fd = new FormData();
+                for (const [key, val] of Object.entries(fields)) fd.append(key, val ?? '');
+                if (files && files.length > 0) Array.from(files).forEach(f => fd.append('Attachments', f));
+                return fd;
+            }
+
+            function saveRequest(url, formData, buttonSelector, closeAddModal) {
+                const $btn = $(buttonSelector);
+                toggleButtonLoading($btn, true, 'Saving...');
+                $.ajax({
+                    url, type: 'POST', data: formData, processData: false, contentType: false,
+                    success: response => {
+                        if (response.success) {
+                            if (closeAddModal) {
+                                $('#addMemoModal').modal('hide');
+                            } else {
+                                const id = $('#viewMemoId').val();
+                                loadCurrentAttachments(id);
+                                loadRecipientsReadOnly(id);
+                                setViewMode();
+                            }
+                            table.ajax.reload(null, false);
+                            showNotification(response.message, 'success');
+                        } else {
+                            showNotification(response.message, 'error');
+                        }
+                    },
+                    error: jqXHR => {
+                        const msg = jqXHR.responseJSON?.message || 'Unable to save. Please try again.';
+                        showNotification(msg, 'error');
+                    },
+                    complete: () => toggleButtonLoading($btn, false)
+                });
+            }
+
+            function loadCurrentAttachments(memoId) {
+                $.get(config.endpoints.attachments, { memoId }, data => {
+                    const container = $('#currentAttachments');
+                    container.empty();
+                    if (data && data.length > 0) {
+                        data.forEach(att => {
+                            const fileName = att.attachmentPath.split('/').pop();
+                            container.append(`
+                                <div class="attachment-item">
+                                    <i class="fas fa-file"></i>
+                                    <a href="${att.attachmentPath}" target="_blank">${fileName}</a>
+                                    <small class="text-muted ms-auto">${new Date(att.dtAdded).toLocaleDateString()}</small>
+                                </div>`);
+                        });
+                    } else {
+                        container.append('<small class="text-muted">No attachments found.</small>');
+                    }
+                });
+            }
+
+            function loadAttachmentsList(memoId) {
+                $.get(config.endpoints.attachments, { memoId }, data => {
+                    const container = $('#attachmentList');
+                    container.empty();
+                    if (data && data.length > 0) {
+                        data.forEach(att => {
+                            const fileName = att.attachmentPath.split('/').pop();
+                            container.append(`
+                                <div class="attachment-item mb-3">
+                                    <i class="fas fa-file-alt fa-2x me-3"></i>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">
+                                            <a href="${att.attachmentPath}" target="_blank" class="text-decoration-none">${fileName}</a>
+                                        </h6>
+                                        <small class="text-muted">Added: ${new Date(att.dtAdded).toLocaleDateString()}</small>
+                                    </div>
+                                    <a href="${att.attachmentPath}" target="_blank" class="btn btn-sm btn-outline-primary ms-2">
+                                        <i class="fas fa-download"></i> View
+                                    </a>
+                                </div>`);
+                        });
+                    } else {
+                        container.append('<p class="text-muted text-center">No attachments found.</p>');
+                    }
+                });
+            }
+
+            function validateForm(formSelector, fields) {
+                clearValidation(formSelector);
+                let isValid = true;
+                fields.forEach(field => {
+                    if (!$(`#${field}`).val()) { $(`#${field}`).addClass('is-invalid'); isValid = false; }
+                });
+                return isValid;
+            }
+
+            function clearValidation(formSelector) {
+                $(`${formSelector} .form-control`).removeClass('is-invalid');
+            }
+
+            function toggleButtonLoading($btn, loading, text = '') {
+                if (loading) {
+                    if (!$btn.data('original-html')) $btn.data('original-html', $btn.html());
+                    const icon = text ? '<i class="fas fa-spinner fa-spin"></i> ' : '<i class="fas fa-spinner fa-spin"></i>';
+                    $btn.prop('disabled', true).html(icon + text);
+                } else {
+                    const originalHtml = $btn.data('original-html') || 'Save';
+                    $btn.prop('disabled', false).html(originalHtml).removeData('original-html');
+                }
+            }
+
+            function showNotification(message, type) {
+                const labels = { success: 'Success', error: 'Error', warning: 'Warning', info: 'Information' };
+                toastr[type](message, labels[type] || 'Notification');
+            }
+
+            validationinputs();
+        });
+    </script>
+}

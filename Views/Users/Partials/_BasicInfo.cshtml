@@ -1,0 +1,704 @@
+﻿@model KEISAN_HRIS_v2.Models.Users.EmployeeBasicInfoModel
+
+<form id="employeeBasicInfoForm">
+    <input type="hidden" id="employeeId" name="id" value="@Model.Id" />
+
+    <div class="row">
+        <div class="col-md-6">
+            <label>Employee No <span class="text-danger">*</span></label>
+            <input type="text" name="employeeNo" id="employeeNo" maxlength="20"
+                   class="form-control formInput required-field alphanum"
+                   placeholder="Employee No" value="@Model.employeeNo" />
+            <div class="invalid-feedback">Employee number is required.</div>
+        </div>
+        <div class="col-md-6">
+            <label>Employment Status <span class="text-danger">*</span></label>
+            <select id="employmentStatus" name="employmentStatus"
+                    class="form-control formInput required-field select2" style="width:100%">
+            </select>
+            <div class="invalid-feedback">Employment status is required.</div>
+        </div>
+    </div>
+
+    <br>
+    <div class="row">
+        <div class="col-md-3">
+            <label>Last Name <span class="text-danger">*</span></label>
+            <input type="text" name="lastName" id="employeeLastName" maxlength="100"
+                   class="form-control formInput required-field"
+                   placeholder="Last name" value="@Model.lastName" />
+            <div class="invalid-feedback">Last name is required.</div>
+        </div>
+        <div class="col-md-3">
+            <label>First Name <span class="text-danger">*</span></label>
+            <input type="text" name="firstName" id="employeeFirstName" maxlength="100"
+                   class="form-control formInput required-field"
+                   placeholder="First Name" value="@Model.firstName" />
+            <div class="invalid-feedback">First name is required.</div>
+        </div>
+        <div class="col-md-3">
+            <label>Middle Name</label>
+            <input type="text" name="middleName" id="employeeMiddleName" maxlength="100"
+                   class="form-control formInput"
+                   placeholder="Middle Name" value="@Model.middleName" />
+        </div>
+        <div class="col-md-3">
+            <label>Suffix</label>
+            <input type="text" name="suffix" id="employeeSuffix" maxlength="10"
+                   class="form-control formInput"
+                   placeholder="Suffix" value="@Model.suffix" />
+        </div>
+    </div>
+
+    <br>
+    <div class="row">
+        <div class="col-md-4">
+            <label>Date Hired (Initial) <span class="text-danger">*</span></label>
+            <div class="input-hasicon">
+                <input name="dateHired" id="employeeDateHired"
+                       class="form-control formInput required-field bt-datepicker">
+                <div class="icon"><i class="far fa-calendar"></i></div>
+            </div>
+            <div class="invalid-feedback">Date hired is required.</div>
+        </div>
+        <div class="col-md-4">
+            <label>Position <span class="text-danger">*</span></label>
+            <select id="employeePosition" name="positionCode"
+                    class="form-control formInput required-field select2" style="width:100%">
+            </select>
+            <div class="invalid-feedback">Position is required.</div>
+        </div>
+        <div class="col-md-4">
+            <label>Rank <span class="text-danger">*</span></label>
+            <select id="employeeRank" name="rankCode"
+                    class="form-control formInput required-field select2" style="width:100%">
+            </select>
+            <div class="invalid-feedback">Rank is required.</div>
+        </div>
+    </div>
+
+    <br>
+    <div class="row">
+        <div class="col-md-6">
+            <label>Branch <span class="text-danger">*</span></label>
+            <select id="employeeBranch" name="branchCode"
+                    class="form-control formInput required-field select2" style="width:100%">
+            </select>
+            <div class="invalid-feedback">Branch is required.</div>
+        </div>
+        <div class="col-md-6">
+            <label>Department <span class="text-danger">*</span></label>
+            <select id="employeeDepartment" name="departmentCode"
+                    class="form-control formInput required-field select2" style="width:100%">
+            </select>
+            <div class="invalid-feedback">Department is required.</div>
+        </div>
+    </div>
+    <br>
+
+    <div class="row">
+        <div class="col-md-4">
+            <label>Probationary Start Date</label>
+            <div class="input-hasicon">
+                <input name="probationaryStartDate" id="employeeProbationaryDate"
+                       class="form-control formInput bt-datepicker">
+                <div class="icon"><i class="far fa-calendar"></i></div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label>Probationary End Date</label>
+            <div class="input-hasicon">
+                <input name="probationaryEndDate" id="employeeProbationaryEndDate"
+                       class="form-control formInput bt-datepicker">
+                <div class="icon"><i class="far fa-calendar"></i></div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <label>Date of Regularization</label>
+            <div class="input-hasicon">
+                <input name="dateOfRegApp" id="employeeDateOfRegularization"
+                       class="form-control formInput bt-datepicker">
+                <div class="icon"><i class="far fa-calendar"></i></div>
+            </div>
+        </div>
+    </div>
+    <br>
+    <hr>
+
+    <div class="row">
+        <div class="col-md-4">
+            <label>Employment Status</label>
+            <select id="employeeEmploymentStatus" name="isActive" class="form-control formInput select2" style="width:100%">
+                <option value="1">Active</option>
+                <option value="0">Inactive</option>
+            </select>
+        </div>
+    </div>
+
+    <br>
+
+    <div id="separationDiv" style="display:none;">
+        <div class="row">
+            <div class="col-md-4">
+                <label>Date Of Employment Separation</label>
+                <div class="input-hasicon">
+                    <input name="dateOfEmpTermInitial" id="employeeDateOfSeparation"
+                           class="form-control formInput bt-datepicker">
+                    <div class="icon"><i class="far fa-calendar"></i></div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label>Reason of Separation</label>
+                <input type="text" name="reason4TermInitial" id="employeeReasonOfSeparation"
+                       maxlength="255" class="form-control formInput"
+                       placeholder="Reason" value="@Model.reason4TermInitial" />
+            </div>
+        </div>
+        <br>
+
+        <div class="row">
+            <div class="col-md-4">
+                <label>Remarks</label>
+                <input type="text" name="remarksInitial" id="employeeRemarks"
+                       maxlength="255" class="form-control formInput"
+                       placeholder="Remarks" value="@Model.remarksInitial" />
+            </div>
+        </div>
+        <br>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-check custom-checkbox mb-3">
+                    <input type="checkbox" class="form-check-input"
+                           id="employeeRetired" name="isRetired"
+                           @(Model.isRetired ? "checked" : "")>
+                    <label class="form-check-label" for="employeeRetired">Retired?</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="row" id="update_div">
+        <div class="col-md-12">
+            <button type="button" id="updateSaveBasicInfoBtn"
+                    class="btn btn-primary formupdateSave_btn"
+                    style="float:right;">
+                Edit
+            </button>
+        </div>
+    </div>
+</form>
+
+<style>
+    .invalid-feedback {
+        display: none;
+    }
+
+    .form-control.is-invalid,
+    .form-select.is-invalid {
+        border-color: #dc3545;
+    }
+
+        .form-control.is-invalid ~ .invalid-feedback,
+        .form-select.is-invalid ~ .invalid-feedback {
+            display: block;
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+    .select2-container--default .select2-selection--single.is-invalid {
+        border-color: #dc3545 !important;
+    }
+</style>
+
+<script>
+
+    function decodeHtmlEntities(text) {
+        if (!text) return text;
+        var textArea = document.createElement('textarea');
+        textArea.innerHTML = text;
+        return textArea.value;
+    }
+
+    $(document).ready(function () {
+
+        MODULE = 'FBasicM';
+        access = ROLE_ACCESS?.[MODULE];
+
+        if (access != 'READWRITE' && access != 'FULL') {
+            $('#update_div').hide();
+        }
+
+        const isCreate = parseInt("@Model.Id") === 0;
+
+        // CONFIGURATION
+        const config = {
+            endpoints: {
+                create: '/BasicInfo/CreateBasicInfo',
+                update: '/BasicInfo/UpdateBasicInfo',
+                checkEmployeeNo: '/BasicInfo/CheckEmployeeNo',
+                employmentStatuses: '/Setup/GetEmploymentStatuses',
+                positions: '/Setup/GetEmployeePositions',
+                ranks: '/Setup/GetEmployeeRanks',
+                branches: '/Setup/GetEmployeeBranch',
+                departments: '/Setup/GetEmployeeDepartment'
+            }
+        };
+
+        // INITIALIZATION
+        initializeDatepicker();
+        initializeSelect2();
+
+        // Set initial values AFTER Select2 is initialized
+        setTimeout(() => {
+            setInitialValues();
+        }, 100);
+
+        if (isCreate) {
+            // CREATE MODE
+            disabledEnableInput(false);
+            $('#updateSaveBasicInfoBtn').text('Save');
+            $('#cancelBasicInfoBtn').removeClass('d-none');
+            // Set default employment status to Active for new employees
+            $('#employeeEmploymentStatus').val('1').trigger('change');
+        } else {
+            // EDIT MODE
+            disabledEnableInput(true);
+            $('#updateSaveBasicInfoBtn').text('Edit');
+            $('#cancelBasicInfoBtn').addClass('d-none');
+        }
+
+        // EVENT HANDLERS
+        $('#updateSaveBasicInfoBtn').on('click', function () {
+            const $btn = $(this);
+
+            if ($btn.text().trim() === 'Edit') {
+                showHideEditSaveBtn($btn);
+            } else {
+                saveUpdateBasicInfo();
+            }
+        });
+
+        $('#cancelBasicInfoBtn').on('click', function () {
+            if (isCreate) {
+                // If creating new employee, close the modal
+                $('#employeeModal').modal('hide');
+            } else {
+                // If editing, just reload the tab
+                showHideEditSaveBtn($('#updateSaveBasicInfoBtn'));
+                loadEmployeeTabContent("BasicInfo", "@Model.employeeNo");
+            }
+        });
+
+        $('#employeeProbationaryDate').on('change changeDate', function () {
+            const startDate = $(this).datepicker('getDate');
+
+            if (!startDate) {
+                $('#employeeProbationaryEndDate').datepicker('clearDates');
+                $('#employeeDateOfRegularization').datepicker('clearDates');
+                return;
+            }
+
+            let endDate = new Date(startDate.getTime());
+            endDate.setMonth(endDate.getMonth() + 6);
+
+            if (endDate.getDate() !== startDate.getDate()) {
+                endDate.setDate(0);
+            }
+
+            $('#employeeProbationaryEndDate').datepicker('setDate', endDate);
+            $('#employeeDateOfRegularization').datepicker('setDate', endDate);
+        });
+
+        $('#employeeEmploymentStatus').on('change', function () {
+            toggleSeparationDiv();
+        });
+
+        // Clear validation on input
+        $('#employeeNo, #employeeFirstName, #employeeLastName').on('input', function () {
+            $(this).removeClass('is-invalid');
+        });
+
+        $('#employmentStatus, #employeePosition, #employeeRank, #employeeBranch, #employeeDepartment').on('change', function () {
+            $(this).removeClass('is-invalid');
+        });
+
+        // FUNCTIONS
+        function initializeDatepicker() {
+            $('.bt-datepicker').datepicker({
+                format: 'yyyy/mm/dd',
+                autoclose: true
+            });
+        }
+
+        function initializeSelect2() {
+            // Employment Status (AJAX-based, supports search by name)
+            $('#employmentStatus').select2({
+                placeholder: "Select Employment Status",
+                allowClear: true,
+                ajax: {
+                    url: config.endpoints.employmentStatuses,
+                    dataType: 'json',
+                    delay: 250,
+                    processResults: data => ({
+                        results: $.map(data, item => ({
+                            id: item.employmentStatusCode,
+                            text: decodeHtmlEntities(item.employmentStatusName)
+                        }))
+                    })
+                }
+            });
+
+            // Position, Rank, Branch, Department — pre-loaded (options injected via loadDropdownOptions)
+            $('#employeePosition').select2({
+                placeholder: "Select Position",
+                allowClear: true,
+                width: '100%'
+            });
+
+            $('#employeeRank').select2({
+                placeholder: "Select Rank",
+                allowClear: true,
+                width: '100%'
+            });
+
+            $('#employeeBranch').select2({
+                placeholder: "Select Branch",
+                allowClear: true,
+                width: '100%'
+            });
+
+            $('#employeeDepartment').select2({
+                placeholder: "Select Department",
+                allowClear: true,
+                width: '100%'
+            });
+
+            // Active/Inactive status dropdown
+            $('#employeeEmploymentStatus').select2({
+                selectOnClose: true,
+                minimumResultsForSearch: Infinity
+            });
+
+            // Load all pre-loaded dropdown data
+            loadDropdownOptions();
+        }
+
+        function loadDropdownOptions() {
+            const dropdowns = [
+                {
+                    url: config.endpoints.positions,
+                    select: '#employeePosition',
+                    codeKey: 'positionCode',
+                    nameKey: 'positionName',
+                    modelCode: decodeHtmlEntities("@Model.positionCode"),
+                    modelName: decodeHtmlEntities("@Model.positionName")
+                },
+                {
+                    url: config.endpoints.ranks,
+                    select: '#employeeRank',
+                    codeKey: 'rankCode',
+                    nameKey: 'rankName',
+                    modelCode: decodeHtmlEntities("@Model.rankCode"),
+                    modelName: decodeHtmlEntities("@Model.rankName")
+                },
+                {
+                    url: config.endpoints.branches,
+                    select: '#employeeBranch',
+                    codeKey: 'branchCode',
+                    nameKey: 'branchName',
+                    modelCode: decodeHtmlEntities("@Model.branchCode"),
+                    modelName: decodeHtmlEntities("@Model.branchName")
+                },
+                {
+                    url: config.endpoints.departments,
+                    select: '#employeeDepartment',
+                    codeKey: 'departmentCode',
+                    nameKey: 'departmentName',
+                    modelCode: decodeHtmlEntities("@Model.departmentCode"),
+                    modelName: decodeHtmlEntities("@Model.departmentName")
+                }
+            ];
+
+            dropdowns.forEach(cfg => {
+                $.get(cfg.url)
+                    .done(data => {
+                        const $select = $(cfg.select);
+
+                        // Client-side sort as a second safety net (A-Z)
+                        data.sort((a, b) =>
+                            decodeHtmlEntities(a[cfg.nameKey])
+                                .localeCompare(decodeHtmlEntities(b[cfg.nameKey]))
+                        );
+
+                        $select.empty().append('<option value=""></option>');
+                        data.forEach(item => {
+                            $select.append(
+                                `<option value="${item[cfg.codeKey]}">${decodeHtmlEntities(item[cfg.nameKey])}</option>`
+                            );
+                        });
+
+                        // Restore selected value if editing
+                        if (!isCreate && cfg.modelCode) {
+                            $select.val(cfg.modelCode).trigger('change');
+                        }
+                    })
+                    .fail(() => {
+                        console.error(`Failed to load options for ${cfg.select}`);
+                    });
+            });
+        }
+
+        function setInitialValues() {
+            if (!isCreate) {
+                // Employment Status (still AJAX-based, must be set manually)
+                if ("@Model.employmentStatusName" && "@Model.employmentStatus") {
+                    var option = new Option(
+                        decodeHtmlEntities("@Model.employmentStatusName"),
+                        decodeHtmlEntities("@Model.employmentStatus"),
+                        true, true
+                    );
+                    $('#employmentStatus').append(option).trigger('change');
+                }
+
+                // Position, Rank, Branch, Department values are restored
+                // inside loadDropdownOptions() after options are injected
+
+                // Active/Inactive status
+                var modelIsActive = "@Model.isActive";
+                var isActiveValue;
+
+                if (modelIsActive === "True" || modelIsActive === "true" || modelIsActive === "1") {
+                    isActiveValue = "1";
+                } else if (modelIsActive === "False" || modelIsActive === "false" || modelIsActive === "0") {
+                    isActiveValue = "0";
+                } else {
+                    isActiveValue = "1";
+                }
+
+                setTimeout(function () {
+                    $('#employeeEmploymentStatus').val(isActiveValue).trigger('change');
+                    toggleSeparationDiv();
+                }, 200);
+
+                // Dates
+                $('#employeeDateHired').datepicker('setDate', formatDate("@Model.dateHired"));
+                $('#employeeProbationaryDate').datepicker('setDate', formatDate("@Model.probationaryStartDate"));
+                $('#employeeProbationaryEndDate').datepicker('setDate', formatDate("@Model.probationaryEndDate"));
+                $('#employeeDateOfRegularization').datepicker('setDate', formatDate("@Model.dateOfRegApp"));
+                $('#employeeDateOfSeparation').datepicker('setDate', formatDate("@Model.dateOfEmpTermInitial"));
+            }
+        }
+
+        function saveUpdateBasicInfo() {
+            const $form = $('#employeeBasicInfoForm');
+
+            // Clear previous validation
+            clearValidation($form);
+
+            // Validate form
+            if (!validateForm()) {
+                return;
+            }
+
+            const formData = {
+                Id: parseInt("@Model.Id") || 0,
+                employeeNo: $('#employeeNo').val()?.trim(),
+                isActive: parseInt($('#employeeEmploymentStatus').val()),
+                employmentStatus: $('#employmentStatus').val(),
+                lastName: $('#employeeLastName').val()?.trim(),
+                firstName: $('#employeeFirstName').val()?.trim(),
+                middleName: $('#employeeMiddleName').val()?.trim(),
+                suffix: $('#employeeSuffix').val()?.trim(),
+                dateHired: $('#employeeDateHired').val(),
+                positionCode: $('#employeePosition').val(),
+                rankCode: $('#employeeRank').val(),
+                branchCode: $('#employeeBranch').val(),
+                departmentCode: $('#employeeDepartment').val(),
+                probationaryStartDate: $('#employeeProbationaryDate').val(),
+                probationaryEndDate: $('#employeeProbationaryEndDate').val(),
+                dateOfRegApp: $('#employeeDateOfRegularization').val(),
+                dateOfEmpTermInitial: $('#employeeDateOfSeparation').val(),
+                reason4TermInitial: $('#employeeReasonOfSeparation').val(),
+                remarksInitial: $('#employeeRemarks').val()?.trim(),
+                isRetired: $('#employeeRetired').is(':checked')
+            };
+
+            const $saveBtn = $('#updateSaveBasicInfoBtn');
+            const url = isCreate ? config.endpoints.create : config.endpoints.update;
+
+            toggleButtonLoading($saveBtn, true, 'Saving...');
+
+            // Validate employee number uniqueness for new records
+            if (isCreate) {
+                $.get(config.endpoints.checkEmployeeNo, { employeeNo: formData.employeeNo })
+                    .done(response => {
+                        if (response.exists) {
+                            showNotification('Employee number already exists.', 'error');
+                            $('#employeeNo').addClass('is-invalid');
+                            toggleButtonLoading($saveBtn, false);
+                            return;
+                        }
+                        submitForm(url, formData, $saveBtn);
+                    })
+                    .fail(() => {
+                        showNotification('Unable to validate employee number.', 'error');
+                        toggleButtonLoading($saveBtn, false);
+                    });
+            } else {
+                submitForm(url, formData, $saveBtn);
+            }
+        }
+
+        function submitForm(url, data, $btn) {
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: data,
+                dataType: 'json',
+                success: function (response) {
+                    if (response.success) {
+                        if (typeof $('#userTable').DataTable === 'function') {
+                            $('#userTable').DataTable().ajax.reload(null, false);
+                        }
+                        showNotification(response.message, 'success');
+
+                        if (isCreate && response.employeeNo) {
+                            // Enable other tabs after successful creation
+                            if (typeof enableAllTabs === 'function') {
+                                enableAllTabs();
+                            }
+                            // Close modal and reload employee list
+                            setTimeout(() => {
+                                $('#employeeModal').modal('hide');
+                                if (typeof $('#userTable').DataTable === 'function') {
+                                    $('#userTable').DataTable().ajax.reload(null, false);
+                                }
+                            }, 500);
+                        } else {
+                            // For update, switch back to view mode
+                            disabledEnableInput(true);
+                            $btn.text('Edit');
+                            $('#cancelBasicInfoBtn').addClass('d-none');
+                            // Reload the tab to show updated data
+                            if (typeof loadEmployeeTabContent === 'function') {
+                                loadEmployeeTabContent("BasicInfo", "@Model.employeeNo");
+                            }
+                        }
+                    } else {
+                        showNotification(response.message, 'error');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.log('Error:', error);
+                    showNotification('An error occurred while saving.', 'error');
+                },
+                complete: function () {
+                    // ALWAYS reset the button state
+                    toggleButtonLoading($btn, false);
+                }
+            });
+        }
+
+        function validateForm() {
+            let isValid = true;
+
+            // Required fields
+            const requiredFields = [
+                { id: '#employeeNo', message: 'Employee number is required' },
+                { id: '#employmentStatus', message: 'Employment status is required' },
+                { id: '#employeeFirstName', message: 'First name is required' },
+                { id: '#employeeLastName', message: 'Last name is required' },
+                { id: '#employeeDateHired', message: 'Date hired is required' },
+                { id: '#employeePosition', message: 'Position is required' },
+                { id: '#employeeRank', message: 'Rank is required' },
+                { id: '#employeeBranch', message: 'Branch is required' },
+                { id: '#employeeDepartment', message: 'Department is required' }
+            ];
+
+            requiredFields.forEach(field => {
+                if (!$(field.id).val()) {
+                    $(field.id).addClass('is-invalid');
+                    isValid = false;
+                }
+            });
+
+            if (!isValid) {
+                showNotification('Please fill in all required fields.', 'error');
+            }
+
+            return isValid;
+        }
+
+        function clearValidation($form) {
+            $form.find('.form-control, .form-select').removeClass('is-invalid');
+        }
+
+        function toggleSeparationDiv() {
+            const status = $('#employeeEmploymentStatus').val();
+            if (status === '0') {
+                $('#separationDiv').show();
+            } else {
+                $('#separationDiv').hide();
+            }
+        }
+
+        function showHideEditSaveBtn($btn) {
+            if ($btn.text().trim() === 'Edit') {
+                disabledEnableInput(false);
+                $('#updateSaveBasicInfoBtn').text('Save');
+                $('#cancelBasicInfoBtn').removeClass('d-none');
+            } else {
+                disabledEnableInput(true);
+                $('#updateSaveBasicInfoBtn').text('Edit');
+                $('#cancelBasicInfoBtn').addClass('d-none');
+            }
+        }
+
+        function disabledEnableInput(disabled) {
+            $('#employeeBasicInfoForm input:not([type="hidden"]), #employeeBasicInfoForm select').prop('disabled', disabled);
+            if (disabled) {
+                $('#employeeBasicInfoForm .select2').addClass('select2-disabled');
+            } else {
+                $('#employeeBasicInfoForm .select2').removeClass('select2-disabled');
+            }
+        }
+
+        function toggleButtonLoading($btn, loading, text = '') {
+            if (loading) {
+                // Store original text
+                if (!$btn.data('original-text')) {
+                    $btn.data('original-text', $btn.text().trim());
+                }
+                $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> ' + (text || 'Processing...'));
+            } else {
+                // Restore original text
+                const originalText = $btn.data('original-text') || 'Save';
+                $btn.prop('disabled', false).text(originalText);
+                $btn.removeData('original-text');
+            }
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return null;
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return null;
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}/${month}/${day}`;
+        }
+
+        function showNotification(message, type) {
+            const types = { success: 'Success', error: 'Error', warning: 'Warning', info: 'Information' };
+            if (typeof toastr !== 'undefined') {
+                toastr[type](message, types[type] || 'Notification');
+            } else {
+                alert(message);
+            }
+        }
+    });
+</script>

@@ -1,0 +1,511 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutFillow.cshtml";
+    ViewData["Title"] = "Employee Benefit Settings";
+}
+<div class="col-12">
+    <div class="card">
+        <div class="card-header">
+
+            <div class="row" style="width:100%;">
+                <h4 class="card-title">Employee Benefits</h4>
+                <br> <br> <br>
+
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="userBenefits" class="display" style="min-width: 845px">
+                            <thead>
+                                <tr>
+                                    <th>Employee No</th>
+                                    <th>Employee Name</th>
+                                    <th>TAX</th>
+                                    <th>SSS</th>
+                                    <th>PHIC</th>
+                                    <th>HDMF</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="viewEmployeeModal" tabindex="-1" aria-labelledby="viewEmployeeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewEmployeeModalLabel">Employee Benefits Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="viewEmployeeForm">
+                <div class="modal-body">
+                    <p><strong>Employee No:</strong> <span id="modalEmployeeNo"></span></p>
+                    <p><strong>Employee Name:</strong> <span id="modalEmployeeName"></span></p>
+                    <hr>
+                    <p><span id="modalTax"></span></p>
+                    <p><span id="modalSSS"></span></p>
+                    <p><span id="modalPHIC"></span></p>
+                    <p><span id="modalHDMF"></span></p>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" id="updateSaveBtn" class="btn btn-primary formupdateSave_btn" style="float:right;">Edit</button>
+                    <button type="button" id="cancelSavedBtn" class="btn btn-danger formcancel_btn" style="float:right; display:none; margin-left: 10px">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+@section Fillow_style
+{
+
+
+}
+
+@section Fillow_script
+{
+    <script>
+
+        $(document).ready(function () {
+
+            MODULE = 'FemployeeBenefitsSettingM';
+            access = ROLE_ACCESS?.[MODULE];
+
+            if (access != 'READWRITE' && access != 'FULL') {
+              $('#updateSaveBtn').hide();
+            }
+            
+            
+            const userBenefits = $('#userBenefits').DataTable({
+                responsive: true,
+                ajax: {
+                    url: "/Benefits/GetUserBenefitsList",
+                    type: "GET",
+                    dataType: "json",
+                    data: function (d) {
+
+                    }
+                },
+                columns: [
+                    { data: "employeeNo" },
+                    { data: "employeeName" },
+                    {
+                        data: "tax",
+                        render: function (data, type, row) {
+                            return `<input type="checkbox" class="form-check-input taxCheck"
+                                        ${data == 1 ? 'checked' : ''}
+                                        data-employeeno="${row.employeeNo}" disabled>`;
+                        }
+                    },
+                    {
+                        data: "sss",
+                        render: function (data, type, row) {
+                            return `<input type="checkbox" class="form-check-input sssCheck"
+                                        ${data == 1 ? 'checked' : ''}
+                                        data-employeeno="${row.employeeNo}" disabled>`;
+                        }
+                    },
+                    {
+                        data: "philhealth",
+                        render: function (data, type, row) {
+                            return `<input type="checkbox" class="form-check-input philhealthCheck"
+                                        ${data == 1 ? 'checked' : ''}
+                                        data-employeeno="${row.employeeNo}" disabled>`;
+                        }
+                    },
+                    {
+                        data: "pagibig",
+                        render: function (data, type, row) {
+                            return `<input type="checkbox" class="form-check-input pagibigCheck"
+                                        ${data == 1 ? 'checked' : ''}
+                                        data-employeeno="${row.employeeNo}" disabled>`;
+                        }
+                    },
+                    {
+                        data: "employeeNo",
+                        render: function (data) {
+
+                            let edit_btn = '';
+
+                            if (access === 'READWRITE' || access === 'FULL') {
+                                edit_btn = `
+                                    <button type="button"
+                                            class="btn btn-sm btn-info shadow-sm editRow"
+                                            data-employeeno="${data}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>`;
+                            }
+
+                            return `
+                                <div class="d-flex">
+                                    <button type="button"
+                                            class="btn btn-sm btn-primary shadow-sm me-2 viewEmployee"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#viewEmployeeModal"
+                                            data-employeeno="${data}">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    ${edit_btn}
+                                </div>`;
+                        }
+                    }
+                ],
+                language: {
+                    paginate: {
+                    next: '<i class="fa fa-angle-double-right" aria-hidden="true"></i>',
+                    previous: '<i class="fa fa-angle-double-left" aria-hidden="true"></i>'
+                    }
+                }
+        });
+
+        $(document).on('click', '#enableEditBtn', function () {
+            const isDisabled = $('#userBenefits input[type="checkbox"]').prop('disabled');
+
+            if (isDisabled) {
+                // Enable all checkboxes and view buttons
+                $('#userBenefits input[type="checkbox"], #userBenefits .viewEmployee').prop('disabled', false);
+                $(this).text('Disable Edit').removeClass('btn-success').addClass('btn-secondary');
+            } else {
+                // Disable all checkboxes and view buttons
+                $('#userBenefits input[type="checkbox"], #userBenefits .viewEmployee').prop('disabled', true);
+                $(this).text('Enable Edit').removeClass('btn-secondary').addClass('btn-success');
+            }
+        });
+            $(document).on('click', '.editRow', function () {
+                const $btn = $(this);
+                const $row = $btn.closest('tr');
+                const $viewBtn = $row.find('.viewEmployee');
+
+                // Hide view button
+                $viewBtn.hide();
+
+                // Enable checkboxes in the same row
+                $row.find('input[type="checkbox"]').prop('disabled', false);
+
+                // Change edit button to success/check button
+                $btn
+                    .removeClass('btn-info')
+                    .addClass('btn-success')
+                    .html('<i class="fas fa-check"></i>');
+
+                // Add cancel button next to it if not exists
+                if ($row.find('.cancelEdit').length === 0) {
+                    $btn.after(`
+                        <button type="button" class="btn btn-sm btn-danger shadow-sm ms-2 cancelEdit">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `);
+                }
+            });
+
+            $(document).on('click', '.cancelEdit', function () {
+                const $btn = $(this);
+                const $row = $btn.closest('tr');
+                const $editBtn = $row.find('.editRow');
+                const $viewBtn = $row.find('.viewEmployee');
+
+                // Revert edit button
+                $editBtn
+                    .removeClass('btn-success')
+                    .addClass('btn-info')
+                    .html('<i class="fas fa-edit"></i>');
+
+                // Hide cancel button
+                $btn.remove();
+
+                // Show view button again
+                $viewBtn.show();
+
+                // Disable checkboxes again
+                $row.find('input[type="checkbox"]').prop('disabled', true);
+                userBenefits.ajax.reload(null, false);
+            });
+
+
+            $('#updateSaveBtn').off('click').on('click', function () {
+                    const $btn = $(this);
+
+                    if ($btn.text().trim() === 'Edit') {
+                        showhide_edit_save_btn($btn);
+                    } else {
+                        saveupdateBenefits();
+                    }
+                });
+
+            function saveupdateBenefits() {
+                const employeeNo = $("#modalEmployeeNo").text().trim();
+
+                const updates = {
+                    tax: $('#taxAuto').is(':checked') ? 1 : 0,
+                    sss: $('#sssAuto').is(':checked') ? 1 : 0,
+                    philhealth: $('#phicAuto').is(':checked') ? 1 : 0,
+                    pagibig: $('#hdmfAuto').is(':checked') ? 1 : 0
+                };
+
+                const getVal = (selector) => $(selector).val() === "" ? 0 : $(selector).val();
+
+                const manualValues = {
+                    taxManual: getVal('#taxInput'),
+                    sssManualEE: getVal('#sssInputEE'),
+                    sssManualER: getVal('#sssInputER'),
+                    philhealthManualEE: getVal('#phicInputEE'),
+                    philhealthManualER: getVal('#phicInputER'),
+                    pagibigManualEE: getVal('#hdmfInputEE'),
+                    pagibigManualER: getVal('#hdmfInputER')
+                };
+
+                // ✅ Combine everything into one AJAX request
+                $.ajax({
+                    url: '/Benefits/UpdateBenefitEmployee',
+                    type: 'POST',
+                    data: {
+                        employeeNo: employeeNo,
+                        ...updates,
+                        ...manualValues
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            userBenefits.ajax.reload(null, false);
+                            loadEmployeeBenefits(employeeNo);
+                            showNotification(response.message, 'success');
+                        } else {
+                            showNotification(response.message, 'error');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error updating benefits:', error);
+                        showNotification('Error updating benefits. Please try again.', 'error');
+                    },
+                    complete: function () {
+                        $('#updateSaveBtn').text('Edit')
+                            .removeClass('btn-success')
+                            .addClass('btn-primary');
+                        $('#cancelSavedBtn').hide();
+                        disabled_enable_input(true);
+                    }
+                });
+            }
+
+            $('#cancelSavedBtn').on('click', function() {
+                  showhide_edit_save_btn($(this));
+                  const employeeNo = $("#modalEmployeeNo").text();
+                  loadEmployeeBenefits(employeeNo);
+            });
+                    
+            $(document).on('click', '.editRow.btn-success', function () {
+                const $btn = $(this);
+                const $row = $btn.closest('tr');
+                const employeeNo = $btn.data('employeeno');
+
+                
+                const updates = [];
+                $row.find('.form-check-input').each(function () {
+                    const $checkbox = $(this);
+                    const field = $checkbox.attr('class').split(' ')[1].replace('Check', '');
+                    const value = $checkbox.is(':checked') ? 1 : 0;
+
+                    updates.push({ field, value });
+                });
+
+                // Disable checkboxes after saving
+                $row.find('.form-check-input').prop('disabled', true);
+
+                // Change the button back to Edit
+                $btn
+                    .removeClass('btn-success')
+                    .addClass('btn-info')
+                    .html('<i class="fas fa-edit"></i>');
+
+                // Show the View button again
+                $row.find('.viewEmployee').show();
+
+                // Remove the Cancel button
+                $row.find('.cancelEdit').remove();
+
+                let completed = 0;
+                let hasError = false;
+                let message = ''; // ✅ Store success/error message
+
+                updates.forEach(update => {
+                    $.ajax({
+                        url: '/Benefits/UpdateBenefitSetting',
+                        type: 'POST',
+                        data: {
+                            employeeNo: employeeNo,
+                            field: update.field,
+                            value: update.value
+                        },
+                        success: function (response) {
+                            if (!response.success) {
+                                hasError = true;
+                            }
+                            message = response.message; // ✅ Capture message from server
+                        },
+                        error: function () {
+                            hasError = true;
+                            message = 'An error occurred while updating benefits.';
+                        },
+                        complete: function () {
+                            completed++;
+                            if (completed === updates.length) {
+                                // ✅ Show ONE notification after all AJAX calls
+                                if (hasError) {
+                                    showNotification(message, 'danger');
+                                } else {
+                                    showNotification(message, 'success');
+                                }
+
+                                // ✅ Reload DataTable once
+                                userBenefits.ajax.reload(null, false);
+                            }
+                        }
+                    });
+                });
+            });
+        });
+
+        $(document).on("click", ".viewEmployee", function () {
+            const employeeNo = $(this).data("employeeno");
+            loadEmployeeBenefits(employeeNo);
+           
+        });
+
+        function loadEmployeeBenefits(employeeNo) {
+            $.ajax({
+                url: '/Benefits/GetEmployeeBenefits',
+                type: 'GET',
+                data: { employeeNo: employeeNo },
+                success: function (data) {
+                    if (!data) return;
+
+                    // Basic info
+                    $("#modalEmployeeNo").text(data.employeeNo);
+                    $("#modalEmployeeName").text(data.employeeName);
+
+                    // ---------- TAX ----------
+                    $("#modalTax").html(`
+                        <div>
+                            <strong style="color:red;" class="form-label d-block">Tax Mode</strong>
+                            <div class="form-check form-check-inline">
+                                <input class="form-radio formRadio" type="radio" name="taxMode" id="taxAuto" value="automatic" ${data.tax == 1 ? 'checked' : ''} disabled>
+                                <label class="form-check-label" for="taxAuto">Auto</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-radio formRadio" type="radio" name="taxMode" id="taxManual" value="manual" ${data.tax == 0 ? 'checked' : ''} disabled>
+                                <label class="form-check-label" for="taxManual">Manual</label>
+                            </div>
+                            <div id="taxManualFields" class="mt-2" style="display:${data.tax == 0 ? 'block' : 'none'}">
+                                <label class="form-label">Tax Value</label>
+                                <input type="text" id="taxInput" class="form-control formInput decimal-input""
+                                       placeholder="Enter Tax Value" value="${data.taxManual ?? ''}" disabled>
+                            </div>
+                        </div>
+                    `);
+
+                    // ---------- SSS ----------
+                    $("#modalSSS").html(`
+                        <div>
+                            <strong style="color:red;" class="form-label d-block">SSS Mode</strong>
+                            <div class="form-check form-check-inline">
+                                <input class="form-radio formRadio" type="radio" name="sssMode" id="sssAuto" value="automatic" ${data.sss == 1 ? 'checked' : ''} disabled>
+                                <label class="form-check-label" for="sssAuto">Auto</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-radio formRadio" type="radio" name="sssMode" id="sssManual" value="manual" ${data.sss == 0 ? 'checked' : ''} disabled>
+                                <label class="form-check-label" for="sssManual">Manual</label>
+                            </div>
+                            <div id="sssManualFields" class="row g-2 mt-2" style="display:${data.sss == 0 ? 'flex' : 'none'}">
+                                <div class="col">
+                                    <label class="form-label">SSS EE</label>
+                                    <input type="text" id="sssInputEE" class="form-control formInput decimal-input"
+                                           placeholder="Employee Share" value="${data.sssManualEE ?? ''}" disabled>
+                                </div>
+                                <div class="col">
+                                    <label class="form-label">SSS ER</label>
+                                    <input type="text" id="sssInputER" class="form-control formInput decimal-input"
+                                           placeholder="Employer Share" value="${data.sssManualER ?? ''}" disabled>
+                                </div>
+                            </div>
+                        </div>
+                    `);
+
+                    // ---------- PHILHEALTH ----------
+                    $("#modalPHIC").html(`
+                        <div>
+                            <strong style="color:red;" class="form-label d-block">PhilHealth Mode</strong>
+                            <div class="form-check form-check-inline">
+                                <input class="form-radio formRadio" type="radio" name="phicMode" id="phicAuto" value="automatic" ${data.philhealth == 1 ? 'checked' : ''} disabled>
+                                <label class="form-check-label" for="phicAuto">Auto</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-radio formRadio" type="radio" name="phicMode" id="phicManual" value="manual" ${data.philhealth == 0 ? 'checked' : ''} disabled>
+                                <label class="form-check-label" for="phicManual">Manual</label>
+                            </div>
+                            <div id="phicManualFields" class="row g-2 mt-2" style="display:${data.philhealth == 0 ? 'flex' : 'none'}">
+                                <div class="col">
+                                    <label class="form-label">PHIC EE</label>
+                                    <input type="text" id="phicInputEE" class="form-control formInput decimal-input"
+                                           placeholder="Employee Share" value="${data.philhealthManualEE ?? ''}" disabled>
+                                </div>
+                                <div class="col">
+                                    <label class="form-label">PHIC ER</label>
+                                    <input type="text" id="phicInputER" class="form-control formInput decimal-input"
+                                           placeholder="Employer Share" value="${data.philhealthManualER ?? ''}" disabled>
+                                </div>
+                            </div>
+                        </div>
+                    `);
+
+                    // ---------- PAG-IBIG ----------
+                    $("#modalHDMF").html(`
+                        <div>
+                            <strong style="color:red;" class="form-label d-block">Pag-IBIG Mode</strong>
+                            <div class="form-check form-check-inline">
+                                <input class="form-radio formRadio" type="radio" name="hdmfMode" id="hdmfAuto" value="automatic" ${data.pagibig == 1 ? 'checked' : ''} disabled>
+                                <label class="form-check-label" for="hdmfAuto">Auto</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-radio formRadio" type="radio" name="hdmfMode" id="hdmfManual" value="manual" ${data.pagibig == 0 ? 'checked' : ''} disabled>
+                                <label class="form-check-label" for="hdmfManual">Manual</label>
+                            </div>
+                            <div id="hdmfManualFields" class="row g-2 mt-2" style="display:${data.pagibig == 0 ? 'flex' : 'none'}">
+                                <div class="col">
+                                    <label class="form-label">HDMF EE</label>
+                                    <input type="text" id="hdmfInputEE" class="form-control formInput decimal-input"
+                                           placeholder="Employee Share" value="${data.pagibigManualEE ?? ''}" disabled>
+                                </div>
+                                <div class="col">
+                                    <label class="form-label">HDMF ER</label>
+                                    <input type="text" id="hdmfInputER" class="form-control formInput decimal-input"
+                                           placeholder="Employer Share" value="${data.pagibigManualER ?? ''}" disabled>
+                                </div>
+                            </div>
+                        </div>
+                    `);
+
+                    // ---------- Buttons ----------
+                    $('#updateSaveBtn').text('Edit').removeClass('btn-success').addClass('btn-primary');
+                    $('#cancelSavedBtn').hide();
+                    disabled_enable_input(true);
+
+                    $("#viewEmployeeModal").modal("show");
+                },
+                error: function () {
+                    showNotification('danger', 'Error', 'Failed to load employee data', 'Global');
+                }
+            });
+        }
+        $(document).on('change', 'input[name$="Mode"]', function () {
+            const name = $(this).attr('name'); // e.g. taxMode, sssMode, etc.
+            const isManual = $(this).val() === 'manual';
+
+            // toggle corresponding manual section
+            $(`#${name.replace('Mode', '')}ManualFields`).toggle(isManual);
+        });
+
+
+        
+    </script>
+}

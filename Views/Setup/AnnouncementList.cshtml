@@ -1,0 +1,885 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutFillow.cshtml";
+    ViewData["Title"] = "Announcement List";
+}
+
+<div class="col-12">
+    <div class="card">
+        <div class="card-header">
+            <div class="row" style="width:100%;">
+                <h4 class="card-title">Announcements</h4>
+                <br> <br> <br>
+
+                <div class="row" style="margin-left:0px;width:100%;">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Record Status</h5>
+                            <select name="filterRecordStatus" id="filterRecordStatus" class="form-control">
+                                <option value="active" selected>ACTIVE</option>
+                                <option value="inactive">INACTIVE</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6"></div>
+                    <div class="col-md-3 d-flex justify-content-end align-items-end">
+                        <div class="form-group">
+                            <button type="button" class="btn btn-primary" id="btnAddAnnouncement">
+                                <i class="fa fa-plus"></i> New Announcement
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="announcementTable" class="display" style="min-width: 845px">
+                    <thead>
+                        <tr>
+                            <th>Action</th>
+                            <th>Announcement Title</th>
+                            <th>Announcement</th>
+                            <th>Date Start</th>
+                            <th>Date End</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+
+        <!-- Modal for Add Announcement -->
+        <div class="modal fade" id="addAnnouncementModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add Announcement</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addAnnouncementForm">
+                            <div class="mb-3">
+                                <label for="addAnnouncementTitle" class="form-label">
+                                    Announcement Title <span class="text-danger">*</span>
+                                </label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="addAnnouncementTitle"
+                                       name="announcementTitle"
+                                       required
+                                       maxlength="255">
+                                <div class="invalid-feedback">Please provide an announcement title.</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="addAnnouncement" class="form-label">
+                                    Announcement <span class="text-danger">*</span>
+                                </label>
+                                <textarea class="form-control"
+                                          id="addAnnouncement"
+                                          name="announcement"
+                                          rows="6"
+                                          required
+                                          maxlength="1000"></textarea>
+                                <div class="invalid-feedback">Please provide announcement details.</div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="addDateStart" class="form-label">
+                                        Date Start <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="date"
+                                           class="form-control"
+                                           id="addDateStart"
+                                           name="dateStart"
+                                           required>
+                                    <div class="invalid-feedback">Please select a start date.</div>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="addDateEnd" class="form-label">
+                                        Date End <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="date"
+                                           class="form-control"
+                                           id="addDateEnd"
+                                           name="dateEnd"
+                                           required>
+                                    <div class="invalid-feedback">Please select an end date.</div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="btnSaveNewAnnouncement">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for View/Edit Announcement -->
+        <div class="modal fade" id="viewAnnouncementModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="viewModalTitle">View Announcement</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="viewAnnouncementForm">
+                            <input type="hidden" id="viewAnnouncementId" name="id">
+
+                            <div class="mb-3">
+                                <label for="viewAnnouncementTitle" class="form-label">
+                                    Announcement Title
+                                    <span class="text-danger edit-required d-none">*</span>
+                                </label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="viewAnnouncementTitle"
+                                       name="announcementTitle"
+                                       readonly
+                                       maxlength="255">
+                                <div class="invalid-feedback">Please provide an announcement title.</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="viewAnnouncementBody" class="form-label">
+                                    Announcement
+                                    <span class="text-danger edit-required d-none">*</span>
+                                </label>
+                                <textarea class="form-control"
+                                          id="viewAnnouncementBody"
+                                          name="announcement"
+                                          rows="6"
+                                          readonly
+                                          maxlength="1000"></textarea>
+                                <div class="invalid-feedback">Please provide announcement details.</div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="viewDateStart" class="form-label">
+                                        Date Start
+                                        <span class="text-danger edit-required d-none">*</span>
+                                    </label>
+                                    <input type="date"
+                                           class="form-control"
+                                           id="viewDateStart"
+                                           name="dateStart"
+                                           readonly>
+                                    <div class="invalid-feedback">Please select a start date.</div>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="viewDateEnd" class="form-label">
+                                        Date End
+                                        <span class="text-danger edit-required d-none">*</span>
+                                    </label>
+                                    <input type="date"
+                                           class="form-control"
+                                           id="viewDateEnd"
+                                           name="dateEnd"
+                                           readonly>
+                                    <div class="invalid-feedback">Please select an end date.</div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="btnEditAnnouncement">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button type="button" class="btn btn-success d-none" id="btnSaveAnnouncement">Save</button>
+                        <button type="button" class="btn btn-danger d-none" id="btnCancelEdit">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Fillow_style
+{
+    <style>
+        .table-responsive {
+            border-radius: 0.375rem;
+        }
+
+        #announcementTable_wrapper .dataTables_length,
+        #announcementTable_wrapper .dataTables_filter {
+            margin-bottom: 1rem;
+        }
+
+        #announcementTable_wrapper .dataTables_info,
+        #announcementTable_wrapper .dataTables_paginate {
+            margin-top: 1rem;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        #announcementTable .d-flex.gap-1 {
+            gap: 0.25rem !important;
+        }
+
+        .modal-content {
+            border-radius: 0.5rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        .invalid-feedback {
+            display: none;
+        }
+
+        .form-control.is-invalid,
+        .form-select.is-invalid {
+            border-color: #dc3545;
+        }
+
+            .form-control.is-invalid ~ .invalid-feedback,
+            .form-select.is-invalid ~ .invalid-feedback {
+                display: block;
+            }
+
+        .form-control[readonly] {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        textarea.form-control[readonly] {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+            resize: none;
+        }
+
+        .edit-mode .form-control[readonly] {
+            background-color: #ffffff;
+            border-color: #ced4da;
+        }
+
+        .edit-mode textarea.form-control[readonly] {
+            background-color: #ffffff;
+            border-color: #ced4da;
+            resize: vertical;
+        }
+
+        textarea.form-control {
+            resize: vertical;
+        }
+
+        .card-header {
+            border-bottom: none !important;
+        }
+
+        /* Announcement content styling */
+        .announcement-content {
+            max-width: 400px;
+            white-space: normal;
+            word-wrap: break-word;
+        }
+
+        .announcement-title {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        /* Date badge styling */
+        .date-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            background-color: #e3f2fd;
+            color: #1976d2;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        #filterRecordStatus {
+            width: 100%;
+        }
+
+        /* Dark mode fixes */
+        [data-theme-version="dark"] .announcement-title {
+            color: #e0e0e0 !important;
+        }
+
+        [data-theme-version="dark"] .announcement-content {
+            color: #b0b0b0 !important;
+        }
+
+        [data-theme-version="dark"] .date-badge {
+            background-color: rgba(25, 118, 210, 0.2) !important;
+            color: #64b5f6 !important;
+            border: 1px solid rgba(100, 181, 246, 0.3);
+        }
+
+        /* SweetAlert2 custom styles */
+        .swal2-popup {
+            border-radius: 15px !important;
+            padding: 2rem !important;
+        }
+
+        .swal2-title {
+            font-size: 1.875rem !important;
+            font-weight: 600 !important;
+            color: #545454 !important;
+            margin: 1rem 0 0.5rem 0 !important;
+        }
+
+        .swal2-html-container {
+            font-size: 1rem !important;
+            color: #737373 !important;
+            margin: 0 0 2rem 0 !important;
+        }
+
+        .swal2-actions {
+            gap: 0.5rem !important;
+        }
+
+        .swal2-confirm {
+            background-color: #7c3aed !important;
+            border-color: #7c3aed !important;
+            color: white !important;
+            font-weight: 500 !important;
+            padding: 0.75rem 2rem !important;
+            border-radius: 8px !important;
+            font-size: 0.875rem !important;
+        }
+
+        .swal2-cancel {
+            background-color: #6b7280 !important;
+            border-color: #6b7280 !important;
+            color: white !important;
+            font-weight: 500 !important;
+            padding: 0.75rem 2rem !important;
+            border-radius: 8px !important;
+            font-size: 0.875rem !important;
+        }
+
+        .swal2-confirm:hover {
+            background-color: #6d28d9 !important;
+            border-color: #6d28d9 !important;
+        }
+
+        .swal2-cancel:hover {
+            background-color: #4b5563 !important;
+            border-color: #4b5563 !important;
+        }
+    </style>
+}
+
+@section Fillow_script
+{
+    <script>
+
+        MODULE = 'AAnnouncementM';
+        access = ROLE_ACCESS?.[MODULE];
+
+        if (access != 'READWRITE' && access != 'FULL') {
+            $('#btnAddAnnouncement').hide();
+        }
+
+        $(document).ready(function () {
+
+            // CONFIGURATION
+            const config = {
+                toastr: {
+                    positionClass: "toast-top-right",
+                    timeOut: 5000,
+                    closeButton: true,
+                    progressBar: true,
+                    preventDuplicates: true,
+                    newestOnTop: true,
+                    showDuration: "300",
+                    hideDuration: "1000",
+                    extendedTimeOut: "1000",
+                    showEasing: "swing",
+                    hideEasing: "linear",
+                    showMethod: "fadeIn",
+                    hideMethod: "fadeOut",
+                    tapToDismiss: false
+                },
+                endpoints: {
+                    list:    "/AnnouncementList/GetAnnouncementList",
+                    deleted: "/AnnouncementList/GetDeletedAnnouncementList",
+                    get:     "/AnnouncementList/GetAnnouncement",
+                    add:     "/AnnouncementList/AddAnnouncement",
+                    update:  "/AnnouncementList/UpdateAnnouncement",
+                    delete:  "/AnnouncementList/DeleteAnnouncement",
+                    restore: "/AnnouncementList/RestoreAnnouncement"
+                }
+            };
+
+            toastr.options = config.toastr;
+            let isViewingDeleted = false;
+
+            // Filter dropdown
+            $('#filterRecordStatus').select2({ selectOnClose: true, minimumResultsForSearch: Infinity });
+            $('#filterRecordStatus').on('change', function () {
+                isViewingDeleted = $(this).val() === 'inactive';
+                updateTableView();
+            });
+
+            // DATATABLE INITIALIZATION
+            const table = $('#announcementTable').DataTable({
+                processing: true,
+                serverSide: false,
+                ajax: {
+                    url: config.endpoints.list,
+                    type: "GET",
+                    datatype: "json",
+                    error: function () {
+                        showNotification('Error loading announcement data. Please refresh the page.', 'error');
+                    }
+                },
+                columns: [
+                    {
+                        data: "id",
+                        width: "10%",
+                        orderable: false,
+                        render: function (data) {
+                            let viewBtn   = '';
+                            let deleteBtn = '';
+                            let restoreBtn = '';
+
+                            if (isViewingDeleted) {
+                                if (access === 'FULL') {
+                                    restoreBtn = `<button class="btn btn-sm btn-success shadow-sm restoreAnnouncement" data-id="${data}" title="Restore">
+                                        <i class="fas fa-undo"></i>
+                                    </button>`;
+                                }
+                                return `<div class="d-flex gap-1">${restoreBtn}</div>`;
+                            } else {
+                                viewBtn = `<button class="btn btn-sm btn-primary shadow-sm viewAnnouncement" data-id="${data}" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </button>`;
+
+                                if (access === 'FULL') {
+                                    deleteBtn = `<button class="btn btn-sm btn-danger shadow-sm deleteAnnouncement" data-id="${data}" title="Delete">
+                                        <i class="fa fa-trash"></i>
+                                    </button>`;
+                                }
+                                return `<div class="d-flex gap-1">${viewBtn}${deleteBtn}</div>`;
+                            }
+                        }
+                    },
+                    {
+                        data: "announcementTitle",
+                        width: "25%",
+                        render: function (data) {
+                            return `<span class="announcement-title">${data || ''}</span>`;
+                        }
+                    },
+                    {
+                        data: "announcement",
+                        width: "40%",
+                        render: function (data) {
+                            var maxLength = 150;
+                            if (data && data.length > maxLength) {
+                                return `<div class="announcement-content">${data.substring(0, maxLength)}...</div>`;
+                            }
+                            return `<div class="announcement-content">${data || ''}</div>`;
+                        }
+                    },
+                    {
+                        data: "dateStart",
+                        width: "12%",
+                        render: function (data) {
+                            if (data) {
+                                var date = new Date(data);
+                                return `<span class="date-badge">${date.toLocaleDateString()}</span>`;
+                            }
+                            return '-';
+                        }
+                    },
+                    {
+                        data: "dateEnd",
+                        width: "13%",
+                        render: function (data) {
+                            if (data) {
+                                var date = new Date(data);
+                                return `<span class="date-badge">${date.toLocaleDateString()}</span>`;
+                            }
+                            return '-';
+                        }
+                    }
+                ],
+                order: [[0, 'desc']],
+                pageLength: 25,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                language: {
+                    processing: "Loading...",
+                    emptyTable: "No announcements found",
+                    zeroRecords: "No matching announcements found",
+                    paginate: {
+                        next: '<i class="fa fa-angle-double-right" aria-hidden="true"></i>',
+                        previous: '<i class="fa fa-angle-double-left" aria-hidden="true"></i>'
+                    }
+                }
+            });
+
+            // ─── ADD ANNOUNCEMENT ───────────────────────────────────────────────────────
+
+            $('#btnAddAnnouncement').click(function () {
+                resetAddForm();
+                $('#addAnnouncementModal').modal('show');
+                $('#addAnnouncementModal').on('shown.bs.modal', function () {
+                    $('#addAnnouncementTitle').focus();
+                });
+            });
+
+            $('#btnSaveNewAnnouncement').click(function () {
+                clearValidation('#addAnnouncementForm');
+                if (!validateAddForm()) return;
+
+                var startDate = new Date($('#addDateStart').val());
+                var endDate   = new Date($('#addDateEnd').val());
+                if (endDate < startDate) {
+                    showNotification('End date cannot be earlier than start date!', 'error');
+                    $('#addDateEnd').addClass('is-invalid');
+                    return;
+                }
+
+                var formData = {
+                    announcementTitle: $('#addAnnouncementTitle').val().trim(),
+                    announcement:      $('#addAnnouncement').val().trim(),
+                    dateStart:         $('#addDateStart').val(),
+                    dateEnd:           $('#addDateEnd').val()
+                };
+
+                var $btn = $('#btnSaveNewAnnouncement');
+                toggleButtonLoading($btn, true, 'Saving...');
+
+                $.post(config.endpoints.add, formData)
+                    .done(function (response) {
+                        if (response.success) {
+                            $('#addAnnouncementModal').modal('hide');
+                            table.ajax.reload(null, false);
+                            showNotification(response.message, 'success');
+                        } else {
+                            showNotification(response.message, 'error');
+                        }
+                    })
+                    .fail(function () {
+                        showNotification('Unable to save announcement. Please try again.', 'error');
+                    })
+                    .always(function () {
+                        toggleButtonLoading($btn, false);
+                    });
+            });
+
+            // ─── VIEW / EDIT ANNOUNCEMENT ───────────────────────────────────────────────
+
+            $(document).on('click', '.viewAnnouncement', function (e) {
+                e.preventDefault();
+                var id   = $(this).data('id');
+                var $btn = $(this);
+
+                toggleButtonLoading($btn, true);
+
+                $.get(config.endpoints.get, { id: id })
+                    .done(function (data) {
+                        if (data) {
+                            resetViewForm();
+                            setViewMode();
+                            $('#viewAnnouncementId').val(data.id);
+                            $('#viewAnnouncementTitle').val(data.announcementTitle || '');
+                            $('#viewAnnouncementBody').val(data.announcement || '');
+                            // Format dates to yyyy-MM-dd for <input type="date">
+                            $('#viewDateStart').val(data.dateStart ? data.dateStart.substring(0, 10) : '');
+                            $('#viewDateEnd').val(data.dateEnd   ? data.dateEnd.substring(0, 10)   : '');
+                            $('#viewAnnouncementModal').modal('show');
+                        } else {
+                            showNotification('Unable to load announcement data.', 'error');
+                        }
+                    })
+                    .fail(function () {
+                        showNotification('Unable to load announcement data.', 'error');
+                    })
+                    .always(function () {
+                        toggleButtonLoading($btn, false);
+                    });
+            });
+
+            $('#btnEditAnnouncement').click(function () {
+                setEditMode();
+                $('#viewAnnouncementTitle').focus();
+            });
+
+            $('#btnCancelEdit').click(function () {
+                var id = $('#viewAnnouncementId').val();
+                $.get(config.endpoints.get, { id: id }).done(function (data) {
+                    if (data) {
+                        $('#viewAnnouncementTitle').val(data.announcementTitle || '');
+                        $('#viewAnnouncementBody').val(data.announcement || '');
+                        $('#viewDateStart').val(data.dateStart ? data.dateStart.substring(0, 10) : '');
+                        $('#viewDateEnd').val(data.dateEnd   ? data.dateEnd.substring(0, 10)   : '');
+                        setViewMode();
+                        clearValidation('#viewAnnouncementForm');
+                    }
+                });
+            });
+
+            $('#btnSaveAnnouncement').click(function () {
+                clearValidation('#viewAnnouncementForm');
+                if (!validateEditForm()) return;
+
+                var startDate = new Date($('#viewDateStart').val());
+                var endDate   = new Date($('#viewDateEnd').val());
+                if (endDate < startDate) {
+                    showNotification('End date cannot be earlier than start date!', 'error');
+                    $('#viewDateEnd').addClass('is-invalid');
+                    return;
+                }
+
+                var formData = {
+                    id:                $('#viewAnnouncementId').val(),
+                    announcementTitle: $('#viewAnnouncementTitle').val().trim(),
+                    announcement:      $('#viewAnnouncementBody').val().trim(),
+                    dateStart:         $('#viewDateStart').val(),
+                    dateEnd:           $('#viewDateEnd').val()
+                };
+
+                var $btn = $('#btnSaveAnnouncement');
+                toggleButtonLoading($btn, true, 'Saving...');
+
+                $.post(config.endpoints.update, formData)
+                    .done(function (response) {
+                        if (response.success) {
+                            setViewMode();
+                            table.ajax.reload(null, false);
+                            showNotification(response.message, 'success');
+                        } else {
+                            showNotification(response.message, 'error');
+                        }
+                    })
+                    .fail(function () {
+                        showNotification('Unable to update announcement. Please try again.', 'error');
+                    })
+                    .always(function () {
+                        toggleButtonLoading($btn, false);
+                    });
+            });
+
+            // ─── DELETE ANNOUNCEMENT ────────────────────────────────────────────────────
+
+            $(document).on('click', '.deleteAnnouncement', function (e) {
+                e.preventDefault();
+                var id   = $(this).data('id');
+                var $btn = $(this);
+
+                Swal.fire({
+                    title: 'Inactive Announcement',
+                    text: 'Are you sure you want to inactive this announcement?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, Inactive',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    reverseButtons: false,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false
+                }).then(function (result) {
+                    if (result.isConfirmed) {
+                        toggleButtonLoading($btn, true);
+                        $.post(config.endpoints.delete, { id: id })
+                            .done(function (response) {
+                                if (response.success) {
+                                    table.ajax.reload(null, false);
+                                    showNotification(response.message, 'success');
+                                } else {
+                                    showNotification(response.message, 'error');
+                                }
+                            })
+                            .fail(function () {
+                                showNotification('Unable to inactive announcement.', 'error');
+                            })
+                            .always(function () {
+                                toggleButtonLoading($btn, false);
+                            });
+                    }
+                });
+            });
+
+            // ─── RESTORE ANNOUNCEMENT ───────────────────────────────────────────────────
+
+            $(document).on('click', '.restoreAnnouncement', function (e) {
+                e.preventDefault();
+                var id   = $(this).data('id');
+                var $btn = $(this);
+
+                Swal.fire({
+                    title: 'Restore Announcement',
+                    text: 'Are you sure you want to restore this announcement?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, Restore',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d',
+                    reverseButtons: false,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false
+                }).then(function (result) {
+                    if (result.isConfirmed) {
+                        toggleButtonLoading($btn, true);
+                        $.post(config.endpoints.restore, { id: id })
+                            .done(function (response) {
+                                if (response.success) {
+                                    table.ajax.reload(null, false);
+                                    showNotification(response.message, 'success');
+                                } else {
+                                    showNotification(response.message, 'error');
+                                }
+                            })
+                            .fail(function () {
+                                showNotification('Unable to restore announcement.', 'error');
+                            })
+                            .always(function () {
+                                toggleButtonLoading($btn, false);
+                            });
+                    }
+                });
+            });
+
+            // ─── MODAL LIFECYCLE ────────────────────────────────────────────────────────
+
+            $('#addAnnouncementModal').on('hidden.bs.modal', function () { resetAddForm(); });
+            $('#viewAnnouncementModal').on('hidden.bs.modal', function () { resetViewForm(); setViewMode(); });
+
+            // Enter key handling (inputs only, not textarea)
+            $('#addAnnouncementForm input').on('keypress', function (e) {
+                if (e.which === 13) { e.preventDefault(); $('#btnSaveNewAnnouncement').click(); }
+            });
+            $('#viewAnnouncementForm input').on('keypress', function (e) {
+                if (e.which === 13 && $('#viewAnnouncementModal .modal-body').hasClass('edit-mode')) {
+                    e.preventDefault();
+                    $('#btnSaveAnnouncement').click();
+                }
+            });
+
+            // Remove validation classes on input
+            $('#addAnnouncementTitle, #addAnnouncement, #addDateStart, #addDateEnd').on('input change', function () {
+                $(this).removeClass('is-invalid');
+            });
+            $('#viewAnnouncementTitle, #viewAnnouncementBody, #viewDateStart, #viewDateEnd').on('input change', function () {
+                $(this).removeClass('is-invalid');
+            });
+
+            // ─── HELPER FUNCTIONS ───────────────────────────────────────────────────────
+
+            function updateTableView() {
+                table.ajax.url(isViewingDeleted ? config.endpoints.deleted : config.endpoints.list).load();
+                $('#btnAddAnnouncement').toggle(!isViewingDeleted);
+            }
+
+            function resetAddForm() {
+                $('#addAnnouncementForm')[0].reset();
+                clearValidation('#addAnnouncementForm');
+                $('#btnSaveNewAnnouncement').prop('disabled', false).html('Save');
+                // Default start date to today
+                var today = new Date().toISOString().split('T')[0];
+                $('#addDateStart').val(today);
+            }
+
+            function resetViewForm() {
+                $('#viewAnnouncementForm')[0].reset();
+                clearValidation('#viewAnnouncementForm');
+                $('#btnSaveAnnouncement').prop('disabled', false).html('Save');
+            }
+
+            function setViewMode() {
+                $('#viewModalTitle').text('View Announcement');
+                $('#viewAnnouncementModal .modal-body').removeClass('edit-mode');
+                $('#viewAnnouncementTitle, #viewAnnouncementBody, #viewDateStart, #viewDateEnd').prop('readonly', true);
+                $('.edit-required').addClass('d-none');
+                $('#btnEditAnnouncement').removeClass('d-none');
+                $('#btnSaveAnnouncement, #btnCancelEdit').addClass('d-none');
+                clearValidation('#viewAnnouncementForm');
+            }
+
+            function setEditMode() {
+                $('#viewModalTitle').text('Edit Announcement');
+                $('#viewAnnouncementModal .modal-body').addClass('edit-mode');
+                $('#viewAnnouncementTitle, #viewAnnouncementBody, #viewDateStart, #viewDateEnd').prop('readonly', false);
+                $('.edit-required').removeClass('d-none');
+                $('#btnEditAnnouncement').addClass('d-none');
+                $('#btnSaveAnnouncement, #btnCancelEdit').removeClass('d-none');
+            }
+
+            function validateAddForm() {
+                var isValid = true;
+                if (!$('#addAnnouncementTitle').val().trim()) {
+                    $('#addAnnouncementTitle').addClass('is-invalid');
+                    isValid = false;
+                }
+                if (!$('#addAnnouncement').val().trim()) {
+                    $('#addAnnouncement').addClass('is-invalid');
+                    isValid = false;
+                }
+                if (!$('#addDateStart').val()) {
+                    $('#addDateStart').addClass('is-invalid');
+                    isValid = false;
+                }
+                if (!$('#addDateEnd').val()) {
+                    $('#addDateEnd').addClass('is-invalid');
+                    isValid = false;
+                }
+                return isValid;
+            }
+
+            function validateEditForm() {
+                var isValid = true;
+                if (!$('#viewAnnouncementTitle').val().trim()) {
+                    $('#viewAnnouncementTitle').addClass('is-invalid');
+                    isValid = false;
+                }
+                if (!$('#viewAnnouncementBody').val().trim()) {
+                    $('#viewAnnouncementBody').addClass('is-invalid');
+                    isValid = false;
+                }
+                if (!$('#viewDateStart').val()) {
+                    $('#viewDateStart').addClass('is-invalid');
+                    isValid = false;
+                }
+                if (!$('#viewDateEnd').val()) {
+                    $('#viewDateEnd').addClass('is-invalid');
+                    isValid = false;
+                }
+                return isValid;
+            }
+
+            function clearValidation(formSelector) {
+                $(formSelector + ' .form-control, ' + formSelector + ' .form-select').removeClass('is-invalid');
+            }
+
+            function toggleButtonLoading($btn, loading, text) {
+                text = text || '';
+                if (loading) {
+                    if (!$btn.data('original-html')) $btn.data('original-html', $btn.html());
+                    var icon = text ? '<i class="fas fa-spinner fa-spin"></i> ' : '<i class="fas fa-spinner fa-spin"></i>';
+                    $btn.prop('disabled', true).html(icon + text);
+                } else {
+                    $btn.prop('disabled', false).html($btn.data('original-html') || 'Save');
+                    $btn.removeData('original-html');
+                }
+            }
+
+            function showNotification(message, type) {
+                var titles = { success: 'Success', error: 'Error', warning: 'Warning', info: 'Information' };
+                toastr[type](message, titles[type] || 'Notification');
+            }
+        });
+    </script>
+}

@@ -1,0 +1,542 @@
+﻿@model KEISAN_HRIS_v2.Models.Users.userFixedDeduction
+
+<div>
+    <div class="row">
+        <div class="col-md-3">
+            <label>Fixed-Deduction List </label>
+            <select id="filterList" class="form-control formInput select2" style="width:100%">
+                <option value="1" selected>Ongoing</option>
+                <option value="3">Completed</option>
+                <option value="0">Inactive</option>
+                <option value="2">ALL</option>
+            </select>
+        </div>
+
+        <div class="col-md-7"></div>
+        <div class="col-md-2 d-flex justify-content-end">
+            <button type="button" class="btn btn-primary" id="btnNewRecord">
+                <i class="fa fa-plus"></i> New Deduction
+            </button>
+        </div>
+    </div>
+    <br>
+    <div class="partialParentDiv">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="deductionList" class="display" style="min-width: 845px">
+                    <thead>
+                        <tr>
+                            <th>Action</th>
+                           
+                            <th>Fixed Deduction Name</th>
+                            <th>Collection Start Date</th>
+                            <th>Amount</th>
+                            <th>Total Collection</th>
+                            <th>Status</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- data rows -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Add -->
+    <div class="modal fade" id="newRecordModal" tabindex="-1" aria-hidden="true" style="margin-top:20px!important">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="box-shadow: -1px 1px 13px 0px #7d7979;">
+                <div class="modal-header">
+                    <h5 class="modal-title deductionHeader">New Deduction</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="newRecordForm">
+                        <!-- Hidden field to store the record ID -->
+                        <input type="hidden" id="editEmployeeFixedDeductionID" name="employeeFixedDeductionID" />
+                        <div class="row">
+                            <div class="col-md-12">
+                                <label><span class="text-danger">*</span> Deduction Name </label>
+                                <select id="fixedDeductionCode" class="form-control formInput select2 required-field" style="width:100%">
+                                </select>
+
+                            </div>
+
+                        </div>
+                        <br />
+                        <div class="row">
+                            <div class="col-md-12">
+                                <label><span class="text-danger">*</span> Deduction Schedule </label>
+                                <select id="deductionSchedule" class="form-control formInput select2 required-field" style="width:100%">
+                                    <option value="">Select Schedule</option>
+                                    <option value="inactive">INACTIVE</option>
+                                    <option value="Per Cutoff">1st and 2nd Cutoff</option>
+                                    <option value="1st Cutoff">1st Cutoff</option>
+                                    <option value="2nd Cutoff">2nd Cutoff</option>
+                                </select>
+                            </div>
+                        </div>
+                        <br />
+                        <div class="row">
+
+                            <div class="col-md-6">
+                                <label for="deductionAmount" class="form-label"><span class="text-danger">*</span>Deduction Amount</label>
+                                <input type="text" name="deductionAmount" id="deductionAmount" maxlength="255" class="form-control formInput required-field" placeholder="Deduction Amount" />
+                            </div>
+                            <div class="col-md-6">
+                                <label for="amortizationAmount" class="form-label">Deduction per cutoff</label>
+                                <input type="text" name="amortizationAmount" id="amortizationAmount" maxlength="255" class="form-control" placeholder="Deduction" />
+                            </div>
+
+                        </div>
+                        <br />
+                        <div class="row">
+
+                            @* <div class="col-md-6">
+                                <label><span class="text-danger">*</span>Date Granted </label>
+                                <div class="input-hasicon">
+                                    <input name="dateGranted" id="dateGranted" class="form-control formInput bt-datepicker required-field ">
+                                    <div class="icon"><i class="far fa-calendar"></i></div>
+                                </div>
+                            </div> *@
+
+                            <div class="col-md-12">
+                                <label><span class="text-danger">*</span> Start of Deduction </label>
+                                <div class="input-hasicon">
+                                    <input name="deductionStartDate" id="deductionStartDate" class="form-control formInput bt-datepicker required-field ">
+                                    <div class="icon"><i class="far fa-calendar"></i></div>
+                                </div>
+                            </div>
+
+                        </div>
+                        <br />
+                        <div class="row">
+                            <div class="col-md-12">
+                                <label for="remarks" class="form-label">Remarks </label>
+                                <textarea name="remarks" id="remarks"
+                                          maxlength="255"
+                                          class="form-control formInput"
+                                          placeholder="Remarks"
+                                          rows="3"></textarea>
+                            </div>
+                        </div>
+                        <br>
+                        <div class="row">
+                            <div class="col-md-12">
+                                @* <label for="attachmentTxt" class="form-label"><span class="text-danger">*</span> Attachment</label>
+                                <input type="text" name="attachmentTxt" id="attachmentTxt" maxlength="255" class="form-control formInput" placeholder="Attachment" /> *@
+                                <div class="input-group fileupload-v1">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label for="attachment" class="form-label">Attachment </label>
+                                            <input id="fileUpload"
+                                                   accept=".xlsx,.xls,image/*,.doc, .docx,.ppt, .pptx,.txt,.pdf"
+                                                   type="file" name="manualfile" class="fileupload-v1-file hidden" />
+                                            <input id="filePath" type="text" class="form-control fileupload-v1-path"
+                                                   placeholder="File Path..." style="display:none" disabled />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="btnSaveNewRecord">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Complete -->
+    <div class="modal fade" id="updateDeductionModal" tabindex="-1" aria-hidden="true" style="margin-top:20px!important">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="box-shadow: -1px 1px 13px 0px #7d7979;">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalHeaderTitle">Complete Deduction</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="updateDeductionForm">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <input type="hidden" name="deductionID" id="deductionID" maxlength="255" />
+                                <label for="updateDeductionRemarks" class="form-label"><span class="text-danger">*</span>Remarks </label>
+                                <textarea name="updateDeductionRemarks" id="updateDeductionRemarks"
+                                          maxlength="255"
+                                          class="form-control formInput required-field"
+                                          placeholder="Remarks"
+                                          rows="3"></textarea>
+                            </div>
+                        </div>
+                        <br>
+                        <div class="row">
+                            <div class="col-md-12">
+                                @* <label for="attachmentTxt" class="form-label"><span class="text-danger">*</span> Attachment</label>
+                                <input type="text" name="attachmentTxt" id="attachmentTxt" maxlength="255" class="form-control formInput" placeholder="Attachment" /> *@
+                                <div class="input-group fileupload-v1">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label for="attachment" class="form-label">Attachment </label>
+                                            <input id="fileUpload"
+                                                   accept=".xlsx,.xls,image/*,.doc, .docx,.ppt, .pptx,.txt,.pdf"
+                                                   type="file" name="manualfile" class="fileupload-v1-file hidden" />
+                                            <input id="filePath" type="text" class="form-control fileupload-v1-path"
+                                                   placeholder="File Path..." style="display:none" disabled />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="btnUpdateDeduction">Update</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Complete -->
+    <div class="modal fade" id="paymentHistoryModal" tabindex="-1" aria-hidden="true" style="margin-top:20px!important">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="box-shadow: -1px 1px 13px 0px #7d7979;">
+                <div class="modal-header">
+                    <h5 class="modal-title">Payment History</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="partialParentDiv">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table id="paymentList" class="display" style="min-width: 845px">
+                                    <thead>
+                                        <tr>
+                                            <th>Transaction<br>Date</th>
+                                            <th>Payment</th>
+                                            <th>Remarks</th>
+                                            <th>Processed By</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- data rows -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@* 
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+ *@
+<script>
+
+    $(document).ready(function () {
+        
+        if (access != 'READWRITE' && access != 'FULL') {
+              $('#btnNewRecord').hide();
+        }
+
+        //datepicker
+        $('.bt-datepicker').datepicker({
+            format: 'yyyy/mm/dd',
+            autoclose: true
+        });
+         $('#fixedDeductionCode').select2({
+            placeholder: "Select Deduction Name",
+            allowClear: true,
+            ajax: {
+                url: '/Setup/GetFixedDeductionList',
+                dataType: 'json',
+                delay: 250,
+                processResults: function (data) {
+                    return {
+                        results: $.map(data, function (item) {
+                            return {
+                                id: item.fixedDeductionCode,
+                                text: item.fixedDeductionName
+                            };
+                        })
+                    };
+                }
+            }
+        });
+        disabled_enable_input(true);
+        initializeSelect2();
+        $('#filterList').prop('disabled', false).css('background', '');
+        loadDeduction("1");
+        
+        $('#amortizationAmount').prop('disabled', true).css('background', '#efefef');
+        // ✅ Show modal when clicking "New Deduction" button
+        $('#btnNewRecord').on('click', function () {
+            // clear the form first (optional)
+            $('#newRecordForm')[0].reset();
+            $('#btnSaveNewRecord').text("Save");
+             $('.deductionHeader').text("Add Deduction");
+             $('#editEmployeeFixedDeductionID').val(0);
+            // open the modal
+            $('#newRecordModal').modal('show');
+            $('#fixedDeductionCode').val('').trigger('change');
+
+             disabled_enable_input(false);
+        });
+
+
+    $('#btnSaveNewRecord').on('click', function() {
+        let $form = $('#newRecordForm');
+        clearValidation($form);
+
+        if (!validateForm($form)) {
+            return;
+        }
+
+        Swal.fire({
+            title: 'Continue save deduction?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Confirm',
+            cancelButtonText: 'Cancel',
+            reverseButtons: false,
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            customClass: {
+                popup: 'swal-custom-popup',
+                title: 'swal-custom-title',
+                htmlContainer: 'swal-custom-text',
+                confirmButton: 'swal-custom-confirm',
+                cancelButton: 'swal-custom-cancel'
+            }
+        }).then((result) => {
+                if (result.isConfirmed) {
+
+                    var id = parseInt($('#editEmployeeFixedDeductionID').val(), 10) || 0;
+                    var isEdit = id > 0;
+
+                    var formData = {
+                        id: id, // 0 = new, >0 = update
+                        employeeNo: '@Model.employeeNo',
+                        fixedDeductionCode: $('#fixedDeductionCode').val(),
+                        fixedDeductionDateStart: $('#deductionStartDate').val(),
+                        fixedDeductionAmount: $('#deductionAmount').val(),
+                        deductionSchedule: $('#deductionSchedule').val(),
+                        remarks: $('#remarks').val()
+                    };
+
+                    var url = isEdit
+                        ? '/FixedDeduction/UpdateDeduction'
+                        : '/FixedDeduction/NewDeduction';
+
+                    $.post(url, formData, function (response) {
+                        if (response.success) {
+                            $('#deductionList').DataTable().ajax.reload(null, false);
+                            $('#newRecordModal').modal('hide');
+                            showNotification(response.message, 'success');
+                        } else {
+                            showNotification(response.message, 'error');
+                        }
+                    }).fail(function () {
+                        showNotification('Unable to save. Please try again.', 'error');
+                    });
+                }
+        });
+    });
+
+
+
+        //apply filter when user chooses a param
+        $('#filterList').on('change', function () {
+            loadDeduction($('#filterList').val());
+        });
+
+
+
+    $(document).on('click', '.viewPayments', function (e) {
+            e.preventDefault();
+            var Id = $(this).data('id');
+            $('#paymentHistoryModal').modal('show');
+
+            var paymentListTable = $('#paymentList').DataTable({
+            autoWidth: false,
+            responsive: false,
+            processing: true,
+            serverSide: false,
+            destroy: true, // ✅ add this if you reload the table multiple times
+            ajax: {
+                url: "/FixedDeduction/GetDeductionPayments",
+                type: "GET",
+                datatype: "json",
+                data: function (d) {
+                    // Add employeeno as a parameter
+                    d.id = Id;
+                },
+                error: function(xhr, error, code) {
+                    console.log('Error loading data:', error);
+                    //showNotification('Error loading rate history. Please refresh the page.', 'error');
+                }
+            },
+            columns: [
+                {
+                    data: "dtAdded"
+                },
+                {
+                    data: "DeductionPayments"
+                },
+                {
+                    data: "remarks"
+                },
+                {
+                    data: "addedByUser"
+                }
+            ],
+            order: [[0, 'asc']],
+            pageLength: 25,
+            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+            language: {
+                processing: "Loading...",
+                emptyTable: "No records found",
+                zeroRecords: "No matching records found",
+                paginate: {
+                    next: '<i class="fa fa-angle-double-right" aria-hidden="true"></i>',
+                    previous: '<i class="fa fa-angle-double-left" aria-hidden="true"></i>'
+                }
+            }
+        });
+    });
+
+    });
+    $('#deductionAmount, #deductionSchedule').on('change', function () {
+            var deductionSchedule = $('#deductionSchedule').val();
+            var deductionAmount = parseFloat($('#deductionAmount').val()) || 0;
+
+            if (deductionSchedule === "Per Cutoff") {
+                $('#amortizationAmount').val(deductionAmount/2);
+            } else {
+                $('#amortizationAmount').val(deductionAmount);
+            }
+        });
+    $(document).on('click', '.view-details', function() {
+            var dataString = $(this).attr('data-deduction');  // Get raw string
+            var data = JSON.parse(dataString);                 // Parse JSON manually
+            disabled_enable_input(false);
+            $('#btnSaveNewRecord').text("Update");
+            $('.deductionHeader').text("Update Deduction");
+            showFixedDeductionDetail(data);                   // Now it works reliably
+        });
+        function showFixedDeductionDetail(data) {
+        // Set all values first
+        $('#editEmployeeFixedDeductionID').val(data.id);
+
+        if ($('#fixedDeductionCode option[value="' + data.fixedDeductionCode + '"]').length === 0) {
+            var newOption = new Option(data.fixedDeductionName, data.fixedDeductionCode, true, true);
+            $('#fixedDeductionCode').append(newOption).trigger('change');
+        } else {
+            $('#fixedDeductionCode').val(data.fixedDeductionCode).trigger('change');
+        }
+
+        $('#deductionSchedule').val(data.deductionSchedule);
+        $('#deductionAmount').val(data.fixedDeductionAmount);
+        $('#deductionStartDate').val(data.fixedDeductionDateStart);
+        $('#remarks').val(data.remarks || '');
+
+        // Now calculate amortization using the current values
+        var deductionAmount = parseFloat($('#deductionAmount').val()) || 0;
+        var deductionSchedule = $('#deductionSchedule').val();
+        var amortization = (deductionSchedule === "Per Cutoff") ? deductionAmount / 2 : deductionAmount;
+        $('#amortizationAmount').val(amortization);
+
+        $('#newRecordModal').modal('show');
+    }
+    function loadDeduction(_activeStatus){
+        var table = $('#deductionList').DataTable({
+        processing: true,
+        serverSide: false,
+        destroy: true, // ✅ add this if you reload the table multiple times
+        ajax: {
+            url: "/FixedDeduction/GetFixedDeductionList",
+            type: "GET",
+            datatype: "json",
+            data: function (d) {
+                // Add employeeno as a parameter
+                d.employeeno ='@Model.employeeNo',  // or use the variable you have
+                d.loanStatus= _activeStatus;
+            },
+            error: function(xhr, error, code) {
+                console.log('Error loading data:', error);
+                //showNotification('Error loading rate history. Please refresh the page.', 'error');
+            }
+        },
+        columns: [            
+                              {
+                                  'data': null,
+                                  'render': function (data) {
+                                        var x = '<center><button class="btn btn-primary view-details" ' +
+                                                'data-deduction=\'' + JSON.stringify(data) + '\' ' +
+                                                'data-toggle="modal" data-target="#fixedDeductionModal" ' +
+                                                'title="View Details">' +
+                                                '<span class="fa fa-info-circle"></span></button></center>';
+                                        return x;
+                                  }
+                              },
+                              
+                              { 'data': 'fixedDeductionName' },
+                              { 'data': 'fixedDeductionDateStart' },
+                              {
+                                  'data': null,
+                                  'render': function (data) {
+                                      var x = '<p style="text-align:right">' + Number(data.fixedDeductionAmount).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,') + '</p>';
+                                      return x
+                                  }
+                              },
+                              {
+                                  'data': null,
+                                  'render': function (data) {
+                                      var x = '<p style="text-align:right">' + Number(data.totalPaidBalance).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,') + '</p>';
+                                      return x
+                                  }
+                              },
+                              {
+                                  'data': null,
+                                  'render': function (data) {
+                                      var status = (data.deductionSchedule == "inactive") ? "<span class='badge badge-warning'>Inactive</span>" : "<span class='badge badge-success'>Active</span><br>";
+                                      return status;
+                                  }
+                              },
+                              { 'data': 'fixedDeductionName' }
+                              
+        ],
+        order: [[0, 'asc']],
+        pageLength: 25,
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        language: {
+            processing: "Loading...",
+            emptyTable: "No records found",
+            zeroRecords: "No matching records found",
+            paginate: {
+                next: '<i class="fa fa-angle-double-right" aria-hidden="true"></i>',
+                previous: '<i class="fa fa-angle-double-left" aria-hidden="true"></i>'
+            }
+        }
+    });
+
+    }
+    
+    function initializeSelect2(){
+        $('#deductionID').val('0');
+
+
+    }
+
+</script>

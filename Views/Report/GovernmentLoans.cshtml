@@ -1,0 +1,569 @@
+﻿﻿@{
+Layout = "~/Views/Shared/_LayoutFillow.cshtml";
+ViewData["Title"] = "Government Loans Report";
+}
+
+<div class="col-12">
+    <div class="card">
+        <div class="card-header">
+
+            <div class="row" style="width:100%;">
+                <h4 class="card-title">Government Loans Report</h4>
+                <br> <br> <br>
+
+                <div class="row" style="margin-left:0px;width:100%;">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Select Report</h5>
+                            <select name="filterReportName" id="filterReportName" class="form-control">
+                                <option value="SSSreport" selected>SSS Report</option>
+                                <option value="PIFreport">Pagibig Report</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Company</h5>
+                            <select name="branch" id="filterBranch" class="form-control"></select>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="row align-items-end mt-2" style="margin-left:0px;width:100%;">
+                    <div class="col-md-3">
+                        <label>Date Month</label>
+                        <div class="input-hasicon">
+                            <input name="dateMonth" id="dateMonth" class="form-control formInput month-picker ">
+                            <div class="icon"><i class="far fa-calendar"></i></div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label>Year</label>
+                        <div class="input-hasicon">
+                            <input name="dateYear" id="dateYear" class="form-control formInput year-picker ">
+                            <div class="icon"><i class="far fa-calendar"></i></div>
+                        </div>
+                    </div>
+                    <div hidden class="col-md-3">
+                        <div class="form-group">
+                            <h5>Department</h5>
+                            <select name="department" id="filterDepartment" class="form-control"></select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                    </div>
+                    <div class="col-md-12 d-flex justify-content-end" style="margin-top:15px;gap:10px;">
+                        <div class="form-group">
+                            <button type="button" class="btn btn-warning" id="btnExportToExcel">
+                                <i class="fas fa-file-excel"></i> Export to Excel
+                            </button>
+                        </div>
+                        <div class="form-group">
+                            <button type="button" class="btn btn-warning" id="btnNewRequest" hidden>
+                                Print Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="ContributionTable" class="display" style="min-width: 845px">
+                    <thead id="sssList">
+                        <tr>
+                            <th>Employee No</th>
+                            <th>Employee Name</th>
+                            <th>SSS Number</th>
+                            <th>Calamity Loan</th>
+                            <th>Salary Loan</th>
+                        </tr>
+                    </thead>
+                    <tfoot>
+                        <tr></tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+@section Fillow_style
+{
+
+
+}
+
+@section Fillow_script
+{
+
+
+    <script>
+        $(document).ready(function () {
+            //datepicker
+        $('.bt-datepicker').datepicker({
+            format: 'yyyy-mm-dd',
+            autoclose: true,
+            todayHighlight: true    // Highlight today's date
+        });
+
+        let ContributionTable;
+
+        const moneyFmt = $.fn.dataTable.render.number(',', '.', 2);
+
+        // Define columns for each report
+                const reportColumns = {
+            "SSSreport": [
+                { title: "Employee No", data: "employeeNo" },
+                { title: "Employee Name", data: "fullName" },
+                { title: "SSS Number", data: "sssNo" },
+                { title: "Calamity Loan", data: "ssscal", render: moneyFmt, className: "dt-right" },
+                { title: "Salary Loan", data: "ssssal", render: moneyFmt, className: "dt-right" },         
+            ],
+
+            "PIFreport": [
+                { title: "Employee No", data: "employeeNo" },
+                { title: "Employee Name", data: "fullName" },
+                { title: "Pagibig Number", data: "phiNo"},
+                { title: "Calamity Loan", data: "pagcal", render: moneyFmt, className: "dt-right" },
+                { title: "Salary Loan", data: "pagsal", render: moneyFmt, className: "dt-right" },
+
+            ],
+
+       
+        };
+
+
+
+        function initDataTable(reportType) {
+            if ($.fn.DataTable.isDataTable('#ContributionTable')) {
+                // ContributionTable.destroy();
+                // $('#ContributionTable').empty(); // clear table to rebuild thead
+                 ContributionTable.clear().destroy();
+            }
+            
+            // 🔹 ALWAYS rebuild thead + tfoot
+            const columns = reportColumns[reportType];
+
+            let thead = '<thead><tr>';
+            let tfoot = '<tfoot><tr>';
+
+            columns.forEach(col => {
+                thead += `<th>${col.title}</th>`;
+                tfoot += `<th></th>`;
+            });
+
+            thead += '</tr></thead>';
+            tfoot += '</tr></tfoot>';
+
+            $('#ContributionTable')
+                .empty()
+                .append(thead)
+                .append(tfoot);
+
+            // 🔹 Reinitialize DataTable
+            ContributionTable = $('#ContributionTable').DataTable({
+                responsive: true,
+                
+                pageLength: 10, // default rows
+                lengthMenu: [
+                    [10, 25, 50, -1],
+                    [10, 25, 50, "All"]
+                ],
+
+                ajax: {
+                    url: '/GovernmentLoans/GetReportList',
+                    type: 'GET',
+                    dataType: 'json',
+                    data: function(d) {
+                        d.status = $('#filterReportName').val();
+                        d.branch = $('#filterBranch').val() ? $('#filterBranch').val() : "ALL";
+                        d.department = $('#filterDepartment').val();
+                        d.dateMonth = $('#dateMonth').val();
+                        d.dateYear = $('#dateYear').val();
+                    }
+                },
+                columns: reportColumns[reportType],
+
+                footerCallback: function (row, data, start, end, display) {
+                    const api = this.api();
+
+                    // Label
+                    $(api.column(0).footer()).html('<b>TOTAL</b>');
+
+                    // Loop numeric columns only
+                    api.columns('.dt-right', { page: 'current' }).every(function () {
+                        const total = this
+                            .data()
+                            .reduce((sum, val) => {
+                                const num = typeof val === 'string'
+                                    ? parseFloat(val.replace(/,/g, ''))
+                                    : val;
+                                return sum + (num || 0);
+                            }, 0);
+
+                        $(this.footer()).html(
+                            $.fn.dataTable.render.number(',', '.', 2).display(total)
+                        );
+                    });
+                },
+
+                language: {
+                    paginate: {
+                        next: '<i class="fa fa-angle-double-right" aria-hidden="true"></i>',
+                        previous: '<i class="fa fa-angle-double-left" aria-hidden="true"></i>'
+                    }
+                },
+                dom: 'Blfrtip', // Needed to show buttons
+                buttons: [
+                    {
+                        extend: 'excelHtml5',
+                        text: '<i class="fa fa-file-excel-o"></i> Excel',
+                        className: 'btn btn-success',
+                        exportOptions: {
+                            columns: ':visible' // Export only visible columns
+                        }
+                    },
+                    {
+                        extend: 'pdfHtml5',
+                        text: '<i class="fa fa-file-pdf-o"></i> PDF',
+                        className: 'btn btn-danger',
+                        orientation: 'landscape', // or 'portrait'
+                        pageSize: 'A4',
+                        exportOptions: {
+                            columns: ':visible'
+                        }
+                    }
+                ]
+            });
+        }
+
+
+        initializeFilterSelect2();
+        const selectedReport = $('#filterReportName').val();
+        $('#filterReportName').on('change', function() {
+            const selectedReport = $(this).val();
+            initDataTable(selectedReport);
+        });
+        initDataTable(selectedReport);
+        // On filter change
+        $('#filterBranch, #filterDepartment, #dateMonth, #dateYear').on('change', function() {
+            ContributionTable.ajax.reload(null, true);
+        });
+
+        // Initialize with default report
+        initDataTable($('#filterReportName').val());
+
+
+                 $(document).on("click", "#btnNewRequest", function (e) {
+                    var branch = $("#filterBranch").val() == "" || $("#filterBranch").val() == null ? "ALL" : $("#filterBranch").val();
+
+                    var parameter = branch+"_"+$("#dateYear").val()+"_"+$("#dateMonth").val()+"_"+$("#filterReportName").val();
+                    var url = "http://15.235.183.108:90//home/GovReport?" + "&govReports=" + encodeURIComponent(parameter);
+                    window.open(url, '_blank');
+
+                 });
+                 $(document).on("click", ".deleteEmployee", function (e) {
+                    e.preventDefault();
+                    var employeeNo = $(this).data("employeeno");
+
+                    var $btn = $(this);
+
+                    console.log(employeeNo);
+
+                    Swal.fire({
+                        title: 'Oops...',
+                        text: 'Are you sure you want to delete this Employee?',
+                        icon: 'error',
+                        showCancelButton: true,
+                        confirmButtonText: 'OK',
+                        cancelButtonText: 'Cancel',
+                        reverseButtons: false,
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        customClass: {
+                            popup: 'swal-custom-popup',
+                            title: 'swal-custom-title',
+                            htmlContainer: 'swal-custom-text',
+                            confirmButton: 'swal-custom-confirm',
+                            cancelButton: 'swal-custom-cancel'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Disable button and show loading
+
+                           $btn.prop('disabled', true);
+                            $btn.html('<i class="fas fa-spinner fa-spin"></i>');
+
+                            $.ajax({
+                                url: '/Users/DeleteUser',
+                                type: 'POST',
+                                data: { employeeNo: employeeNo },
+                                dataType: 'json',
+                                success: function (response) {
+                                    if (response.success) {
+                                        $('#ContributionTable').DataTable().ajax.reload(null, false); // Keep current page
+                                        showNotification(response.message, 'success');
+                                    } else {
+                                        showNotification(response.message, 'error');
+                                    }
+                                },
+                                error: function (xhr, status, error) {
+                                    console.log('Error deleting adjustment:', error);
+                                    showNotification('Unable to delete adjustment. Please try again.', 'error');
+                                },
+                                complete: function () {
+                                    // Re-enable button
+                                    $btn.prop('disabled', false);
+                                    $btn.html('<i class="fa fa-trash"></i>');
+                                }
+                            });
+
+
+                        }
+                    });
+
+                });
+
+
+
+        });
+
+
+
+         function initializeFilterSelect2(){
+                    $('.month-picker').datepicker({
+                        format: "MM",
+                        minViewMode: 1,
+                        startView: 1,
+                        autoclose: true
+                    }).on('show', function() {
+
+
+                        $('.datepicker-years').hide();
+                        $('.datepicker-switch').css('visibility', 'hidden');
+                    }).val(function() {
+                        let today = new Date();
+                        let monthNames = [
+                            "January", "February", "March", "April", "May", "June",
+                            "July", "August", "September", "October", "November", "December"
+                        ];
+                        return monthNames[today.getMonth()];
+                    });
+                    //  const $monthInput = $('#dateMonth');
+
+                    // $monthInput.datepicker({
+                    //     format: "MM",
+                    //     minViewMode: 1,
+                    //     startView: 1,
+                    //     autoclose: true,
+                    //     forceParse: false
+                    // });
+
+
+                    // $monthInput.val(new Date().toLocaleString('default', { month: 'long' }));
+
+                    // $monthInput.on('show', function () {
+
+
+                    //     setTimeout(function () {
+                    //         const $picker = $('.datepicker');
+                    //         const $switch = $picker.find('.datepicker-switch');
+
+
+                    //         $switch
+                    //             .text('ALL')
+                    //             .css({
+                    //                 cursor: 'pointer',
+                    //                 fontWeight: 'bold'
+                    //             })
+                    //             .off('click.all')
+                    //             .on('click.all', function (e) {
+                    //                 e.preventDefault();
+                    //                 e.stopImmediatePropagation();
+
+
+                    //                 $monthInput.val('ALL');
+
+
+                    //                 $monthInput.data('datepicker').date = null;
+
+
+                    //                 $monthInput.datepicker('hide');
+                    //             });
+
+
+                    //         $picker.find('.datepicker-years').hide();
+
+                    //     }, 0);
+                    // });
+
+                    $('.year-picker').datepicker({
+                        format: 'yyyy',
+                        minViewMode: 2,
+                        autoclose: true
+                    }).val(new Date().getFullYear());
+
+                        // branch
+
+                       $('#filterBranch').select2({
+                        placeholder: "Select Branch",
+                        allowClear: true,
+                        ajax: {
+                            url: '/Setup/GetEmployeeBranch',
+                            dataType: 'json',
+                            delay: 250,
+                            processResults: function (data) {
+
+                                var allOption = {
+                                    id: 'ALL',
+                                    text: 'All Companies'
+                                };
+
+                                var results = $.map(data, function (item) {
+                                    return {
+                                        id: item.branchCode,
+                                        text: item.branchName
+                                    };
+                                });
+
+                                results.unshift(allOption);
+
+                                return {
+                                    results: results
+                                };
+                            }
+                        }
+                    });
+
+                     // department
+                     $('#filterDepartment').select2({
+                        placeholder: "Select Employee Department",
+                        allowClear: true,
+                        ajax: {
+                            url: '/Setup/GetEmployeeDepartment',
+                            dataType: 'json',
+                            delay: 250,
+                            processResults: function (data) {
+                                // Map your results as usual
+                                var results = $.map(data, function (item) {
+                                    return {
+                                        id: item.departmentCode,
+                                        text: item.departmentName
+                                    };
+                                });
+
+                                // Add the "All" option at the top
+                                results.unshift({
+                                    id: 'ALL',
+                                    text: 'All Departments'
+                                });
+
+                                return {
+                                    results: results
+                                };
+                            }
+                        }
+                    });
+
+                    // EVENT HANDLER - EXPORT TO EXCEL (CURRENT PAGE ONLY)
+                    $(document).on('click', '#btnExportToExcel', function() {
+                        const $btn = $(this);
+                        const table = $('#ContributionTable').DataTable();
+
+                        if (!table) {
+                            alert('Table not initialized. Please wait for the page to load completely.');
+                            return;
+                        }
+
+                        if (table.rows({ search: 'applied' }).count() === 0) {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'No Data',
+                                text: 'No data available to export',
+                                confirmButtonText: 'OK'
+                            });
+                            return;
+                        }
+
+                        const currentPageData = table.rows({ page: 'current' }).data().toArray();
+                        if (currentPageData.length === 0) {
+                            Swal.fire({
+                                icon: 'warning',
+                                title: 'No Data',
+                                text: 'No data on current page to export',
+                                confirmButtonText: 'OK'
+                            });
+                            return;
+                        }
+
+                        const pageInfo = table.page.info();
+                        const params = new URLSearchParams({
+                            status: $('#filterReportName').val() || 'SSSreport',
+                            branch: $('#filterBranch').val() || '',
+                            dateMonth: $('#dateMonth').val() || '',
+                            dateYear: $('#dateYear').val() || '',
+                            offset: pageInfo.start,
+                            limit: pageInfo.length
+                        });
+
+                        const originalHtml = $btn.html();
+                        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Exporting...');
+
+                        const url = `/GovernmentLoans/ExportToExcel?${params.toString()}`;
+
+                        fetch(url, {
+                            method: 'GET',
+                            headers: {
+                                'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                            }
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                return response.text().then(text => {
+                                    throw new Error(`Server error (${response.status}): ${text}`);
+                                });
+                            }
+                            return response.blob();
+                        })
+                        .then(blob => {
+                            const url = window.URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+                            link.href = url;
+                            const reportType = $('#filterReportName').val() || 'SSSreport';
+                            const dateYear = $('#dateYear').val() || '';
+                            const dateMonth = $('#dateMonth').val() || '';
+                            link.download = `GovReport_${reportType}_${dateYear}_${dateMonth}_${new Date().getTime()}.xlsx`;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            window.URL.revokeObjectURL(url);
+
+                            // Reset button
+                            $btn.prop('disabled', false).html(originalHtml);
+                        })
+                        .catch(error => {
+                            // Reset button
+                            $btn.prop('disabled', false).html(originalHtml);
+
+                            // Show error notification
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Export Failed',
+                                text: 'An error occurred during export. Please try again.',
+                                confirmButtonText: 'OK'
+                            });
+                        });
+                    });
+
+                }
+
+    </script>
+
+}

@@ -1,0 +1,598 @@
+﻿@model List<KEISAN_HRIS_v2.Models.Users.EmploymentHistoryInfo>
+
+<div class="card-header">
+    <div class="row" style="width:100%;">
+        <div class="row" style="margin-left:0px;width:100%;">
+            <div class="col-md-3">
+                <div class="form-group">
+                    <h5>Record Status</h5>
+                    <select name="filterRecordStatus" id="filterRecordStatus" class="form-control">
+                        <option value="active" selected>ACTIVE</option>
+                        <option value="inactive">INACTIVE</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-6"></div>
+            <div class="col-md-3 d-flex justify-content-end align-items-end">
+                <div class="form-group">
+                    <button type="button" class="btn btn-primary" id="btnAddEmploymentHistory">
+                        <i class="fa fa-plus"></i> New Employment History
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card-body">
+    <div class="table-responsive">
+        <table id="employmentHistoryTable" class="display" style="min-width: 900px">
+            <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>Company Name</th>
+                    <th>Position</th>
+                    <th>From Date</th>
+                    <th>To Date</th>
+                    <th>Address</th>
+                    <th>Date Added</th>
+                    <th>Added By</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<!-- Add Employment History Modal -->
+<div class="modal fade" id="addEmploymentHistoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">New Employment History</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addEmploymentHistoryForm">
+                    <input type="hidden" id="addEmployeeNoHidden" name="EmployeeNo" value="@ViewBag.EmployeeNo" />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Company Name <span class="text-danger">*</span></label>
+                            <input type="text" id="addCompanyName" name="CompanyName" class="form-control" maxlength="255" required />
+                            <div class="invalid-feedback">Please enter company name.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Position <span class="text-danger">*</span></label>
+                            <input type="text" id="addPosition" name="Position" class="form-control" maxlength="255" required />
+                            <div class="invalid-feedback">Please enter position.</div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Address</label>
+                            <input type="text" id="addAddress" name="Address" class="form-control" maxlength="255" />
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <label class="form-label">From Date <span class="text-danger">*</span></label>
+                            <div class="input-hasicon">
+                                <input type="text" id="addFromDate" name="FromDate" class="form-control bt-datepicker" required />
+                                <div class="icon"><i class="far fa-calendar"></i></div>
+                            </div>
+                            <div class="invalid-feedback">Please select from date.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">To Date <span class="text-danger">*</span></label>
+                            <div class="input-hasicon">
+                                <input type="text" id="addToDate" name="ToDate" class="form-control bt-datepicker" required />
+                                <div class="icon"><i class="far fa-calendar"></i></div>
+                            </div>
+                            <div class="invalid-feedback">Please select to date.</div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Job Description</label>
+                            <textarea id="addJobDesc" name="JobDesc" class="form-control" rows="3" maxlength="500"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Remarks</label>
+                            <textarea id="addRemarks" name="Remarks" class="form-control" rows="2" maxlength="500"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btnSaveNewEmploymentHistory" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View/Edit Employment History Modal -->
+<div class="modal fade" id="viewEmploymentHistoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewModalTitle">View Employment History</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="viewEmploymentHistoryForm">
+                    <input type="hidden" id="viewEmploymentHistoryId" name="Id" />
+                    <input type="hidden" id="viewEmployeeNoHidden" name="EmployeeNo" value="@ViewBag.EmployeeNo" />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Company Name <span class="text-danger edit-required d-none">*</span></label>
+                            <input type="text" id="viewCompanyName" name="CompanyName" class="form-control" maxlength="255" readonly />
+                            <div class="invalid-feedback">Please enter company name.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Position <span class="text-danger edit-required d-none">*</span></label>
+                            <input type="text" id="viewPosition" name="Position" class="form-control" maxlength="255" readonly />
+                            <div class="invalid-feedback">Please enter position.</div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Address</label>
+                            <input type="text" id="viewAddress" name="Address" class="form-control" maxlength="255" readonly />
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <label class="form-label">From Date <span class="text-danger edit-required d-none">*</span></label>
+                            <div class="input-hasicon">
+                                <input type="text" id="viewFromDate" name="FromDate" class="form-control bt-datepicker" readonly />
+                                <div class="icon"><i class="far fa-calendar"></i></div>
+                            </div>
+                            <div class="invalid-feedback">Please select from date.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">To Date <span class="text-danger edit-required d-none">*</span></label>
+                            <div class="input-hasicon">
+                                <input type="text" id="viewToDate" name="ToDate" class="form-control bt-datepicker" readonly />
+                                <div class="icon"><i class="far fa-calendar"></i></div>
+                            </div>
+                            <div class="invalid-feedback">Please select to date.</div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Job Description</label>
+                            <textarea id="viewJobDesc" name="JobDesc" class="form-control" rows="3" maxlength="500" readonly></textarea>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Remarks</label>
+                            <textarea id="viewRemarks" name="Remarks" class="form-control" rows="2" maxlength="500" readonly></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="btnEditEmploymentHistory">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+                <button type="button" class="btn btn-success d-none" id="btnSaveEmploymentHistory">Save</button>
+                <button type="button" class="btn btn-danger d-none" id="btnCancelEdit">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .table-responsive {
+        border-radius: 0.375rem;
+    }
+
+    #employmentHistoryTable_wrapper .dataTables_length, #employmentHistoryTable_wrapper .dataTables_filter {
+        margin-bottom: 1rem;
+    }
+
+    #employmentHistoryTable_wrapper .dataTables_info, #employmentHistoryTable_wrapper .dataTables_paginate {
+        margin-top: 1rem;
+    }
+
+    #employmentHistoryTable .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .modal-content {
+        border-radius: 0.5rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+
+    .invalid-feedback {
+        display: none;
+    }
+
+    .form-control.is-invalid {
+        border-color: #dc3545;
+    }
+
+        .form-control.is-invalid ~ .invalid-feedback {
+            display: block;
+        }
+
+    .input-hasicon {
+        position: relative;
+    }
+
+        .input-hasicon .icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+
+        .input-hasicon input {
+            padding-right: 35px;
+        }
+
+    .text-danger {
+        color: #dc3545 !important;
+    }
+
+    .form-control[readonly] {
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+    }
+
+    .edit-mode .form-control[readonly] {
+        background-color: #ffffff;
+        border-color: #ced4da;
+    }
+
+    .edit-mode textarea[readonly] {
+        background-color: #ffffff;
+        border-color: #ced4da;
+    }
+
+    .swal2-popup {
+        border-radius: 15px !important;
+        padding: 2rem !important;
+    }
+
+    .swal2-icon.swal2-error {
+        border-color: #f27474 !important;
+        color: #f27474 !important;
+    }
+
+        .swal2-icon.swal2-error .swal2-x-mark {
+            display: none !important;
+        }
+
+        .swal2-icon.swal2-error::before {
+            content: "\f2ed" !important;
+            font-family: "Font Awesome 5 Free" !important;
+            font-weight: 900 !important;
+            font-size: 2.5rem !important;
+            color: #f27474 !important;
+            display: block !important;
+        }
+
+    .swal2-title {
+        font-size: 1.875rem !important;
+        font-weight: 600 !important;
+        color: #545454 !important;
+        margin: 1rem 0 0.5rem 0 !important;
+    }
+
+    .swal2-html-container {
+        font-size: 1rem !important;
+        color: #737373 !important;
+        margin: 0 0 2rem 0 !important;
+    }
+
+    .swal2-actions {
+        gap: 0.5rem !important;
+    }
+
+    .swal2-confirm {
+        background-color: #7c3aed !important;
+        border-color: #7c3aed !important;
+        color: white !important;
+        font-weight: 500 !important;
+        padding: 0.75rem 2rem !important;
+        border-radius: 8px !important;
+        font-size: 0.875rem !important;
+    }
+
+    .swal2-cancel {
+        background-color: #6b7280 !important;
+        border-color: #6b7280 !important;
+        color: white !important;
+        font-weight: 500 !important;
+        padding: 0.75rem 2rem !important;
+        border-radius: 8px !important;
+        font-size: 0.875rem !important;
+    }
+
+    .swal2-confirm:hover {
+        background-color: #6d28d9 !important;
+        border-color: #6d28d9 !important;
+    }
+
+    .swal2-cancel:hover {
+        background-color: #4b5563 !important;
+        border-color: #4b5563 !important;
+    }
+
+    .btn-success.shadow-sm:hover {
+        background-color: #1e7e34;
+        border-color: #1c7430;
+    }
+
+    .table th, .table td {
+        vertical-align: middle;
+    }
+
+    #employmentHistoryTable .btn-sm i {
+        font-size: 0.875rem;
+    }
+
+    #employmentHistoryTable .d-flex.gap-1 {
+        gap: 0.25rem !important;
+    }
+
+    .card-header {
+        border-bottom: none !important;
+    }
+
+    #btnAddEmploymentHistory {
+        padding: 0.6rem 1.2rem !important;
+        white-space: nowrap;
+    }
+</style>
+
+<script>
+    $(document).ready(function () {
+
+        MODULE = 'FSEmploymentHistoryM';
+         access = ROLE_ACCESS?.[MODULE];
+
+        if (access != 'READWRITE' && access != 'FULL') {
+            $('#btnAddEmploymentHistory, #btnEditEmploymentHistory').hide();
+        }
+
+        const config = {
+            toastr: { positionClass: "toast-top-right", timeOut: 5000, closeButton: true, progressBar: true, preventDuplicates: true },
+            endpoints: {
+                list: "/EmploymentHistory/GetEmploymentHistoryList",
+                deleted: "/EmploymentHistory/GetDeletedEmploymentHistory",
+                get: "/EmploymentHistory/GetEmploymentHistoryById",
+                save: "/EmploymentHistory/SaveEmploymentHistory",
+                delete: "/EmploymentHistory/InactiveEmploymentHistory",
+                restore: "/EmploymentHistory/RestoreEmploymentHistory"
+            },
+            datepickerFormat: 'yyyy/mm/dd',
+            employeeNo: '@ViewBag.EmployeeNo'
+        };
+
+        toastr.options = config.toastr;
+        let isViewingDeleted = false;
+
+        $('.bt-datepicker').datepicker({ format: config.datepickerFormat, autoclose: true });
+
+        const table = $('#employmentHistoryTable').DataTable({
+            processing: true,
+            serverSide: false,
+            ajax: {
+                url: config.endpoints.list,
+                type: "GET",
+                data: d => { d.employeeNo = config.employeeNo; d.isactive = isViewingDeleted ? '0' : '1'; },
+                datatype: "json",
+                error: () => showNotification('Error loading data. Please refresh the page.', 'error')
+            },
+            columns: [
+                {
+                    data: "id", width: "12%", orderable: false,
+                    render: (data) => {
+                        if (isViewingDeleted) {
+                            return access === 'FULL' ? `<div class="d-flex gap-1"><button type="button" class="btn btn-sm btn-success shadow-sm restoreEmploymentHistory" data-id="${data}" title="Restore"><i class="fas fa-undo"></i></button></div>` : '';
+                        }
+                        const viewbtn = `<button type="button" class="btn btn-sm btn-primary shadow-sm viewEmploymentHistory" data-id="${data}" title="View"><i class="fas fa-eye"></i></button>`;
+                        const deletebtn = access === 'FULL' ? `<button type="button" class="btn btn-sm btn-danger shadow-sm deleteEmploymentHistory" data-id="${data}" title="Delete"><i class="fa fa-trash"></i></button>` : '';
+                        return `<div class="d-flex gap-1">${viewbtn}${deletebtn}</div>`;
+                    }
+                },
+                { data: "companyName", width: "18%" },
+                { data: "position", width: "15%" },
+                { data: "fromDate", width: "12%" },
+                { data: "toDate", width: "12%" },
+                { data: "address", width: "15%" },
+                { data: "dtAdded", width: "10%" },
+                { data: "addedByUser", width: "10%" }
+            ],
+            order: [[3, 'desc']],
+            pageLength: 25,
+            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+            language: {
+                processing: "Loading...",
+                emptyTable: "No employment history records found",
+                zeroRecords: "No matching employment history records found",
+                paginate: { next: '<i class="fa fa-angle-double-right"></i>', previous: '<i class="fa fa-angle-double-left"></i>' }
+            }
+        });
+
+        setInterval(() => { if (table && !$('.modal').is(':visible')) table.ajax.reload(null, false); }, 3600000);
+
+        $('#filterRecordStatus').on('change', function () {
+            isViewingDeleted = $(this).val() === 'inactive';
+            table.ajax.reload(null, false);
+            $('#btnAddEmploymentHistory').toggle(!isViewingDeleted);
+        }).select2({ selectOnClose: true, minimumResultsForSearch: Infinity });
+
+        $('#btnAddEmploymentHistory').click(() => { resetForm('add'); $('#addEmploymentHistoryModal').modal('show'); });
+        $('#btnSaveNewEmploymentHistory').click(() => { if (validateForm('add')) saveEmploymentHistory(false); });
+
+        $(document).on('click', '.viewEmploymentHistory', function (e) {
+            e.preventDefault();
+            const id = $(this).data('id'), $btn = $(this);
+            toggleButtonLoading($btn, true);
+            $.get(config.endpoints.get, { id })
+                .done(r => { if (r.success) { resetForm('view'); setViewMode(); populateViewForm(r.data); $('#viewEmploymentHistoryModal').modal('show'); } else showNotification(r.message, 'error'); })
+                .fail(() => showNotification('Unable to load employment history data', 'error'))
+                .always(() => toggleButtonLoading($btn, false));
+        });
+
+        $('#btnEditEmploymentHistory').click(() => {
+            $('#viewModalTitle').text('Edit Employment History');
+            $('#viewEmploymentHistoryModal .modal-body').addClass('edit-mode');
+            $('#viewCompanyName, #viewPosition, #viewAddress, #viewFromDate, #viewToDate, #viewJobDesc, #viewRemarks').prop('readonly', false);
+            $('#viewFromDate, #viewToDate').datepicker({ format: config.datepickerFormat, autoclose: true });
+            $('.edit-required').removeClass('d-none');
+            $('#btnEditEmploymentHistory').addClass('d-none');
+            $('#btnSaveEmploymentHistory, #btnCancelEdit').removeClass('d-none');
+            $('#viewCompanyName').focus();
+        });
+
+        $('#btnCancelEdit').click(() => { $.get(config.endpoints.get, { id: $('#viewEmploymentHistoryId').val() }).done(r => { if (r.success) { resetForm('view'); setViewMode(); populateViewForm(r.data); } }); });
+        $('#btnSaveEmploymentHistory').click(() => { if (validateForm('view')) saveEmploymentHistory(true); });
+
+        // EVENT HANDLERS - DELETE/RESTORE
+        $(document).on('click', '.deleteEmploymentHistory', function (e) {
+            e.preventDefault();
+            deleteWithReason({
+                title: 'Inactive Employment History',
+                text: 'Are you sure you want to inactive this employment history record?',
+                url: config.endpoints.delete,
+                id: $(this).data('id'),
+                button: $(this),
+                table: table
+            });
+        });
+
+        $(document).on('click', '.restoreEmploymentHistory', function (e) {
+            e.preventDefault();
+            const id = $(this).data('id'), $btn = $(this);
+            Swal.fire({
+                title: 'Restore Record',
+                text: 'Are you sure you want to restore this employment history record?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Restore',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#6c757d',
+                allowOutsideClick: false,
+                allowEscapeKey: false
+            }).then(result => { if (result.isConfirmed) { toggleButtonLoading($btn, true); $.post(config.endpoints.restore, { id }).done(r => { if (r.success) { table.ajax.reload(null, false); showNotification(r.message, 'success'); } else showNotification(r.message, 'error'); }).fail(() => showNotification('Unable to restore employment history. Please try again.', 'error')).always(() => toggleButtonLoading($btn, false)); } });
+        });
+
+        $('#addEmploymentHistoryModal, #viewEmploymentHistoryModal').on('hidden.bs.modal', function() { resetForm($(this).attr('id').includes('add') ? 'add' : 'view'); if ($(this).attr('id').includes('view')) setViewMode(); });
+
+        $('#addEmploymentHistoryForm, #viewEmploymentHistoryForm').on('keypress', function(e) { if (e.which === 13 && !$(e.target).is('textarea')) { e.preventDefault(); $(this).attr('id').includes('add') ? $('#btnSaveNewEmploymentHistory').click() : $('#viewEmploymentHistoryModal .modal-body').hasClass('edit-mode') && $('#btnSaveEmploymentHistory').click(); } });
+
+        $('#addCompanyName, #viewCompanyName, #addPosition, #viewPosition, #addFromDate, #viewFromDate, #addToDate, #viewToDate').on('input change', function() { $(this).removeClass('is-invalid'); validateDateRange($(this).attr('id').startsWith('add') ? 'add' : 'view'); });
+
+        function saveEmploymentHistory(isEdit) {
+            const prefix = isEdit ? 'view' : 'add';
+            const formData = {
+                ...(isEdit && { Id: parseInt($(`#${prefix}EmploymentHistoryId`).val()) }),
+                EmployeeNo: $(`#${prefix}EmployeeNoHidden`).val(),
+                CompanyName: $(`#${prefix}CompanyName`).val(),
+                Position: $(`#${prefix}Position`).val(),
+                Address: $(`#${prefix}Address`).val() || '',
+                FromDate: $(`#${prefix}FromDate`).val(),
+                ToDate: $(`#${prefix}ToDate`).val(),
+                JobDesc: $(`#${prefix}JobDesc`).val() || '',
+                Remarks: $(`#${prefix}Remarks`).val() || '',
+                IsActive: true
+            };
+            const $saveBtn = isEdit ? $('#btnSaveEmploymentHistory') : $('#btnSaveNewEmploymentHistory');
+            toggleButtonLoading($saveBtn, true, 'Saving...');
+            $.ajax({
+                url: config.endpoints.save,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(formData),
+                success: r => { if (r.success) { isEdit && setViewMode(); $(`#${isEdit ? 'view' : 'add'}EmploymentHistoryModal`).modal('hide'); table.ajax.reload(null, false); showNotification(r.message, 'success'); } else showNotification(r.message, 'error'); },
+                error: () => showNotification('Unable to save employment history. Please try again.', 'error'),
+                complete: () => toggleButtonLoading($saveBtn, false)
+            });
+        }
+
+        function populateViewForm(data) {
+            $('#viewEmploymentHistoryId').val(data.id);
+            $('#viewCompanyName').val(data.companyName);
+            $('#viewPosition').val(data.position);
+            $('#viewAddress').val(data.address);
+            $('#viewFromDate').val(data.fromDate);
+            $('#viewToDate').val(data.toDate);
+            $('#viewJobDesc').val(data.jobdesc || data.JOBDESC || '');
+            $('#viewRemarks').val(data.remarks || data.REMARKS || '');
+        }
+
+        function resetForm(prefix) {
+            $(`#${prefix}EmploymentHistoryForm`)[0].reset();
+            $(`#${prefix}EmploymentHistoryForm .form-control`).removeClass('is-invalid');
+            $(`#btnSave${prefix === 'view' ? 'EmploymentHistory' : 'NewEmploymentHistory'}`).prop('disabled', false).html('Save');
+        }
+
+        function setViewMode() {
+            $('#viewModalTitle').text('View Employment History');
+            $('#viewEmploymentHistoryModal .modal-body').removeClass('edit-mode');
+            $('#viewCompanyName, #viewPosition, #viewAddress, #viewFromDate, #viewToDate, #viewJobDesc, #viewRemarks').prop('readonly', true);
+            $('#viewFromDate, #viewToDate').datepicker('remove');
+            $('.edit-required').addClass('d-none');
+            $('#btnEditEmploymentHistory').removeClass('d-none');
+            $('#btnSaveEmploymentHistory, #btnCancelEdit').addClass('d-none');
+            $('#viewEmploymentHistoryForm .form-control').removeClass('is-invalid');
+        }
+
+        function validateForm(prefix) {
+            let isValid = true;
+            ['CompanyName', 'Position', 'FromDate', 'ToDate'].forEach(field => {
+                if (!$(`#${prefix}${field}`).val()) { $(`#${prefix}${field}`).addClass('is-invalid'); isValid = false; }
+            });
+            if (!validateDateRange(prefix)) isValid = false;
+            return isValid;
+        }
+
+        function validateDateRange(prefix) {
+            const from = $(`#${prefix}FromDate`).val(), to = $(`#${prefix}ToDate`).val();
+            if (from && to && new Date(to) < new Date(from)) {
+                $(`#${prefix}ToDate`).addClass('is-invalid').siblings('.invalid-feedback').text('To date cannot be earlier than from date.');
+                return false;
+            }
+            return true;
+        }
+
+        function toggleButtonLoading($btn, loading, text = '') {
+            const iconMap = { 'viewEmploymentHistory': '<i class="fas fa-eye"></i>', 'deleteEmploymentHistory': '<i class="fa fa-trash"></i>', 'restoreEmploymentHistory': '<i class="fas fa-undo"></i>' };
+            if (loading) {
+                $btn.data('original-html', $btn.html()).prop('disabled', true).html((text ? '<i class="fas fa-spinner fa-spin"></i> ' : '<i class="fas fa-spinner fa-spin"></i>') + text);
+            } else {
+                const btnClass = Object.keys(iconMap).find(cls => $btn.hasClass(cls));
+                $btn.prop('disabled', false).html($btn.data('original-html') || iconMap[btnClass] || 'Save').removeData('original-html');
+            }
+        }
+
+        function showNotification(message, type) {
+            const types = { success: 'Success', error: 'Error', warning: 'Warning', info: 'Information' };
+            toastr[type](message, types[type] || 'Notification');
+        }
+    });
+</script>

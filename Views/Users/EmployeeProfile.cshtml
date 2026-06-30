@@ -1,0 +1,1656 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutFillow.cshtml";
+    ViewData["Title"] = "Employee Management";
+}
+
+<div class="col-12">
+    <div class="card">
+        <div class="card-header">
+            <div class="row" style="width:100%;">
+                <h4 class="card-title">Employee List</h4>
+                <br><br><br>
+
+                <div class="row" style="margin-left:0px;width:100%;">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Record Status</h5>
+                            <select name="filterStatusName" id="filterStatusName" class="form-control">
+                                <option value="All">ALL</option>
+                                <option value="1" selected>ACTIVE</option>
+                                <option value="0">INACTIVE</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Employment Status</h5>
+                            <select name="employmentStatus" id="filterEmploymentStatus" class="form-control"></select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Branch</h5>
+                            <select name="branch" id="filterBranch" class="form-control"></select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Department</h5>
+                            <select name="department" id="filterDepartment" class="form-control"></select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Rank</h5>
+                            <select name="rank" id="filterRank" class="form-control"></select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6"></div>
+                    <div class="col-md-3 d-flex justify-content-end align-items-end">
+                        <div class="form-group">
+                            <button type="button" class="btn btn-primary" id="btnNewEmployee">
+                                <i class="fa fa-plus"></i> New Employee
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="userTable" class="display" style="min-width: 845px">
+                    <thead>
+                        <tr>
+                            <th>Action</th>
+                            <th>Profile</th>
+                            <th>Employee No</th>
+                            <th>Employee Name</th>
+                            <th>Position</th>
+                            <th>Rank</th>
+                            <th>Branch</th>
+                            <th id="dateColumnHeader">Date Hired</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+
+        <!-- Modal Employee Profile -->
+        <div class="modal fade" id="employeeModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Employee Details</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <ul class="nav nav-tabs" id="employeeTabs">
+                            <li class="nav-item"><a class="nav-link active" data-tab="BasicInfo" data-module="" href="#">Basic Information</a></li>
+                            <li class="nav-item"><a class="nav-link" data-tab="PersonalInfo" data-module="FSPersonalInfoM" href="#">Personal Info</a></li>
+                            <li class="nav-item"><a class="nav-link" data-tab="EducationalBackground" data-module="FSEducationalBackgroundM" href="#">Educational Background</a></li>
+                            <li class="nav-item"><a class="nav-link" data-tab="PayrollDetails" data-module="FSPayrollDetailsM" href="#">Payroll Details</a></li>
+                            <li class="nav-item"><a class="nav-link" data-tab="Allowances" data-module="FSAllowancesM" href="#">Allowances</a></li>
+                            <li class="nav-item"><a class="nav-link" data-tab="Loans" data-module="FSLoansM" href="#">Loans</a></li>
+                            <li class="nav-item"><a class="nav-link" data-tab="LeaveLedger" data-module="FSleaveLedgerM" href="#">Leave Ledger</a></li>
+                            <li class="nav-item"><a class="nav-link" data-tab="LeaveSetup" data-module="FSLeaveSetupM" href="#">Leave Setup</a></li>
+                            <li class="nav-item"><a class="nav-link" data-tab="DisciplinaryActionTab" data-module="FDisciplinaryAction" href="#">Disciplinary Action</a></li>
+                            <li class="nav-item"><a class="nav-link" data-tab="CommendationTab" data-module="FCommendation" href="#">Commendation</a></li>
+                            @* <li class="nav-item"><a class="nav-link" data-tab="MedicalAvailment" data-module="FSMedicalAvailmentM" href="#">Medical Availment</a></li> *@
+                            <li class="nav-item"><a class="nav-link" data-tab="EmploymentHistory" data-module="FSEmploymentHistoryM" href="#">Employment History</a></li>
+                            <li class="nav-item"><a class="nav-link" data-tab="LicensesAndCertification" data-module="FSLicencesAndCertificationM" href="#">Licenses & Certification</a></li>
+                            <li class="nav-item"><a class="nav-link" data-tab="Trainings" data-module="FSTrainingsM" href="#">Trainings</a></li>
+                            <li class="nav-item"><a class="nav-link" data-tab="DTR" data-module="FSdtrM" href="#">DTR</a></li>
+                            <li class="nav-item"><a class="nav-link" data-tab="Attachments" data-module="FSAttachmentsM" href="#">Attachments</a></li>
+                        </ul>
+                        <div id="tabContent" class="mt-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- COE Purpose Modal -->
+<div class="modal fade" id="coePurposeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header py-2">
+                <h6 class="modal-title">
+                    <i class="fas fa-file-alt me-1"></i> Employee Certificate
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2 small text-muted" id="coeEmployeeLabel"></p>
+                <label class="form-label fw-semibold" for="coePurposeInput">
+                    Purpose <span class="text-danger">*</span>
+                </label>
+                <input type="text"
+                       id="coePurposeInput"
+                       class="form-control form-control-sm"
+                       placeholder="e.g. car loan application, visa application"
+                       maxlength="200">
+                <div class="invalid-feedback">Please enter the purpose.</div>
+
+                <!-- Monthly Incentive — only shown for COE With Compensation -->
+                <div class="mt-3" id="coeIncentiveGroup" style="display:none;">
+                    <label class="form-label fw-semibold" for="coeIncentiveInput">
+                        Monthly Incentive <span class="text-muted fw-normal small">(optional)</span>
+                    </label>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text">Php</span>
+                        <input type="number"
+                               id="coeIncentiveInput"
+                               class="form-control form-control-sm"
+                               placeholder="e.g. 10000"
+                               min="0"
+                               step="0.01">
+                    </div>
+                    <div class="form-text text-muted" style="font-size:0.75rem;">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Will appear as <em>"not fixed amount, average"</em> in the document.
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-sm btn-danger" data-bs-dismiss="modal">
+                    Cancel
+                </button>
+                <button type="button" class="btn btn-sm btn-primary" id="btnGenerateCoe">
+                    <i class="fas fa-file-pdf me-1"></i> Generate PDF
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- PhilHealth Certificate – Purpose Modal -->
+<div class="modal fade" id="phcPurposeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header py-2">
+                <h6 class="modal-title">
+                    <i class="fas fa-notes-medical me-1"></i> PhilHealth Certificate
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2 small text-muted" id="phcPurposeEmployeeLabel"></p>
+                <label class="form-label fw-semibold" for="phcPurposeInput">
+                    Purpose <span class="text-muted fw-normal small">(optional)</span>
+                </label>
+                <input type="text"
+                       id="phcPurposeInput"
+                       class="form-control form-control-sm"
+                       placeholder="e.g. Philhealth reimbursement"
+                       maxlength="200">
+            </div>
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-sm btn-danger" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-sm btn-primary" id="btnPhcPurposeNext">
+                    <i class="fas fa-arrow-right me-1"></i> Next
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PhilHealth Certificate of Contributions – Range Modal -->
+<div class="modal fade" id="philHealthCertModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header py-2">
+                <h6 class="modal-title">
+                    <i class="fas fa-notes-medical me-1"></i> PhilHealth Certificate
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3 small text-muted" id="phcEmployeeLabel"></p>
+
+                <!-- FROM -->
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="form-label fw-semibold" for="phcFromYear">
+                            From Year <span class="text-danger">*</span>
+                        </label>
+                        <input type="number"
+                               id="phcFromYear"
+                               class="form-control form-control-sm"
+                               placeholder="e.g. 2025"
+                               min="2000"
+                               max="2099">
+                        <div class="invalid-feedback">Enter a valid year.</div>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label fw-semibold" for="phcFromMonth">
+                            From Month <span class="text-danger">*</span>
+                        </label>
+                        <select id="phcFromMonth" class="form-select form-select-sm">
+                            <option value="">-- Select --</option>
+                            <option>January</option>
+                            <option>February</option>
+                            <option>March</option>
+                            <option>April</option>
+                            <option>May</option>
+                            <option>June</option>
+                            <option>July</option>
+                            <option>August</option>
+                            <option>September</option>
+                            <option>October</option>
+                            <option>November</option>
+                            <option>December</option>
+                        </select>
+                        <div class="invalid-feedback">Select a month.</div>
+                    </div>
+                </div>
+
+                <!-- TO -->
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="form-label fw-semibold" for="phcToYear">
+                            To Year <span class="text-danger">*</span>
+                        </label>
+                        <input type="number"
+                               id="phcToYear"
+                               class="form-control form-control-sm"
+                               placeholder="e.g. 2026"
+                               min="2000"
+                               max="2099">
+                        <div class="invalid-feedback">Enter a valid year.</div>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label fw-semibold" for="phcToMonth">
+                            To Month <span class="text-danger">*</span>
+                        </label>
+                        <select id="phcToMonth" class="form-select form-select-sm">
+                            <option value="">-- Select --</option>
+                            <option>January</option>
+                            <option>February</option>
+                            <option>March</option>
+                            <option>April</option>
+                            <option>May</option>
+                            <option>June</option>
+                            <option>July</option>
+                            <option>August</option>
+                            <option>September</option>
+                            <option>October</option>
+                            <option>November</option>
+                            <option>December</option>
+                        </select>
+                        <div class="invalid-feedback">Select a month.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-sm btn-danger" data-bs-dismiss="modal">
+                    Cancel
+                </button>
+                <button type="button" class="btn btn-sm btn-primary" id="btnGeneratePhilHealthCert">
+                    <i class="fas fa-file-pdf me-1"></i> Generate PDF
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SSS Contribution – Purpose Modal -->
+<div class="modal fade" id="sssPurposeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header py-2">
+                <h6 class="modal-title">
+                    <i class="fas fa-file-invoice me-1"></i> SSS Contribution
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2 small text-muted" id="sssPurposeEmployeeLabel"></p>
+                <label class="form-label fw-semibold" for="sssPurposeInput">
+                    Purpose <span class="text-muted fw-normal small">(optional)</span>
+                </label>
+                <input type="text"
+                       id="sssPurposeInput"
+                       class="form-control form-control-sm"
+                       placeholder="e.g. SSS loan application"
+                       maxlength="200">
+            </div>
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-sm btn-danger" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-sm btn-primary" id="btnSssPurposeNext">
+                    <i class="fas fa-arrow-right me-1"></i> Next
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SSS Contribution Report – Range Modal -->
+<div class="modal fade" id="sssContribModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header py-2">
+                <h6 class="modal-title">
+                    <i class="fas fa-file-invoice me-1"></i> SSS Contribution Report
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3 small text-muted" id="sssEmployeeLabel"></p>
+
+                <!-- FROM -->
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="form-label fw-semibold" for="sssFromYear">
+                            From Year <span class="text-danger">*</span>
+                        </label>
+                        <input type="number"
+                               id="sssFromYear"
+                               class="form-control form-control-sm"
+                               placeholder="e.g. 2025"
+                               min="2000"
+                               max="2099">
+                        <div class="invalid-feedback">Enter a valid year.</div>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label fw-semibold" for="sssFromMonth">
+                            From Month <span class="text-danger">*</span>
+                        </label>
+                        <select id="sssFromMonth" class="form-select form-select-sm">
+                            <option value="">-- Select --</option>
+                            <option>January</option>
+                            <option>February</option>
+                            <option>March</option>
+                            <option>April</option>
+                            <option>May</option>
+                            <option>June</option>
+                            <option>July</option>
+                            <option>August</option>
+                            <option>September</option>
+                            <option>October</option>
+                            <option>November</option>
+                            <option>December</option>
+                        </select>
+                        <div class="invalid-feedback">Select a month.</div>
+                    </div>
+                </div>
+
+                <!-- TO -->
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="form-label fw-semibold" for="sssToYear">
+                            To Year <span class="text-danger">*</span>
+                        </label>
+                        <input type="number"
+                               id="sssToYear"
+                               class="form-control form-control-sm"
+                               placeholder="e.g. 2026"
+                               min="2000"
+                               max="2099">
+                        <div class="invalid-feedback">Enter a valid year.</div>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label fw-semibold" for="sssToMonth">
+                            To Month <span class="text-danger">*</span>
+                        </label>
+                        <select id="sssToMonth" class="form-select form-select-sm">
+                            <option value="">-- Select --</option>
+                            <option>January</option>
+                            <option>February</option>
+                            <option>March</option>
+                            <option>April</option>
+                            <option>May</option>
+                            <option>June</option>
+                            <option>July</option>
+                            <option>August</option>
+                            <option>September</option>
+                            <option>October</option>
+                            <option>November</option>
+                            <option>December</option>
+                        </select>
+                        <div class="invalid-feedback">Select a month.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-sm btn-danger" data-bs-dismiss="modal">
+                    Cancel
+                </button>
+                <button type="button" class="btn btn-sm btn-primary" id="btnGenerateSssContrib">
+                    <i class="fas fa-file-pdf me-1"></i> Generate PDF
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pag-IBIG Contribution – Purpose Modal -->
+<div class="modal fade" id="pagIbigPurposeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header py-2">
+                <h6 class="modal-title">
+                    <i class="fas fa-home me-1"></i> Pag-IBIG Contribution
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2 small text-muted" id="pagIbigPurposeEmployeeLabel"></p>
+                <label class="form-label fw-semibold" for="pagIbigPurposeInput">
+                    Purpose <span class="text-muted fw-normal small">(optional)</span>
+                </label>
+                <input type="text"
+                       id="pagIbigPurposeInput"
+                       class="form-control form-control-sm"
+                       placeholder="e.g. Pag-IBIG loan application"
+                       maxlength="200">
+            </div>
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-sm btn-danger" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-sm btn-primary" id="btnPagIbigPurposeNext">
+                    <i class="fas fa-arrow-right me-1"></i> Next
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pag-IBIG Contribution – Range Modal -->
+<div class="modal fade" id="pagIbigContribModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header py-2">
+                <h6 class="modal-title">
+                    <i class="fas fa-home me-1"></i> Pag-IBIG Contribution
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3 small text-muted" id="pagIbigEmployeeLabel"></p>
+
+                <!-- FROM -->
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="form-label fw-semibold" for="pagIbigFromYear">
+                            From Year <span class="text-danger">*</span>
+                        </label>
+                        <input type="number"
+                               id="pagIbigFromYear"
+                               class="form-control form-control-sm"
+                               placeholder="e.g. 2025"
+                               min="2000"
+                               max="2099">
+                        <div class="invalid-feedback">Enter a valid year.</div>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label fw-semibold" for="pagIbigFromMonth">
+                            From Month <span class="text-danger">*</span>
+                        </label>
+                        <select id="pagIbigFromMonth" class="form-select form-select-sm">
+                            <option value="">-- Select --</option>
+                            <option>January</option>
+                            <option>February</option>
+                            <option>March</option>
+                            <option>April</option>
+                            <option>May</option>
+                            <option>June</option>
+                            <option>July</option>
+                            <option>August</option>
+                            <option>September</option>
+                            <option>October</option>
+                            <option>November</option>
+                            <option>December</option>
+                        </select>
+                        <div class="invalid-feedback">Select a month.</div>
+                    </div>
+                </div>
+
+                <!-- TO -->
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label class="form-label fw-semibold" for="pagIbigToYear">
+                            To Year <span class="text-danger">*</span>
+                        </label>
+                        <input type="number"
+                               id="pagIbigToYear"
+                               class="form-control form-control-sm"
+                               placeholder="e.g. 2026"
+                               min="2000"
+                               max="2099">
+                        <div class="invalid-feedback">Enter a valid year.</div>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label fw-semibold" for="pagIbigToMonth">
+                            To Month <span class="text-danger">*</span>
+                        </label>
+                        <select id="pagIbigToMonth" class="form-select form-select-sm">
+                            <option value="">-- Select --</option>
+                            <option>January</option>
+                            <option>February</option>
+                            <option>March</option>
+                            <option>April</option>
+                            <option>May</option>
+                            <option>June</option>
+                            <option>July</option>
+                            <option>August</option>
+                            <option>September</option>
+                            <option>October</option>
+                            <option>November</option>
+                            <option>December</option>
+                        </select>
+                        <div class="invalid-feedback">Select a month.</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-sm btn-danger" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-sm btn-primary" id="btnGeneratePagIbigContrib">
+                    <i class="fas fa-file-pdf me-1"></i> Generate PDF
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Fillow_style
+{
+    <style>
+        .table-responsive {
+            border-radius: 0.375rem;
+        }
+
+        /* COE dropdown — positioned to the right of the profile image,
+                                   wide enough to show full label text without clipping            */
+        .coe-dropdown-menu {
+            min-width: 230px;
+            white-space: nowrap;
+            z-index: 9999 !important;
+        }
+        /* THIS is the key fix — lifts overflow clipping when dropdown is open */
+        .table-responsive:has(.dropdown.show) {
+            overflow: visible !important;
+        }
+
+
+        #userTable_wrapper .dataTables_length, #userTable_wrapper .dataTables_filter {
+            margin-bottom: 1rem;
+        }
+
+        #userTable_wrapper .dataTables_info, #userTable_wrapper .dataTables_paginate {
+            margin-top: 1rem;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        #userTable .d-flex.gap-1 {
+            gap: 0.25rem !important;
+        }
+
+        .swal2-popup {
+            border-radius: 15px !important;
+            padding: 2rem !important;
+        }
+
+        .swal2-icon.swal2-error {
+            border-color: #f27474 !important;
+            color: #f27474 !important;
+        }
+
+            .swal2-icon.swal2-error .swal2-x-mark {
+                display: none !important;
+            }
+
+            .swal2-icon.swal2-error::before {
+                content: "\f2ed" !important;
+                font-family: "Font Awesome 5 Free" !important;
+                font-weight: 900 !important;
+                font-size: 2.5rem !important;
+                color: #f27474 !important;
+                display: block !important;
+            }
+
+        .truncate {
+            max-width: 200px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-header {
+            border-bottom: none !important;
+        }
+
+        .employee-profile-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #e9ecef;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+            .employee-profile-img:hover {
+                transform: scale(1.1);
+                transition: transform 0.2s ease;
+            }
+    </style>
+}
+
+@section Fillow_script
+{
+    <script>
+        $(document).ready(function () {
+
+            MODULE = 'FemployeeM';
+            access = ROLE_ACCESS?.[MODULE];
+            const COE_ACCESS = '@ViewBag.CoeAccess'; // "None" | "WithoutOnly" | "SupervisorWith" | "Both"
+            const CAN_PRINT_PHC = @(ViewBag.CanPrintPhilHealthCert ? "true" : "false");
+
+            // Ranks that HR SUPERVISOR cannot print COE With Compensation for
+            const SUPERVISOR_EXCLUDED_RANKS = ['MANAGER', 'TEAM LEADER', 'TOP MANAGEMENT'];
+
+            // Returns true if the logged-in user can print COE With Compensation
+            // for the given employee rankCode, mirroring CoeAccessHelper.CanPrintWithForEmployee()
+            function canPrintWithForEmployee(rankCode) {
+                // HR DIRECTOR and admin — no rank restriction
+                if (COE_ACCESS === 'Both') return true;
+
+                // HR SUPERVISOR — allowed only for non-excluded ranks
+                if (COE_ACCESS === 'SupervisorWith') {
+                    return !SUPERVISOR_EXCLUDED_RANKS.includes((rankCode || '').trim().toUpperCase());
+                }
+
+                // WithoutOnly or None — never show With Compensation
+                return false;
+            }
+
+            // CONFIGURATION
+            const config = {
+                toastr: {
+                    positionClass: "toast-top-right",
+                    timeOut: 5000,
+                    closeButton: true,
+                    progressBar: true,
+                    preventDuplicates: true
+                },
+                endpoints: {
+                    list: "/Users/GetUserList",
+                    get: "/Users/GetEmployee",
+                    delete: "/Users/DeleteUser",
+                    restore: "/Users/RestoreUser",
+                    employmentStatuses: "/Setup/GetEmploymentStatuses",
+                    branches: "/Setup/GetEmployeeBranch",
+                    departments: "/Setup/GetEmployeeDepartment",
+                    ranks: "/Setup/GetEmployeeRank"
+                }
+            };
+
+            toastr.options = config.toastr;
+            const roleCode = '@ViewBag.RoleCode';
+            let currentEmployeeNo = null;
+            let isViewingDeleted = false;
+
+            // INITIALIZATION
+            initializeFilterSelect2();
+
+            // Hide/show controls based on access
+            if (access != 'READWRITE' && access != 'FULL') {
+                $('#btnNewEmployee').hide();
+            }
+
+            // **NEW: Filter tabs based on role access on page load**
+            filterTabsByAccess();
+
+            // DATATABLE CONFIGURATION
+            const userTable = $('#userTable').DataTable({
+                responsive: false,
+                processing: true,
+                serverSide: false,
+                ajax: {
+                    url: config.endpoints.list,
+                    type: "GET",
+                    data: function (d) {
+                        d.status = $('#filterStatusName').val();
+                        d.employmentStatus = $('#filterEmploymentStatus').val();
+                        d.branch = $('#filterBranch').val();
+                        d.department = $('#filterDepartment').val();
+                        d.rank = $('#filterRank').val();
+                    },
+                    error: () => showNotification('Error loading data. Please refresh the page.', 'error')
+                },
+                columns: [
+                    {
+                        data: "employeeNo",
+                        width: "12%",
+                        orderable: false,
+                        render: data => {
+                            let viewBtn = '';
+                            let deleteBtn = '';
+                            let restoreBtn = '';
+
+                                if (isViewingDeleted) {
+                                    if (access === 'FULL') {
+                                        restoreBtn = `<button class="btn btn-sm btn-success shadow-sm restoreEmployee" data-employeeno="${data}" title="Restore">
+                                            <i class="fas fa-undo"></i>
+                                        </button>`;
+                                    }
+
+                                    viewBtn = `<button class="btn btn-sm btn-primary shadow-sm viewEmployee" data-employeeno="${data}" title="View">
+                                        <i class="fas fa-eye"></i>
+                                    </button>`;
+
+                                    return `<div class="d-flex gap-1">${viewBtn}${restoreBtn}</div>`;
+                                } else {
+                                viewBtn = `<button class="btn btn-sm btn-primary shadow-sm viewEmployee" data-employeeno="${data}" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </button>`;
+
+                                if (access === 'FULL') {
+                                    deleteBtn = `<button class="btn btn-sm btn-danger shadow-sm deleteEmployee" data-employeeno="${data}" title="Delete">
+                                        <i class="fa fa-trash"></i>
+                                    </button>`;
+                                }
+
+                                return `<div class="d-flex gap-1">${viewBtn}${deleteBtn}</div>`;
+                            }
+                        }
+                    },
+                    {
+                        data: "profilePicturePath",
+                        width: "8%",
+                        orderable: false,
+                        render: function (data, type, row) {
+                            const imgSrc = data || '/Fillow/images/user-profile.jpg';
+
+                            // No COE access at all — plain image, no dropdown
+                            if (COE_ACCESS === 'None') {
+                                return `<img src="${imgSrc}"
+                                             alt="${row.employeeName}"
+                                             class="employee-profile-img"
+                                             onerror="this.src='/Fillow/images/user-profile.jpg'">`;
+                            }
+
+                            // HR DIRECTOR/admin — always shown; HR SUPERVISOR — hidden for excluded ranks
+                            const withCompItem = canPrintWithForEmployee(row.rankCode)
+                                ? `<li>
+                                       <a class="dropdown-item coeBtn" href="#"
+                                          data-type="with"
+                                          data-employeeno="${row.employeeNo}"
+                                          data-employeename="${row.employeeName}">
+                                           <i class="fas fa-file-invoice-dollar me-2 text-success"></i>
+                                           COE With Compensation
+                                       </a>
+                                   </li>`
+                                : '';
+
+                            // PhilHealth Certificate — visible to any HR role (WithoutOnly or Both)
+                            const phcItem = CAN_PRINT_PHC
+                                ? `<li>
+                                       <a class="dropdown-item phcBtn" href="#"
+                                          data-employeeno="${row.employeeNo}"
+                                          data-employeename="${row.employeeName}">
+                                           <i class="fas fa-notes-medical me-2 text-info"></i>
+                                           PhilHealth Certificate
+                                       </a>
+                                   </li>`
+                                : '';
+
+                            // SSS Contribution Report — same access rule as PhilHealth Certificate
+                            const sssItem = CAN_PRINT_PHC
+                                ? `<li>
+                                       <a class="dropdown-item sssBtn" href="#"
+                                          data-employeeno="${row.employeeNo}"
+                                          data-employeename="${row.employeeName}">
+                                           <i class="fas fa-file-invoice me-2 text-secondary"></i>
+                                           SSS Contribution
+                                       </a>
+                                   </li>`
+                                : '';
+
+                            // Pag-IBIG Contribution — same access rule as PhilHealth / SSS
+                            const pagIbigItem = CAN_PRINT_PHC
+                                ? `<li>
+                                       <a class="dropdown-item pagIbigBtn" href="#"
+                                          data-employeeno="${row.employeeNo}"
+                                          data-employeename="${row.employeeName}">
+                                           <i class="fas fa-home me-2 text-warning"></i>
+                                           Pag-IBIG Contribution
+                                       </a>
+                                   </li>`
+                                : '';
+                                // Employee 201 — visible to all users who can view the employee list
+                                const emp201Item = `<li>
+                                    <a class="dropdown-item emp201Btn" href="#"
+                                       data-employeeno="${row.employeeNo}"
+                                       data-employeename="${row.employeeName}">
+                                        <i class="fas fa-id-card me-2 text-primary"></i>
+                                        Employee 201
+                                    </a>
+                                </li>`;
+
+                                // Upload Profile Picture — same access as the dropdown (any non-None COE access)
+                                const uploadProfileItem = `
+                                <li><hr class="dropdown-divider my-1"></li>
+                                <li>
+                                    <a class="dropdown-item uploadEmpProfileBtn" href="#"
+                                       data-employeeno="${row.employeeNo}"
+                                       data-employeename="${row.employeeName}">
+                                        <i class="fas fa-camera me-2 text-dark"></i>
+                                        Upload Profile Picture
+                                    </a>
+                                </li>`;
+                            return `
+                                <div class="dropdown coe-dropdown">
+                                    <img src="${imgSrc}"
+                                         alt="${row.employeeName}"
+                                         class="employee-profile-img"
+                                         onerror="this.src='/Fillow/images/user-profile.jpg'"
+                                         data-bs-toggle="dropdown"
+                                         aria-expanded="false"
+                                         style="cursor:pointer;"
+                                         title="Click for Employee Profile options">
+                                    <ul class="dropdown-menu coe-dropdown-menu">
+                                        <li>
+                                            <span class="dropdown-header small text-muted px-3 py-1">
+                                                <i class="fas fa-file-alt me-1"></i> Employee Certificate and Contributions
+                                            </span>
+                                        </li>
+                                        <li><hr class="dropdown-divider my-1"></li>
+                                        <li>
+                                            <a class="dropdown-item coeBtn" href="#"
+                                               data-type="without"
+                                               data-employeeno="${row.employeeNo}"
+                                               data-employeename="${row.employeeName}">
+                                                <i class="fas fa-file-contract me-2 text-warning"></i>
+                                                COE Without Compensation
+                                            </a>
+                                        </li>
+                                        ${withCompItem}
+                                        ${phcItem}
+                                        ${sssItem}
+                                        ${pagIbigItem}
+                                        ${emp201Item}
+                                        ${uploadProfileItem}
+                                    </ul>
+                                </div>`;
+                        }
+                    },
+                    { data: "employeeNo", width: "10%" },
+                    { data: "employeeName", width: "22%", render: data => `<span class="truncate" title="${data || ''}">${data || ''}</span>` },
+                    { data: "positionName", width: "15%", render: data => `<span class="truncate" title="${data || ''}">${data || ''}</span>` },
+                    { data: "rankName", width: "12%", render: data => `<span class="truncate" title="${data || ''}">${data || ''}</span>` },
+                    { data: "branchName", width: "13%", render: data => `<span class="truncate" title="${data || ''}">${data || ''}</span>` },
+                    {
+                        data: null,
+                        width: "13%",
+                        render: function (data, type, row) {
+                            if (row.isActive == 0) {
+                                // Inactive: show Date Resigned (prefer rehired term date, fallback to initial)
+                                const resigned = row.dateOfEmpTermRehired || row.dateOfEmpTermInitial || '';
+                                return `<span class="truncate" title="${resigned}">${resigned ? formatDate(resigned) : 'N/A'}</span>`;
+                            } else {
+                                // Active: show Date Hired
+                                const hired = row.dateHired || '';
+                                return `<span class="truncate" title="${hired}">${hired ? formatDate(hired) : 'N/A'}</span>`;
+                            }
+                        }
+                    }
+                ],
+                order: [[2, 'asc']],
+                pageLength: 25,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                language: {
+                    processing: "Loading...",
+                    emptyTable: "No employees found",
+                    zeroRecords: "No matching employees found",
+                    paginate: {
+                        next: '<i class="fa fa-angle-double-right"></i>',
+                        previous: '<i class="fa fa-angle-double-left"></i>'
+                    }
+                }
+            });
+
+            // EVENT HANDLERS - FILTERS
+            $('#filterStatusName, #filterEmploymentStatus, #filterBranch, #filterDepartment, #filterRank')
+                .on('change', function () {
+                    userTable.ajax.reload(null, false);
+                });
+
+            $('#filterStatusName').on('change', () => {
+                isViewingDeleted = $('#filterStatusName').val() === '0';
+                $('#btnNewEmployee').toggle(!isViewingDeleted);
+            });
+
+            // EVENT HANDLERS - NEW EMPLOYEE
+            $('#btnNewEmployee').on('click', function () {
+                currentEmployeeNo = null;
+                $("#employeeModal").modal("show");
+                disableAllTabsExceptBasic();
+                $("#employeeTabs a").removeClass('active');
+                $("#employeeTabs a[data-tab='BasicInfo']").addClass('active');
+                loadEmployeeTabContent("BasicInfo", null);
+            });
+
+            // EVENT HANDLERS - VIEW EMPLOYEE
+            $(document).on("click", ".viewEmployee", function (e) {
+                e.preventDefault();
+                currentEmployeeNo = $(this).data("employeeno");
+                const $btn = $(this);
+
+                toggleButtonLoading($btn, true);
+
+                $.get(config.endpoints.get, { employeeNo: currentEmployeeNo })
+                    .done(data => {
+                        if (data) {
+                            $("#tabContent").html("");
+                            $("#employeeTabs a").removeClass('active');
+
+                            enableAllTabs();
+                            filterTabsByAccess();
+
+                            // Use namespaced event to prevent duplicate bindings on each open
+                            $("#employeeTabs a").off("click.employeeTab").on("click.employeeTab", function (e) {
+                                e.preventDefault();
+                                if ($(this).hasClass('disabled')) return;
+                                const tab = $(this).data("tab");
+                                $("#employeeTabs a").removeClass("active");
+                                $(this).addClass("active");
+                                loadEmployeeTabContent(tab, currentEmployeeNo);
+                            });
+
+                            // Find and activate first visible tab
+                            const firstVisibleTab = $("#employeeTabs li:not([style*='display: none']) a").first();
+                            if (firstVisibleTab.length > 0) {
+                                firstVisibleTab.addClass('active');
+                                loadEmployeeTabContent(firstVisibleTab.data("tab"), currentEmployeeNo);
+                            }
+
+                            $("#employeeModal").modal("show");
+                        } else {
+                            showNotification('Unable to load employee data', 'error');
+                        }
+                    })
+                    .fail(() => showNotification('Unable to load employee data', 'error'))
+                    .always(() => toggleButtonLoading($btn, false));
+            });
+
+            $('#employeeModal').on('hidden.bs.modal', function (e) {
+                // Only reset if the employeeModal itself closed, not a child modal
+                if ($(e.target).attr('id') === 'employeeModal') {
+                    $("#tabContent").html("");
+                    $("#employeeTabs a").removeClass('active');
+                    currentEmployeeNo = null;
+                }
+            });
+
+            // EVENT HANDLERS - DELETE (Updated to use reusable function)
+            $(document).on("click", ".deleteEmployee", function (e) {
+                e.preventDefault();
+                deleteWithReason({
+                    title: 'Inactive Employee',
+                    text: 'Are you sure you want to inactive this employee?',
+                    url: config.endpoints.delete,
+                    button: $(this),
+                    table: userTable,
+                    postData: {
+                        employeeNo: $(this).data('employeeno'),
+                        deletedByUser: sessemployeeNo || 'SYSTEM'
+                    }
+                });
+            });
+
+            // EVENT HANDLERS - RESTORE
+            $(document).on('click', '.restoreEmployee', function (e) {
+                e.preventDefault();
+                const employeeNo = $(this).data('employeeno');
+                const $btn = $(this);
+
+                Swal.fire({
+                    title: 'Restore Employee',
+                    text: 'Are you sure you want to restore this employee?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, Restore',
+                    cancelButtonText: 'Cancel',
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor: '#6c757d',
+                    reverseButtons: false,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        toggleButtonLoading($btn, true);
+                        $.post(config.endpoints.restore, { employeeNo })
+                            .done(response => {
+                                if (response.success) {
+                                    userTable.ajax.reload(null, false);
+                                    showNotification(response.message, 'success');
+                                } else {
+                                    showNotification(response.message, 'error');
+                                }
+                            })
+                            .fail(() => showNotification('Unable to restore employee.', 'error'))
+                            .always(() => toggleButtonLoading($btn, false));
+                    }
+                });
+            });
+
+            // **NEW: Filter tabs based on role access**
+            function filterTabsByAccess() {
+                $("#employeeTabs a").each(function () {
+                    const $tab = $(this);
+                    const moduleCode = $tab.data("module");
+
+                    // Basic Info tab has no module restriction (always visible)
+                    if (!moduleCode || moduleCode === "") {
+                        $tab.closest('li').show();
+                        return;
+                    }
+
+                    // Check if user has access to this module
+                    const moduleAccess = ROLE_ACCESS?.[moduleCode];
+
+                    // Hide tab if no access or NO_ACCESS
+                    if (!moduleAccess || moduleAccess === 'NO_ACCESS') {
+                        $tab.closest('li').hide();
+                    } else {
+                        $tab.closest('li').show();
+                    }
+                });
+            }
+
+            // HELPER FUNCTIONS
+            function initializeFilterSelect2() {
+                $('#filterEmploymentStatus').select2({
+                    placeholder: "Select Employment Status",
+                    allowClear: true,
+                    ajax: {
+                        url: config.endpoints.employmentStatuses,
+                        dataType: 'json',
+                        delay: 250,
+                        processResults: data => ({
+                            results: $.map(data, item => ({
+                                id: item.employmentStatusCode,
+                                text: item.employmentStatusName
+                            }))
+                        })
+                    }
+                });
+
+                $('#filterBranch').select2({
+                    placeholder: "Select Branch",
+                    allowClear: true,
+                    ajax: {
+                        url: config.endpoints.branches,
+                        dataType: 'json',
+                        delay: 250,
+                        processResults: data => ({
+                            results: $.map(data, item => ({
+                                id: item.branchCode,
+                                text: item.branchName
+                            }))
+                        })
+                    }
+                });
+
+                $('#filterDepartment').select2({
+                    placeholder: "Select Department",
+                    allowClear: true,
+                    ajax: {
+                        url: config.endpoints.departments,
+                        dataType: 'json',
+                        delay: 250,
+                        processResults: data => ({
+                            results: $.map(data, item => ({
+                                id: item.departmentCode,
+                                text: item.departmentName
+                            }))
+                        })
+                    }
+                });
+
+                $('#filterRank').select2({
+                    placeholder: "Select Rank",
+                    allowClear: true,
+                    ajax: {
+                        url: config.endpoints.ranks,
+                        dataType: 'json',
+                        delay: 250,
+                        processResults: data => ({
+                            results: $.map(data, item => ({
+                                id: item.rankCode,
+                                text: item.rankName
+                            }))
+                        })
+                    }
+                });
+
+                $('#filterStatusName').select2({
+                    selectOnClose: true,
+                    minimumResultsForSearch: Infinity
+                });
+            }
+
+            function loadEmployeeTabContent(tab, employeeNo) {
+                const mode = (!employeeNo) ? "CREATE" : "EDIT";
+                $("#tabContent").html(`<div class="text-center p-4"><i class="fas fa-spinner fa-spin fa-2x"></i><p class="mt-2">Loading...</p></div>`);
+
+                $.get("/" + tab + "/Get" + tab, { employeeNo: employeeNo, mode: mode })
+                    .done(result => {
+                        $("#tabContent").html(result);
+                        // Expose a reload function so child partials can refresh the tab after saving
+                        window.reloadCurrentTab = function () {
+                            const activeTab = $("#employeeTabs a.active").data("tab");
+                            if (activeTab) loadEmployeeTabContent(activeTab, employeeNo);
+                        };
+                    })
+                    .fail(() => {
+                        $("#tabContent").html(`<div class="alert alert-danger">Failed to load tab content. Please try again.</div>`);
+                    });
+            }
+
+            function disableAllTabsExceptBasic() {
+                $("#employeeTabs a").each(function () {
+                    const tab = $(this).data("tab");
+                    if (tab !== "BasicInfo") {
+                        $(this).addClass("disabled").css("pointer-events", "none").css("opacity", "0.5");
+                    } else {
+                        $(this).removeClass("disabled").css("pointer-events", "auto").css("opacity", "1");
+                    }
+                });
+            }
+
+            function enableAllTabs() {
+                $("#employeeTabs a").removeClass("disabled").css("pointer-events", "auto").css("opacity", "1");
+            }
+
+            function toggleButtonLoading($btn, loading, text = '') {
+                if (loading) {
+                    if (!$btn.data('original-html')) $btn.data('original-html', $btn.html());
+                    const icon = text ? '<i class="fas fa-spinner fa-spin"></i> ' : '<i class="fas fa-spinner fa-spin"></i>';
+                    $btn.prop('disabled', true).html(icon + text);
+                } else {
+                    $btn.prop('disabled', false).html($btn.data('original-html') || $btn.html());
+                    $btn.removeData('original-html');
+                }
+            }
+
+            // Format date helper (handles yyyy-MM-dd or datetime strings)
+            function formatDate(dateStr) {
+                if (!dateStr) return '';
+                const d = new Date(dateStr);
+                if (isNaN(d.getTime())) return dateStr;
+                return d.toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: '2-digit' });
+            }
+
+            // Update column header label based on active filter
+            function updateDateColumnHeader() {
+                const status = $('#filterStatusName').val();
+                $('#dateColumnHeader').text(status === '0' ? 'Date Resigned' : 'Date Hired');
+            }
+
+            $('#filterStatusName').on('change', updateDateColumnHeader);
+            updateDateColumnHeader(); // set correct label on page load
+
+            function showNotification(message, type) {
+                const types = { success: 'Success', error: 'Error', warning: 'Warning', info: 'Information' };
+                toastr[type](message, types[type] || 'Notification');
+            }
+
+            // ── COE: state variables ─────────────────────────────────────────────
+            let _coeEmployeeNo = null;
+            let _coeType       = null;   // 'with' | 'without'
+
+            $(document).on('shown.bs.dropdown', '.coe-dropdown', function () {
+                const $menu      = $(this).find('.coe-dropdown-menu');
+                const $toggle    = $(this).find('[data-bs-toggle="dropdown"]');
+                const rect       = $toggle[0].getBoundingClientRect();
+                const menuHeight = $menu.outerHeight(true);
+                const spaceBelow = window.innerHeight - rect.bottom;
+
+                if (spaceBelow < menuHeight) {
+                    $menu.css({ 'top': 'auto', 'bottom': '100%', 'margin-bottom': '4px', 'margin-top': '0' });
+                } else {
+                    $menu.css({ 'top': '100%', 'bottom': 'auto', 'margin-top': '4px', 'margin-bottom': '0' });
+                }
+            });
+
+            // ── COE: open purpose modal when a dropdown item is clicked ──────────
+            $(document).on('click', '.coeBtn', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                _coeEmployeeNo = $(this).data('employeeno');
+                _coeType       = $(this).data('type');
+                const name     = $(this).data('employeename');
+
+                $('#coeEmployeeLabel').text('Employee: ' + (name || _coeEmployeeNo));
+                $('#coePurposeInput').val('').removeClass('is-invalid');
+                $('#coeIncentiveInput').val('');
+
+                // Show incentive field only for "with compensation"
+                if (_coeType === 'with') {
+                    $('#coeIncentiveGroup').show();
+                } else {
+                    $('#coeIncentiveGroup').hide();
+                }
+
+                $('#coePurposeModal').modal('show');
+            });
+
+            // ── COE: generate PDF when user clicks Generate ──────────────────────
+            $('#btnGenerateCoe').on('click', function () {
+                const purpose   = $('#coePurposeInput').val().trim();
+                const incentive = parseFloat($('#coeIncentiveInput').val()) || 0;
+
+                if (!purpose) {
+                    $('#coePurposeInput').addClass('is-invalid').focus();
+                    return;
+                }
+
+                if (!_coeEmployeeNo || !_coeType) {
+                    showNotification('Missing employee or COE type. Please try again.', 'error');
+                    return;
+                }
+
+                const endpoint = _coeType === 'with'
+                    ? '/Coe/WithCompensation'
+                    : '/Coe/WithoutCompensation';
+
+                let url = `${endpoint}?employeeNo=${encodeURIComponent(_coeEmployeeNo)}&purpose=${encodeURIComponent(purpose)}`;
+
+                // Append incentive only when type is 'with' and a value was entered
+                if (_coeType === 'with' && incentive > 0) {
+                    url += `&monthlyIncentive=${incentive}`;
+                }
+
+                window.open(url, '_blank');
+                $('#coePurposeModal').modal('hide');
+            });
+
+            // ── COE: clear invalid state as user types ───────────────────────────
+            $('#coePurposeInput').on('input', function () {
+                if ($(this).val().trim()) $(this).removeClass('is-invalid');
+            });
+
+            // ── COE: Enter key submits the modal ─────────────────────────────────
+            $('#coePurposeInput').on('keydown', function (e) {
+                if (e.key === 'Enter') { e.preventDefault(); $('#btnGenerateCoe').trigger('click'); }
+            });
+
+            // ── PhilHealth Certificate ────────────────────────────────────────
+
+            const MONTH_ORDER = [
+                'January','February','March','April','May','June',
+                'July','August','September','October','November','December'
+            ];
+
+            let _phcEmployeeNo   = null;
+            let _phcEmployeeName = null;
+
+            // Step 1 — open purpose modal first
+            $(document).on('click', '.phcBtn', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                _phcEmployeeNo   = $(this).data('employeeno');
+                _phcEmployeeName = $(this).data('employeename');
+
+                $('#phcPurposeEmployeeLabel').text('Employee: ' + (_phcEmployeeName || _phcEmployeeNo));
+                $('#phcPurposeInput').val('');
+
+                $('#phcPurposeModal').modal('show');
+            });
+
+            // Step 2 — Next: close purpose modal, open range modal
+            $('#btnPhcPurposeNext').on('click', function () {
+                $('#phcPurposeModal').modal('hide');
+                $('#phcPurposeModal').one('hidden.bs.modal', function () {
+                    const currentYear = new Date().getFullYear();
+                    $('#phcEmployeeLabel').text('Employee: ' + (_phcEmployeeName || _phcEmployeeNo));
+                    $('#phcFromYear').val(currentYear).removeClass('is-invalid');
+                    $('#phcToYear').val(currentYear).removeClass('is-invalid');
+                    $('#phcFromMonth').val('').removeClass('is-invalid');
+                    $('#phcToMonth').val('').removeClass('is-invalid');
+                    $('#philHealthCertModal').modal('show');
+                });
+            });
+
+            // Step 3 — Generate PDF
+            $('#btnGeneratePhilHealthCert').on('click', function () {
+                const fromYear  = $('#phcFromYear').val().trim();
+                const toYear    = $('#phcToYear').val().trim();
+                const fromMonth = $('#phcFromMonth').val();
+                const toMonth   = $('#phcToMonth').val();
+                const purpose   = $('#phcPurposeInput').val().trim();
+                let valid       = true;
+
+                // Validate From Year
+                if (!fromYear || isNaN(fromYear) || parseInt(fromYear) < 2000 || parseInt(fromYear) > 2099) {
+                    $('#phcFromYear').addClass('is-invalid'); valid = false;
+                } else {
+                    $('#phcFromYear').removeClass('is-invalid');
+                }
+
+                // Validate To Year
+                if (!toYear || isNaN(toYear) || parseInt(toYear) < 2000 || parseInt(toYear) > 2099) {
+                    $('#phcToYear').addClass('is-invalid'); valid = false;
+                } else {
+                    $('#phcToYear').removeClass('is-invalid');
+                }
+
+                // Validate From Month
+                if (!fromMonth) {
+                    $('#phcFromMonth').addClass('is-invalid'); valid = false;
+                } else {
+                    $('#phcFromMonth').removeClass('is-invalid');
+                }
+
+                // Validate To Month
+                if (!toMonth) {
+                    $('#phcToMonth').addClass('is-invalid'); valid = false;
+                } else {
+                    $('#phcToMonth').removeClass('is-invalid');
+                }
+
+                if (!valid) return;
+
+                // Validate that To is not before From
+                const fy = parseInt(fromYear), ty = parseInt(toYear);
+                const fm = MONTH_ORDER.indexOf(fromMonth), tm = MONTH_ORDER.indexOf(toMonth);
+
+                if (ty < fy || (ty === fy && tm < fm)) {
+                    $('#phcToYear').addClass('is-invalid');
+                    $('#phcToMonth').addClass('is-invalid');
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Invalid Range',
+                        text: '"To" date must be the same as or after "From" date.',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+
+                if (!_phcEmployeeNo) {
+                    showNotification('Missing employee. Please try again.', 'error');
+                    return;
+                }
+
+                let url = `/PhilHealthCertificate/Generate` +
+                    `?employeeNo=${encodeURIComponent(_phcEmployeeNo)}` +
+                    `&fromMonth=${encodeURIComponent(fromMonth)}` +
+                    `&fromYear=${encodeURIComponent(fromYear)}` +
+                    `&toMonth=${encodeURIComponent(toMonth)}` +
+                    `&toYear=${encodeURIComponent(toYear)}`;
+
+                if (purpose) {
+                    url += `&purpose=${encodeURIComponent(purpose)}`;
+                }
+
+                window.open(url, '_blank');
+                $('#philHealthCertModal').modal('hide');
+            });
+
+            // Clear invalid states on input
+            $('#phcFromYear, #phcToYear').on('input', function () {
+                if ($(this).val().trim()) $(this).removeClass('is-invalid');
+            });
+            $('#phcFromMonth, #phcToMonth').on('change', function () {
+                $(this).removeClass('is-invalid');
+            });
+
+            // ── SSS Contribution Report ───────────────────────────────────────
+
+            let _sssEmployeeNo   = null;
+            let _sssEmployeeName = null;
+
+            // Step 1 — open purpose modal first
+            $(document).on('click', '.sssBtn', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                _sssEmployeeNo   = $(this).data('employeeno');
+                _sssEmployeeName = $(this).data('employeename');
+
+                $('#sssPurposeEmployeeLabel').text('Employee: ' + (_sssEmployeeName || _sssEmployeeNo));
+                $('#sssPurposeInput').val('');
+
+                $('#sssPurposeModal').modal('show');
+            });
+
+            // Step 2 — Next: close purpose modal, open range modal
+            $('#btnSssPurposeNext').on('click', function () {
+                $('#sssPurposeModal').modal('hide');
+                $('#sssPurposeModal').one('hidden.bs.modal', function () {
+                    const currentYear = new Date().getFullYear();
+                    $('#sssEmployeeLabel').text('Employee: ' + (_sssEmployeeName || _sssEmployeeNo));
+                    $('#sssFromYear').val(currentYear).removeClass('is-invalid');
+                    $('#sssToYear').val(currentYear).removeClass('is-invalid');
+                    $('#sssFromMonth').val('').removeClass('is-invalid');
+                    $('#sssToMonth').val('').removeClass('is-invalid');
+                    $('#sssContribModal').modal('show');
+                });
+            });
+
+            // Step 3 — Generate PDF
+            $('#btnGenerateSssContrib').on('click', function () {
+                const fromYear  = $('#sssFromYear').val().trim();
+                const toYear    = $('#sssToYear').val().trim();
+                const fromMonth = $('#sssFromMonth').val();
+                const toMonth   = $('#sssToMonth').val();
+                const purpose   = $('#sssPurposeInput').val().trim();
+                let valid       = true;
+
+                // Validate From Year
+                if (!fromYear || isNaN(fromYear) || parseInt(fromYear) < 2000 || parseInt(fromYear) > 2099) {
+                    $('#sssFromYear').addClass('is-invalid'); valid = false;
+                } else {
+                    $('#sssFromYear').removeClass('is-invalid');
+                }
+
+                // Validate To Year
+                if (!toYear || isNaN(toYear) || parseInt(toYear) < 2000 || parseInt(toYear) > 2099) {
+                    $('#sssToYear').addClass('is-invalid'); valid = false;
+                } else {
+                    $('#sssToYear').removeClass('is-invalid');
+                }
+
+                // Validate From Month
+                if (!fromMonth) {
+                    $('#sssFromMonth').addClass('is-invalid'); valid = false;
+                } else {
+                    $('#sssFromMonth').removeClass('is-invalid');
+                }
+
+                // Validate To Month
+                if (!toMonth) {
+                    $('#sssToMonth').addClass('is-invalid'); valid = false;
+                } else {
+                    $('#sssToMonth').removeClass('is-invalid');
+                }
+
+                if (!valid) return;
+
+                // Validate that To is not before From
+                const fy = parseInt(fromYear), ty = parseInt(toYear);
+                const fm = MONTH_ORDER.indexOf(fromMonth), tm = MONTH_ORDER.indexOf(toMonth);
+
+                if (ty < fy || (ty === fy && tm < fm)) {
+                    $('#sssToYear').addClass('is-invalid');
+                    $('#sssToMonth').addClass('is-invalid');
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Invalid Range',
+                        text: '"To" date must be the same as or after "From" date.',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+
+                if (!_sssEmployeeNo) {
+                    showNotification('Missing employee. Please try again.', 'error');
+                    return;
+                }
+
+                let url = `/SssContribution/Generate` +
+                    `?employeeNo=${encodeURIComponent(_sssEmployeeNo)}` +
+                    `&fromMonth=${encodeURIComponent(fromMonth)}` +
+                    `&fromYear=${encodeURIComponent(fromYear)}` +
+                    `&toMonth=${encodeURIComponent(toMonth)}` +
+                    `&toYear=${encodeURIComponent(toYear)}`;
+
+                if (purpose) {
+                    url += `&purpose=${encodeURIComponent(purpose)}`;
+                }
+
+                window.open(url, '_blank');
+                $('#sssContribModal').modal('hide');
+            });
+
+            // Clear invalid states
+            $('#sssFromYear, #sssToYear').on('input', function () {
+                if ($(this).val().trim()) $(this).removeClass('is-invalid');
+            });
+            $('#sssFromMonth, #sssToMonth').on('change', function () {
+                $(this).removeClass('is-invalid');
+            });
+
+            // ── Pag-IBIG Contribution ─────────────────────────────────────────
+            let _pagIbigEmployeeNo   = null;
+            let _pagIbigEmployeeName = null;
+
+            // Step 1 — open purpose modal first
+            $(document).on('click', '.pagIbigBtn', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                _pagIbigEmployeeNo   = $(this).data('employeeno');
+                _pagIbigEmployeeName = $(this).data('employeename');
+
+                $('#pagIbigPurposeEmployeeLabel').text('Employee: ' + (_pagIbigEmployeeName || _pagIbigEmployeeNo));
+                $('#pagIbigPurposeInput').val('');
+
+                $('#pagIbigPurposeModal').modal('show');
+            });
+
+            // Step 2 — Next: close purpose modal, open range modal
+            $('#btnPagIbigPurposeNext').on('click', function () {
+                $('#pagIbigPurposeModal').modal('hide');
+                $('#pagIbigPurposeModal').one('hidden.bs.modal', function () {
+                    const currentYear = new Date().getFullYear();
+                    $('#pagIbigEmployeeLabel').text('Employee: ' + (_pagIbigEmployeeName || _pagIbigEmployeeNo));
+                    $('#pagIbigFromYear').val(currentYear).removeClass('is-invalid');
+                    $('#pagIbigToYear').val(currentYear).removeClass('is-invalid');
+                    $('#pagIbigFromMonth').val('').removeClass('is-invalid');
+                    $('#pagIbigToMonth').val('').removeClass('is-invalid');
+                    $('#pagIbigContribModal').modal('show');
+                });
+            });
+
+            // Step 3 — Generate PDF
+            $('#btnGeneratePagIbigContrib').on('click', function () {
+                const fromYear  = $('#pagIbigFromYear').val().trim();
+                const toYear    = $('#pagIbigToYear').val().trim();
+                const fromMonth = $('#pagIbigFromMonth').val();
+                const toMonth   = $('#pagIbigToMonth').val();
+                const purpose   = $('#pagIbigPurposeInput').val().trim();
+                let valid       = true;
+
+                // Validate From Year
+                if (!fromYear || isNaN(fromYear) || parseInt(fromYear) < 2000 || parseInt(fromYear) > 2099) {
+                    $('#pagIbigFromYear').addClass('is-invalid'); valid = false;
+                } else {
+                    $('#pagIbigFromYear').removeClass('is-invalid');
+                }
+
+                // Validate To Year
+                if (!toYear || isNaN(toYear) || parseInt(toYear) < 2000 || parseInt(toYear) > 2099) {
+                    $('#pagIbigToYear').addClass('is-invalid'); valid = false;
+                } else {
+                    $('#pagIbigToYear').removeClass('is-invalid');
+                }
+
+                // Validate From Month
+                if (!fromMonth) {
+                    $('#pagIbigFromMonth').addClass('is-invalid'); valid = false;
+                } else {
+                    $('#pagIbigFromMonth').removeClass('is-invalid');
+                }
+
+                // Validate To Month
+                if (!toMonth) {
+                    $('#pagIbigToMonth').addClass('is-invalid'); valid = false;
+                } else {
+                    $('#pagIbigToMonth').removeClass('is-invalid');
+                }
+
+                if (!valid) return;
+
+                // Validate that To is not before From
+                const fy = parseInt(fromYear), ty = parseInt(toYear);
+                const fm = MONTH_ORDER.indexOf(fromMonth), tm = MONTH_ORDER.indexOf(toMonth);
+
+                if (ty < fy || (ty === fy && tm < fm)) {
+                    $('#pagIbigToYear').addClass('is-invalid');
+                    $('#pagIbigToMonth').addClass('is-invalid');
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Invalid Range',
+                        text: '"To" date must be the same as or after "From" date.',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+
+                if (!_pagIbigEmployeeNo) {
+                    showNotification('Missing employee. Please try again.', 'error');
+                    return;
+                }
+
+                let url = `/PagIbigContribution/Generate` +
+                    `?employeeNo=${encodeURIComponent(_pagIbigEmployeeNo)}` +
+                    `&fromMonth=${encodeURIComponent(fromMonth)}` +
+                    `&fromYear=${encodeURIComponent(fromYear)}` +
+                    `&toMonth=${encodeURIComponent(toMonth)}` +
+                    `&toYear=${encodeURIComponent(toYear)}`;
+
+                if (purpose) {
+                    url += `&purpose=${encodeURIComponent(purpose)}`;
+                }
+
+                window.open(url, '_blank');
+                $('#pagIbigContribModal').modal('hide');
+            });
+
+            // ── Employee 201 ──────────────────────────────────────────────────
+            $(document).on('click', '.emp201Btn', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const employeeNo = $(this).data('employeeno');
+                if (!employeeNo) {
+                    showNotification('Missing employee. Please try again.', 'error');
+                    return;
+                }
+
+                window.open(`/Employee201/Generate?employeeNo=${encodeURIComponent(employeeNo)}`, '_blank');
+            });
+
+            // Clear invalid states
+            $('#pagIbigFromYear, #pagIbigToYear').on('input', function () {
+                if ($(this).val().trim()) $(this).removeClass('is-invalid');
+            });
+            $('#pagIbigFromMonth, #pagIbigToMonth').on('change', function () {
+                $(this).removeClass('is-invalid');
+            });
+        });
+    </script>
+}

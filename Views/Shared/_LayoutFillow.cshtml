@@ -1,0 +1,963 @@
+﻿@using Microsoft.Extensions.Configuration
+@using Microsoft.AspNetCore.Http
+
+@inject IConfiguration Configuration
+@inject IHttpContextAccessor HttpContextAccessor
+
+@{
+	var sessemployeeNo = HttpContextAccessor.HttpContext?.Session.GetString("employeeNo");
+	var sessroleCode = HttpContextAccessor.HttpContext?.Session.GetString("roleCode");
+}
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- Mirrored from fillow.vercel.app/empty-page.html by HTTrack Website Copier/3.x [XR&CO'2014], Mon, 18 Aug 2025 08:35:05 GMT -->
+<!-- Added by HTTrack -->
+<meta http-equiv="content-type" content="text/html;charset=utf-8" /><!-- /Added by HTTrack -->
+<head>
+	<title>@Configuration.GetSection("DefaultValue")["Title"]</title>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="author" content="Dexignlabs">
+	<meta name="robots" content="index, follow">
+
+	<meta name="keywords" content="	admin, admin dashboard, admin template, analytics, bootstrap, bootstrap5, bootstrap 5 admin template, modern, responsive admin dashboard, sales dashboard, sass, ui kit, web app, Fillow SaaS, User Interface (UI), User Experience (UX), Dashboard Design, SaaS Application, Web Application, Data Visualization, Analytics, Customization, Responsive Design, Bootstrap Framework, Charts and Graphs, Data Management, Reporting, Dark Mode, Mobile-Friendly, Dashboard Components, Integrations, Analytics Dashboard, API Integration, User Authentication">
+
+
+	<meta name="description" content="Elevate your administrative efficiency and enhance productivity with the Fillow SaaS Admin Dashboard Template. Designed to streamline your tasks, this powerful tool provides a user-friendly interface, robust features, and customizable options, making it the ideal choice for managing your data and operations with ease.">
+
+	<meta property="og:title" content="Fillow : Fillow Saas Admin Bootstrap 5 Template | Dexignlabs">
+	<meta property="og:description" content="Elevate your administrative efficiency and enhance productivity with the Fillow SaaS Admin Dashboard Template. Designed to streamline your tasks, this powerful tool provides a user-friendly interface, robust features, and customizable options, making it the ideal choice for managing your data and operations with ease.">
+	<meta property="og:image" content="../fillow.dexignlab.com/xhtml/social-image.html">
+	<meta name="format-detection" content="telephone=no">
+
+	<meta name="twitter:title" content="Fillow : Fillow Saas Admin Bootstrap 5 Template | Dexignlabs">
+	<meta name="twitter:description" content="Elevate your administrative efficiency and enhance productivity with the Fillow SaaS Admin Dashboard Template. Designed to streamline your tasks, this powerful tool provides a user-friendly interface, robust features, and customizable options, making it the ideal choice for managing your data and operations with ease.">
+	<meta name="twitter:image" content="../fillow.dexignlab.com/xhtml/social-image.html">
+	<meta name="twitter:card" content="summary_large_image">
+
+	<!-- MOBILE SPECIFIC -->
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<!-- FAVICONS ICON -->
+	<link rel="shortcut icon" type="image/png" href="~/Fillow/images/logo_title.png">
+	<link href="~/Fillow/vendor/bootstrap-select/css/bootstrap-select.min.css" rel="stylesheet">
+
+	<!-- Datatable -->
+	<link href="~/Fillow/vendor/datatables/css/jquery.dataTables.min.css" rel="stylesheet">
+	<link href="~/Fillow/vendor/datatables/responsive/responsive.css" rel="stylesheet">
+
+	<!-- Select2 -->
+	<link rel="stylesheet" href="~/Fillow/vendor/select2/css/select2.min.css">
+	<link href="~/Fillow/vendor/bootstrap-select/css/bootstrap-select.min.css" rel="stylesheet">
+
+	<!-- Daterange picker -->
+	<link href="~/Fillow/vendor/bootstrap-daterangepicker/daterangepicker.css" rel="stylesheet">
+	<!-- Clockpicker -->
+	<link href="~/Fillow/vendor/clockpicker/css/bootstrap-clockpicker.min.css" rel="stylesheet">
+	<!-- asColorpicker -->
+	<link href="~/Fillow/vendor/jquery-asColorPicker/css/asColorPicker.min.css" rel="stylesheet">
+	<!-- Material color picker -->
+	<link href="~/Fillow/vendor/bootstrap-material-datetimepicker/css/bootstrap-material-datetimepicker.css" rel="stylesheet">
+	<link href="~/Fillow/vendor/bootstrap-datepicker-master/css/bootstrap-datepicker.min.css" rel="stylesheet">
+
+	<!-- Pick date -->
+	<link rel="stylesheet" href="~/Fillow/vendor/pickadate/themes/default.css">
+	<link rel="stylesheet" href="~/Fillow/vendor/pickadate/themes/default.date.css">
+	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+	<!-- Toastr CSS -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+
+	<!-- Sweet Alert CSS -->
+	<link href="~/Fillow/vendor/sweetalert2/sweetalert2.min.css" rel="stylesheet">
+	<link href="~/Fillow/vendor/bootstrap-select/css/bootstrap-select.min.css" rel="stylesheet">
+
+
+
+	<link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
+
+
+
+	<!-- TIMEPICKER -->
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+	<!-- SmartWizard CSS -->
+	<link href="https://cdn.jsdelivr.net/npm/smartwizard@6/dist/css/smart_wizard_all.min.css" rel="stylesheet" />
+
+	<!-- jQuery (required) -->
+	<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+	<!-- SmartWizard JS -->
+	<script src="https://cdn.jsdelivr.net/npm/smartwizard@6/dist/js/jquery.smartWizard.min.js"></script>
+
+	<!-- Chart.js CDN -->
+	<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+	@RenderSection("Fillow_style", required: false)
+	<link href="~/Fillow/css/style.css" rel="stylesheet">
+
+	<style>
+
+		/* Keep Select2 dropdown above Bootstrap modal */
+		.select2-container--open {
+			z-index: 9999 !important;
+		}
+
+		/* Disable the mask that blocks typing */
+		.select2-close-mask {
+			display: none !important;
+		}
+
+		.swal2-popup {
+			border-radius: 15px !important;
+			padding: 2rem !important;
+		}
+
+		.swal2-icon.swal2-error {
+			border-color: #f27474 !important;
+			color: #f27474 !important;
+		}
+
+		.swal2-icon.swal2-error .swal2-x-mark {
+			display: none !important;
+		}
+
+		.swal2-icon.swal2-error::before {
+			content: "\f2ed" !important;
+			font-family: "Font Awesome 5 Free" !important;
+			font-weight: 900 !important;
+			font-size: 2.5rem !important;
+			color: #f27474 !important;
+			display: block !important;
+		}
+
+		.swal2-title {
+			font-size: 1.875rem !important;
+			font-weight: 600 !important;
+			color: #545454 !important;
+			margin: 1rem 0 0.5rem 0 !important;
+		}
+
+		.swal2-html-container {
+			font-size: 1rem !important;
+			color: #737373 !important;
+			margin: 0 0 2rem 0 !important;
+		}
+
+		.swal2-actions {
+			gap: 0.5rem !important;
+		}
+
+		.swal2-confirm {
+			background-color: #7c3aed !important;
+			border-color: #7c3aed !important;
+			color: white !important;
+			font-weight: 500 !important;
+			padding: 0.75rem 2rem !important;
+			border-radius: 8px !important;
+			font-size: 0.875rem !important;
+		}
+
+		.swal2-cancel {
+			background-color: #6b7280 !important;
+			border-color: #6b7280 !important;
+			color: white !important;
+			font-weight: 500 !important;
+			padding: 0.75rem 2rem !important;
+			border-radius: 8px !important;
+			font-size: 0.875rem !important;
+		}
+
+		.swal2-confirm:hover {
+			background-color: #6d28d9 !important;
+			border-color: #6d28d9 !important;
+		}
+
+		.swal2-cancel:hover {
+			background-color: #4b5563 !important;
+			border-color: #4b5563 !important;
+		}
+
+	</style>
+
+</head>
+<body>
+	@Html.AntiForgeryToken()
+
+	<partial name="Fillow/_PreLoader" />
+	<!--**********************************
+		Main wrapper start
+	***********************************-->
+	@* <div id="main-wrapper">
+		<partial name="Fillow/_NevHeader" />
+		<partial name="Fillow/_Chatbox" />
+		<partial name="Fillow/_Header" />
+		<partial name="Fillow/_Sidebar" /> *@
+	<!--**********************************
+		Main wrapper start
+	***********************************-->
+	<div id="main-wrapper">
+
+		<partial name="Fillow/_NavHeader" />
+		<partial name="Fillow/_Chatbox" />
+		<partial name="Fillow/_Header" />
+		<partial name="Fillow/_Sidebar" />
+
+
+		<!--**********************************
+			Content body start
+		***********************************-->
+		<div class="content-body default-height">
+			<!-- row -->
+			<div class="container-fluid">
+				@RenderBody()
+			</div>
+		</div>
+		<!--**********************************
+			Content body end
+		***********************************-->
+
+		<partial name="Fillow/_Footer" />
+
+
+
+
+
+	</div>
+	<!--**********************************
+		Main wrapper end
+	***********************************-->
+	<!--**********************************
+		Scripts
+	***********************************-->
+	<!-- Required vendors -->
+	@* <script src="~/Fillow/vendor/jquery/jquery.min.js"></script> *@
+	<script src="~/Fillow/vendor/global/global.min.js"></script>
+	<script src="~/Fillow/vendor/bootstrap-select/js/bootstrap-select.min.js"></script>
+	<script src="~/Fillow/js/custom.min.js"></script>
+	<script src="~/Fillow/js/dlabnav-init.js"></script>
+	@* <script src="~/Fillow/js/demo.js"></script> *@
+	@* <script src="~/Fillow/js/styleSwitcher.js"></script> *@
+
+
+	<!-- Datatable -->
+	<script src="~/Fillow/vendor/datatables/js/jquery.dataTables.min.js"></script>
+	<script src="~/Fillow/vendor/datatables/responsive/responsive.js"></script>
+	<script src="~/Fillow/js/plugins-init/datatables.init.js"></script>
+
+	<!-- Select2 -->
+	<script src="~/Fillow/vendor/select2/js/select2.full.min.js"></script>
+	<script src="~/Fillow/js/plugins-init/select2-init.js"></script>
+
+	<!-- Pickdate -->
+	<script src="~/Fillow/vendor/pickadate/picker.js"></script>
+	<script src="~/Fillow/vendor/pickadate/picker.time.js"></script>
+	<script src="~/Fillow/vendor/pickadate/picker.date.js"></script>
+
+
+	<!-- Daterangepicker -->
+	<!-- momment js is must -->
+	<script src="~/Fillow/vendor/moment/moment.min.js"></script>
+	<script src="~/Fillow/vendor/bootstrap-daterangepicker/daterangepicker.js"></script>
+	<!-- clockpicker -->
+	<script src="~/Fillow/vendor/clockpicker/js/bootstrap-clockpicker.min.js"></script>
+	<!-- asColorPicker -->
+	<script src="~/Fillow/vendor/jquery-asColor/jquery-asColor.min.js"></script>
+	<script src="~/Fillow/vendor/jquery-asGradient/jquery-asGradient.min.js"></script>
+	<script src="~/Fillow/vendor/jquery-asColorPicker/js/jquery-asColorPicker.min.js"></script>
+	<script src="~/Fillow/vendor/bootstrap-datepicker-master/js/bootstrap-datepicker.min.js"></script>
+	<!-- Material color picker -->
+	<script src="~/Fillow/vendor/bootstrap-material-datetimepicker/js/bootstrap-material-datetimepicker.js"></script>
+	<!-- Daterangepicker -->
+	<script src="~/Fillow/js/plugins-init/bs-daterange-picker-init.js"></script>
+	<!-- Clockpicker init -->
+	<script src="~/Fillow/js/plugins-init/clock-picker-init.js"></script>
+	<!-- asColorPicker init -->
+	<script src="~/Fillow/js/plugins-init/jquery-asColorPicker.init.js"></script>
+	<!-- Material color picker init -->
+	<script src="~/Fillow/js/plugins-init/material-date-picker-init.js"></script>
+	<!-- Pickdate -->
+	<script src="~/Fillow/js/plugins-init/pickadate-init.js"></script>
+
+	<!-- Sweet Alert -->
+	<script src="~/Fillow/vendor/sweetalert2/sweetalert2.min.js"></script>
+	<script src="~/Fillow/js/plugins-init/sweetalert.init.js"></script>
+
+	<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+	<!-- Toastr JS -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+
+	
+
+	<script>
+		const sessemployeeNo = @Html.Raw(Json.Serialize(sessemployeeNo));
+		const sessroleCode   = @Html.Raw(Json.Serialize(sessroleCode));
+		const ROLE_ACCESS = @Html.Raw(Context.Session.GetString("ROLE_ACCESS") ?? "{}");
+		let MODULE = '';
+		let access = '';
+
+		// validation
+		$(document).ready(function() {
+
+			validationinputs();
+
+		});
+
+				//notification toaster
+				function showNotification(message, type) {
+								if (type === 'success') {
+									toastr.success(message, "Success");
+								} else if (type === 'error') {
+									toastr.error(message, "Error");
+								} else if (type === 'warning') {
+									toastr.warning(message, "Warning");
+								} else if (type === 'info') {
+									toastr.info(message, "Information");
+								} else {
+									toastr.info(message, "Notification");
+								}
+						}
+
+		function validationinputs() {
+
+			/* ======================================================
+			   TEXT & NUMBER INPUT VALIDATION
+			   ====================================================== */
+			$(document)
+				.off('input.validation')
+				.on('input.validation', 'input', function () {
+
+					const $input = $(this);
+					const type = $input.attr('type');
+					let value = $input.val();
+
+					if ($input.hasClass('decimal-input')) {
+						const decimalRegex = /[^0-9.]/g;
+						let cleaned = value.replace(decimalRegex, '');
+
+						// Only ONE decimal point allowed
+						const parts = cleaned.split('.');
+						if (parts.length > 2) {
+							cleaned = parts[0] + '.' + parts.slice(1).join('');
+						}
+
+						if (value !== cleaned) {
+							$input.val(cleaned);
+						}
+						return; // Skip other validations
+					}
+
+					// TEXT → letters only (except employeeNo)
+					if (type === 'text' &&
+						$input.attr('id') !== 'employeeNo' &&
+						$input.attr('id') !== 'address' &&
+						$input.attr('id') !== 'homePhoneNo' &&
+						$input.attr('id') !== 'mobileNo' &&
+						$input.attr('id') !== 'emergencyContactNo' &&
+						$input.attr('id') !== 'zipcode' &&
+						$input.attr('id') !== 'accountNo' &&
+						$input.attr('id') !== 'bankCode' &&
+						$input.attr('id') !== 'sssNo' &&
+						$input.attr('id') !== 'philhealthNo' &&
+						$input.attr('id') !== 'hdmfNo' &&
+						$input.attr('id') !== 'tinNo' &&
+						$input.attr('id') !== 'addAccessNo' &&
+						$input.attr('id') !== 'viewAccessNo' &&
+						$input.attr('id') !== 'addAdjustmentCode' &&
+						$input.attr('id') !== 'viewAdjustmentCode' &&
+						$input.attr('id') !== 'addAllowanceCode' &&
+						$input.attr('id') !== 'viewAllowanceCode' &&
+						$input.attr('id') !== 'addAttachmentTypeCode' &&
+						$input.attr('id') !== 'viewAttachmentTypeCode' &&
+						$input.attr('id') !== 'addBankCode' &&
+						$input.attr('id') !== 'viewBankCode' && 
+						$input.attr('id') !== 'addBranchCode' &&
+						$input.attr('id') !== 'viewBranchCode' &&
+						$input.attr('id') !== 'addCOECode' &&
+						$input.attr('id') !== 'viewCOECode' &&
+						$input.attr('id') !== 'addCommendationCode' &&
+						$input.attr('id') !== 'viewCommendationCode' &&
+						$input.attr('id') !== 'addDepartmentCode' &&
+						$input.attr('id') !== 'viewDepartmentCode' &&
+						$input.attr('id') !== 'addEmploymentStatusCode' &&
+						$input.attr('id') !== 'viewEmploymentStatusCode' &&
+						$input.attr('id') !== 'addLeaveCode' &&
+						$input.attr('id') !== 'viewLeaveCode' &&
+						$input.attr('id') !== 'addloanCode' &&
+						$input.attr('id') !== 'viewloanCode' &&
+						$input.attr('id') !== 'addLocationCode' &&
+						$input.attr('id') !== 'viewLocationCode' &&
+						$input.attr('id') !== 'addOtherDeductionCode' &&
+						$input.attr('id') !== 'viewOtherDeductionCode' &&
+						$input.attr('id') !== 'addPositionCode' &&
+						$input.attr('id') !== 'viewPositionCode' &&
+						$input.attr('id') !== 'addProjectCode' &&
+						$input.attr('id') !== 'viewProjectCode' &&
+						$input.attr('id') !== 'addRankCode' &&
+						$input.attr('id') !== 'viewRankCode' &&
+						$input.attr('id') !== 'addReason4TerminationCode' &&
+						$input.attr('id') !== 'viewReason4TerminationCode' &&
+						$input.attr('id') !== 'addUnitCode' &&
+						$input.attr('id') !== 'viewUnitCode' &&
+						$input.attr('id') !== 'addUnitCode' &&
+						$input.attr('id') !== 'viewUnitCode' &&
+						$input.attr('id') !== 'addUserCode' &&
+						$input.attr('id') !== 'viewUserCode' &&
+						$input.attr('id') !== 'taxInput' &&           
+						$input.attr('id') !== 'sssInputEE' &&         
+						$input.attr('id') !== 'sssInputER' &&         
+						$input.attr('id') !== 'phicInputEE' &&        
+						$input.attr('id') !== 'phicInputER' &&        
+						$input.attr('id') !== 'hdmfInputEE' &&        
+						$input.attr('id') !== 'hdmfInputER' &&     
+						$input.attr('id') !== 'addAddress' &&
+						$input.attr('id') !== 'addUsername' &&
+						$input.attr('id') !== 'viewUsername' &&
+						$input.attr('id') !== 'roleCode' &&
+						$input.attr('id') !== 'roleName' &&
+						$input.attr('id') !== 'addYearGraduated' &&    
+						$input.attr('id') !== 'viewYearGraduated' &&
+						$input.attr('id') !== 'addSection' &&
+						$input.attr('id') !== 'viewSection' &&
+						$input.attr('id') !== 'orNumberInput' &&
+							!$input.hasClass('alphanum')) {
+						const textRegex = /[^a-zA-ZÀ-ÿÑñ.'\-\s]/g;
+						if (textRegex.test(value)) {
+							$input.val(value.replace(textRegex, ''));
+						}
+					}
+
+					// NUMBER → digits only
+					if (type === 'number' &&
+						$input.attr('id') !== 'addRequestedAmount' &&
+						$input.attr('id') !== 'viewRequestedAmount' &&
+						$input.attr('id') !== 'addRemainingBalance' &&
+						$input.attr('id') !== 'changeScheduleTimeIn' &&
+						$input.attr('id') !== 'changeScheduleTimeOut' &&
+						$input.attr('id') !== 'viewRemainingBalance' &&
+						$input.attr('id') !== 'addValue' &&
+						$input.attr('id') !== 'viewValue' &&
+						$input.attr('id') !== 'addPrincipalAmount' &&
+						$input.attr('id') !== 'viewPrincipalAmount' &&
+						$input.attr('id') !== 'addInterestAmount' &&
+						$input.attr('id') !== 'viewInterestAmount' &&
+						$input.attr('id') !== 'addDeductionPerCutoff' &&
+						$input.attr('id') !== 'viewDeductionPerCutoff') {
+						const numberRegex = /[^0-9]/g;
+						if (numberRegex.test(value)) {
+							$input.val(value.replace(numberRegex, ''));
+						}
+					}
+				});
+
+
+			/* ======================================================
+			   DATE RANGE VALIDATION (From / To)
+			   ====================================================== */
+
+			// Disable date-to by default (if empty)
+			$('.date-to').each(function () {
+				if (!$(this).val()) {
+					$(this).prop('disabled', true).removeData('enabled');
+				}
+			});
+
+			// FROM date change
+					// FROM date change
+			$(document)
+			.off('changeDate.dateFrom')
+			.on('changeDate.dateFrom', '.date-from', function (e) {
+
+				const $range = $(this).closest('.date-range');
+				const $to = $range.find('.date-to');
+				const fromDate = e.date;
+
+				// If From is cleared
+				if (!fromDate) {
+					$to
+						.prop('disabled', true)
+						.removeData('enabled')
+						.datepicker('clearDates')
+						.datepicker('setStartDate', null);
+					return;
+				}
+
+				// ✅ CLEAR Date To when From changes
+				$to
+					.datepicker('clearDates')          // <-- THIS is the key
+					.prop('disabled', false)
+					.data('enabled', true)
+					.datepicker('setStartDate', fromDate);
+			});
+
+			// TO date change
+			$(document)
+				.off('changeDate.dateTo')
+				.on('changeDate.dateTo', '.date-to', function () {
+
+					const $range = $(this).closest('.date-range');
+					const fromDate = $range.find('.date-from').datepicker('getDate');
+					const toDate = $(this).datepicker('getDate');
+
+					if (fromDate && toDate && toDate < fromDate) {
+						showNotification('Date To cannot be earlier than Date From.', 'error');
+						$(this).datepicker('setDate', fromDate);
+					}
+				});
+		}
+
+		 $('.bt-datepicker').datepicker({
+			format: 'yyyy-mm-dd'
+		//autoclose: true
+		});
+
+
+		  flatpickr(".timepicker", {
+			enableTime: true,
+			noCalendar: true,
+			dateFormat: "H:i:S",  // 24-hour format
+			time_24hr: true,
+			 enableSeconds: true
+			 // allowInput: true
+		});
+
+		// $('.timepicker').datetimepicker({
+		// 	//format: 'LT'
+		// 	format: 'HH:mm',
+		// 	stepping: 30
+		// });
+		
+		//fix for select 2 issue when inside the modal
+		document.querySelectorAll('.modal').forEach(function (el) {
+			new bootstrap.Modal(el, {
+				focus: false
+			});
+		});
+
+		// $('.bt-datepicker').datepicker({
+		// 	format: 'yyyy-mm-dd',
+		// 	autoclose: true
+		// });
+
+		//format date for datepicker
+		function format_date(unformattedDate){
+			if (unformattedDate) {
+
+					var datePart = unformattedDate.split(' ')[0];
+
+					// Split into parts
+					var parts = datePart.split('/'); // ["12", "12", "2015"]
+
+					// Create JS Date object
+					var jsDate = new Date(parts[2], parts[0] - 1, parts[1]);
+
+					// Optional: format to yyyy-mm-dd if needed
+					var formattedDate = jsDate.getFullYear() + '/' +
+										String(jsDate.getMonth() + 1).padStart(2, '0') + '/' +
+										String(jsDate.getDate()).padStart(2, '0');
+
+					if(formattedDate === "1900/01/01"){
+						formattedDate = "";
+					}
+					return formattedDate;
+				}
+		}
+
+		//tab in employee profile
+		function loadEmployeeTabContent(tab, employeeNo) {
+					$("#tabContent").html("<p>Loading...</p>");
+					 $.get("/"+ tab + "/Get" + tab, { employeeNo: employeeNo }, function (result) {
+						$("#tabContent").html(result);
+					});
+		}
+
+		// disable / enable inputs
+		function disabled_enable_input(param){
+
+			if(param){
+				$('.formInput,.formRadio').each(function () {
+					$(this).prop('disabled', true).css('background', '#efefef');
+				});
+			}else{
+				$('.formInput,.formRadio').each(function () {
+					$(this).prop('disabled', false).css('background', '');
+				});
+			}
+		}
+
+		//show save and cancel button in forms
+		function showhide_edit_save_btn($btn) {
+
+		  if ($btn.text().trim() === 'Edit') {
+			$btn.text('Save');
+			$btn.removeClass('btn-primary').addClass('btn-success');
+			disabled_enable_input(false);
+			$('.formcancel_btn').show();
+
+		  } else {
+			hideCancelButton();
+		  }
+
+		};
+
+		function hideCancelButton(){
+			disabled_enable_input(true);
+			$('.formcancel_btn').hide();
+			$('.formdateSave_btn').text('Edit');
+			$('.formupdateSave_btn').removeClass('btn-success').addClass('btn-primary');
+		}
+		
+		//validate form
+
+		function validateForm($form) {
+
+			let isValid = true;
+
+			$form.find('.required-field').each(function () {
+				const $field = $(this);
+				let value = $field.val();
+
+				// Normalize value for arrays (multi-select2, etc.)
+				if (Array.isArray(value)) {
+					value = value.filter(v => v && v.trim() !== '').join(',');
+				}
+
+				if (value === null || value === undefined || value === '') {
+					// Mark invalid
+					$field.addClass('is-invalid')
+						  .css('border', '0.0625rem solid #FC2E53');
+
+					// Handle select2
+					if ($field.hasClass('select2-hidden-accessible')) {
+						$field.next('.select2').find('.select2-selection')
+							  .css('border', '0.0625rem solid #FC2E53');
+					}
+
+					isValid = false;
+				} else {
+					// Clear invalid styles
+					$field.removeClass('is-invalid')
+						  .css('border', '');
+
+					if ($field.hasClass('select2-hidden-accessible')) {
+						$field.next('.select2').find('.select2-selection')
+							  .css('border', '');
+					}
+				}
+			});
+
+			return isValid;
+		}
+
+		//clear invalid inputs
+		function clearValidation($form) {
+			$form.find('.form-control, .form-select, .form-radio').removeClass('is-invalid');
+			$form.find('.invalid-feedback').hide();
+		}
+
+		
+
+		function formatDateForPicker(dateStr) {
+			// Replace slashes with dashes
+			return dateStr ? dateStr.replace(/\//g, '-') : '';
+		}
+
+		// Reusable decline with reason function
+		function declineWithReason(options) {
+			var settings = $.extend({
+				title: 'Decline Record',
+				text: 'Are you sure you want to decline this request?',
+				url: '',
+				id: null,
+				declinedByUser: 'CURRENT_USER',
+				button: null,
+				table: null,
+				onSuccess: null,
+				onError: null
+			}, options);
+
+			Swal.fire({
+				title: settings.title,
+				html: `
+					<p style="margin-bottom: 15px;">${settings.text}</p>
+					<div style="text-align: left;">
+						<label for="declineReason" style="display: block; margin-bottom: 5px; font-weight: 500;">
+							Reason for Declining: <span style="color: #dc3545;">*</span>
+						</label>
+						<textarea
+							id="declineReason"
+							class="swal2-input"
+							placeholder="Please provide a reason for declining"
+							style="width: 100%; height: 80px; resize: vertical; padding: 10px; border: 1px solid #ced4da; border-radius: 4px;"
+							maxlength="500"
+						></textarea>
+						<small style="color: #6c757d; display: block; margin-top: 5px;">Maximum 500 characters</small>
+					</div>
+				`,
+				icon: 'warning',
+				showCancelButton: true,
+				confirmButtonText: 'Yes, Decline',
+				cancelButtonText: 'Cancel',
+				confirmButtonColor: '#dc3545',
+				cancelButtonColor: '#6c757d',
+				reverseButtons: false,
+				allowOutsideClick: false,
+				allowEscapeKey: false,
+				preConfirm: () => {
+					const reason = document.getElementById('declineReason').value.trim();
+					if (!reason) {
+						Swal.showValidationMessage('Please provide a reason for declining');
+						return false;
+					}
+					if (reason.length < 5) {
+						Swal.showValidationMessage('Reason must be at least 5 characters');
+						return false;
+					}
+					return reason;
+				},
+				didOpen: () => {
+					document.getElementById('declineReason').focus();
+				}
+			}).then((result) => {
+				if (result.isConfirmed) {
+					var reason = result.value;
+					var $btn = settings.button;
+
+					if ($btn) {
+						$btn.prop('disabled', true);
+						$btn.html('<i class="fas fa-spinner fa-spin"></i>');
+					}
+
+					$.post(settings.url, {
+						id: settings.id,
+						declinedByUser: settings.declinedByUser,
+						reason: reason
+					}, function (response) {
+						if (response.success) {
+							if (settings.table) {
+								settings.table.ajax.reload(null, false);
+							}
+							showNotification(response.message, 'success');
+							if (settings.onSuccess) settings.onSuccess(response);
+						} else {
+							showNotification(response.message, 'error');
+							if (settings.onError) settings.onError(response);
+						}
+					}).fail(function(xhr, status, error) {
+						console.log('Error declining:', error);
+						showNotification('Unable to decline. Please try again.', 'error');
+						if (settings.onError) settings.onError(error);
+					}).always(function() {
+						if ($btn) {
+							$btn.prop('disabled', false);
+							$btn.html('<i class="fa fa-times"></i>');
+						}
+					});
+				}
+			});
+		}
+
+		// Reusable cancel with reason function
+		function cancelWithReason(options) {
+			var settings = $.extend({
+				title: 'Cancel Request',
+				text: 'Are you sure you want to cancel this request?',
+				url: '',
+				id: null,
+				cancelledByUser: 'CURRENT_USER',
+				button: null,
+				table: null,
+				onSuccess: null,
+				onError: null
+			}, options);
+
+			Swal.fire({
+				title: settings.title,
+				html: `
+					<p style="margin-bottom: 15px;">${settings.text}</p>
+					<div style="text-align: left;">
+						<label for="cancelReason" style="display: block; margin-bottom: 5px; font-weight: 500;">
+							Reason for Cancellation: <span style="color: #dc3545;">*</span>
+						</label>
+						<textarea
+							id="cancelReason"
+							class="swal2-input"
+							placeholder="Please provide a reason for cancellation"
+							style="width: 100%; height: 80px; resize: vertical; padding: 10px; border: 1px solid #ced4da; border-radius: 4px;"
+							maxlength="500"
+						></textarea>
+						<small style="color: #6c757d; display: block; margin-top: 5px;">Maximum 500 characters</small>
+					</div>
+				`,
+				icon: 'warning',
+				showCancelButton: true,
+				confirmButtonText: 'Yes, Cancel Request',
+				cancelButtonText: 'Close',
+				confirmButtonColor: '#6c757d',
+				cancelButtonColor: '#0d6efd',
+				reverseButtons: false,
+				allowOutsideClick: false,
+				allowEscapeKey: false,
+				preConfirm: () => {
+					const reason = document.getElementById('cancelReason').value.trim();
+					if (!reason) {
+						Swal.showValidationMessage('Please provide a reason for cancellation');
+						return false;
+					}
+					if (reason.length < 5) {
+						Swal.showValidationMessage('Reason must be at least 5 characters');
+						return false;
+					}
+					return reason;
+				},
+				didOpen: () => {
+					document.getElementById('cancelReason').focus();
+				}
+			}).then((result) => {
+				if (result.isConfirmed) {
+					var reason = result.value;
+					var $btn = settings.button;
+
+					if ($btn) {
+						$btn.prop('disabled', true);
+						$btn.html('<i class="fas fa-spinner fa-spin"></i> Cancelling...');
+					}
+
+					$.post(settings.url, {
+						id: settings.id,
+						cancelledByUser: settings.cancelledByUser,
+						reason: reason
+					}, function (response) {
+						if (response.success) {
+							if (settings.table) {
+								settings.table.ajax.reload(null, false);
+							}
+							showNotification(response.message, 'success');
+							if (settings.onSuccess) settings.onSuccess(response);
+						} else {
+							showNotification(response.message, 'error');
+							if (settings.onError) settings.onError(response);
+						}
+					}).fail(function(xhr, status, error) {
+						console.log('Error cancelling:', error);
+						showNotification('Unable to cancel. Please try again.', 'error');
+						if (settings.onError) settings.onError(error);
+					}).always(function() {
+						if ($btn) {
+							$btn.prop('disabled', false);
+							$btn.html('<i class="fas fa-ban"></i> Cancel Request');
+						}
+					});
+				}
+			});
+		}
+
+				// Reusable delete with reason function
+		function deleteWithReason(options) {
+			var settings = $.extend({
+				title: 'Delete Record',
+				text: 'Are you sure you want to delete this record?',
+				url: '',
+				id: null,
+				button: null,
+				table: null,
+				postData: null,
+				onSuccess: null,
+				onError: null
+			}, options);
+
+			Swal.fire({
+				title: settings.title,
+				html: `
+					<p style="margin-bottom: 15px;">${settings.text}</p>
+					<div style="text-align: left;">
+						<label for="deleteReason" style="display: block; margin-bottom: 5px; font-weight: 500;">
+							Reason for Inactivation: <span style="color: #dc3545;">*</span>
+						</label>
+						<textarea
+							id="deleteReason"
+							class="swal2-input"
+							placeholder="Please provide a reason for inactivation"
+							style="width: 100%; height: 80px; resize: vertical; padding: 10px; border: 1px solid #ced4da; border-radius: 4px;"
+							maxlength="500"
+						></textarea>
+						<small style="color: #6c757d; display: block; margin-top: 5px;">Maximum 500 characters</small>
+					</div>
+				`,
+				icon: 'warning',
+				showCancelButton: true,
+				confirmButtonText: 'Yes, Delete',
+				cancelButtonText: 'Cancel',
+				confirmButtonColor: '#8b5cf6', // CHANGED TO PURPLE
+				cancelButtonColor: '#6c757d',
+				reverseButtons: false,
+				allowOutsideClick: false,
+				allowEscapeKey: false,
+				preConfirm: () => {
+					const reason = document.getElementById('deleteReason').value.trim();
+					if (!reason) {
+						Swal.showValidationMessage('Please provide a reason for deletion');
+						return false;
+					}
+					if (reason.length < 5) {
+						Swal.showValidationMessage('Reason must be at least 5 characters');
+						return false;
+					}
+					return reason;
+				},
+				didOpen: () => {
+					document.getElementById('deleteReason').focus();
+				}
+			}).then((result) => {
+				if (result.isConfirmed) {
+					var reason = result.value;
+					var $btn = settings.button;
+
+					if ($btn) {
+						$btn.prop('disabled', true);
+						$btn.html('<i class="fas fa-spinner fa-spin"></i>');
+					}
+
+					var postData = settings.postData || {
+						id: settings.id,
+						deletedByUser: sessemployeeNo || 'SYSTEM'
+					};
+
+					postData.reason = reason;
+
+					$.post(settings.url, postData, function (response) {
+						if (response.success) {
+							if (settings.table) {
+								settings.table.ajax.reload(null, false);
+							}
+							showNotification(response.message, 'success');
+							if (settings.onSuccess) settings.onSuccess(response);
+						} else {
+							showNotification(response.message, 'error');
+							if (settings.onError) settings.onError(response);
+						}
+					}).fail(function(xhr, status, error) {
+						console.log('Error deleting:', error);
+						showNotification('Unable to delete. Please try again.', 'error');
+						if (settings.onError) settings.onError(error);
+					}).always(function() {
+						if ($btn) {
+							$btn.prop('disabled', false);
+							$btn.html('<i class="fa fa-trash"></i>');
+						}
+					});
+				}
+			});
+		}
+
+	</script>
+
+	@RenderSection("Fillow_script", false)
+
+</body>
+
+</html>

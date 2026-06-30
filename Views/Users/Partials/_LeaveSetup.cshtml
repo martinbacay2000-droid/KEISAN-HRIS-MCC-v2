@@ -1,0 +1,1047 @@
+﻿@model List<KEISAN_HRIS_v2.Models.Users.LeaveSetupModel>
+
+<div class="card-header">
+    <div class="row" style="width:100%;">
+        <div class="row" style="margin-left:0px;width:100%;">
+            <div class="col-md-3">
+                <div class="form-group">
+                    <h5>Record Status</h5>
+                    <select name="filterRecordStatus" id="filterRecordStatus" class="form-control">
+                        <option value="active" selected>ACTIVE</option>
+                        <option value="inactive">INACTIVE</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-6"></div>
+            <div class="col-md-3 d-flex justify-content-end align-items-end">
+                <div class="form-group">
+                    <button type="button" class="btn btn-primary" id="btnAddLeaveSetup">
+                        <i class="fa fa-plus"></i> New Leave
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card-body">
+    <div class="table-responsive">
+        <table id="leaveSetupTable" class="display" style="min-width: 845px">
+            <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>Leave Type</th>
+                    <th>Date From & Date To</th>
+                    <th>Leave Days</th>
+                    <th>Date Entitled</th>
+                    <th>Remaining Balance</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<!-- Add Leave Setup Modal -->
+<div class="modal fade" id="addLeaveSetupModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">New Leave</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addLeaveSetupForm">
+                    <input type="hidden" id="addEmployeeNoHidden" name="EmployeeNo" value="@ViewBag.EmployeeNo" />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Leave Type <span class="text-danger">*</span></label>
+                            <select id="addLeaveType" name="LeaveCode" class="form-select" required>
+                                <option value="">Select Leave Type</option>
+                            </select>
+                            <div class="invalid-feedback">Please select a leave type.</div>
+                        </div>
+                        <div class="col-md-6" id="addDateEntitledContainer">
+                            <label class="form-label">Date Entitled <span class="text-danger">*</span></label>
+                            <div class="input-hasicon">
+                                <input type="text" id="addDateEntitled" name="DateEntitled" class="form-control bt-datepicker" required />
+                                <div class="icon"><i class="far fa-calendar"></i></div>
+                            </div>
+                            <div class="invalid-feedback">Please select date entitled.</div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3" id="addDateRangeContainer" style="display: none;">
+                        <div class="col-md-6">
+                            <label class="form-label">Date From <span class="text-danger">*</span></label>
+                            <div class="input-hasicon">
+                                <input type="text" id="addDateFrom" name="DateFrom" class="form-control bt-datepicker" />
+                                <div class="icon"><i class="far fa-calendar"></i></div>
+                            </div>
+                            <div class="invalid-feedback">Please select date from.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Date To <span class="text-danger">*</span></label>
+                            <div class="input-hasicon">
+                                <input type="text" id="addDateTo" name="DateTo" class="form-control bt-datepicker" readonly style="background-color: #f8f9fa;" />
+                                <div class="icon"><i class="far fa-calendar"></i></div>
+                            </div>
+                            <div class="invalid-feedback">Date To will be calculated automatically.</div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Leave Credits <span class="text-danger">*</span></label>
+                            <input type="number" id="addRemainingBalance" name="RemainingBalance" class="form-control" step="0.01" min="0" required />
+                            <div class="invalid-feedback">Please enter remaining balance.</div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btnSaveNewLeaveSetup" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View/Edit Leave Setup Modal -->
+<div class="modal fade" id="viewLeaveSetupModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewModalTitle">View Leave Setup</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="viewLeaveSetupForm">
+                    <input type="hidden" id="viewLeaveSetupId" name="Id" />
+                    <input type="hidden" id="viewEmployeeNoHidden" name="EmployeeNo" value="@ViewBag.EmployeeNo" />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Leave Type</label>
+                            <input type="text" class="form-control" id="viewLeaveTypeDisplay" readonly>
+                            <input type="hidden" id="viewLeaveType" name="LeaveCode">
+                        </div>
+                        <div class="col-md-6" id="viewDateEntitledContainer">
+                            <label class="form-label">Date Entitled <span class="text-danger edit-required d-none">*</span></label>
+                            <div class="input-hasicon">
+                                <input type="text" id="viewDateEntitled" name="DateEntitled" class="form-control bt-datepicker" readonly />
+                                <div class="icon"><i class="far fa-calendar"></i></div>
+                            </div>
+                            <div class="invalid-feedback">Please select date entitled.</div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3" id="viewDateRangeContainer" style="display: none;">
+                        <div class="col-md-6">
+                            <label class="form-label">Date From <span class="text-danger edit-required d-none">*</span></label>
+                            <div class="input-hasicon">
+                                <input type="text" id="viewDateFrom" name="DateFrom" class="form-control bt-datepicker" readonly />
+                                <div class="icon"><i class="far fa-calendar"></i></div>
+                            </div>
+                            <div class="invalid-feedback">Please select date from.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Date To <span class="text-danger edit-required d-none">*</span></label>
+                            <div class="input-hasicon">
+                                <input type="text" id="viewDateTo" name="DateTo" class="form-control bt-datepicker" readonly style="background-color: #f8f9fa;" />
+                                <div class="icon"><i class="far fa-calendar"></i></div>
+                            </div>
+                            <div class="invalid-feedback">Date To will be calculated automatically.</div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Leave Credits <span class="text-danger edit-required d-none">*</span></label>
+                            <input type="number" id="viewRemainingBalance" name="RemainingBalance" class="form-control" step="0.01" min="0" readonly />
+                            <div class="invalid-feedback">Please enter remaining balance.</div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="btnEditLeaveSetup">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+                <button type="button" class="btn btn-success d-none" id="btnSaveLeaveSetup">Save</button>
+                <button type="button" class="btn btn-danger d-none" id="btnCancelEdit">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .table-responsive {
+        border-radius: 0.375rem;
+    }
+
+    #leaveSetupTable_wrapper .dataTables_length, #leaveSetupTable_wrapper .dataTables_filter {
+        margin-bottom: 1rem;
+    }
+
+    #leaveSetupTable_wrapper .dataTables_info, #leaveSetupTable_wrapper .dataTables_paginate {
+        margin-top: 1rem;
+    }
+
+    #leaveSetupTable .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .modal-content {
+        border-radius: 0.5rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+
+    .invalid-feedback {
+        display: none;
+    }
+
+    .form-control.is-invalid, .form-select.is-invalid {
+        border-color: #dc3545;
+    }
+
+        .form-control.is-invalid ~ .invalid-feedback, .form-select.is-invalid ~ .invalid-feedback {
+            display: block;
+        }
+
+    .input-hasicon {
+        position: relative;
+    }
+
+        .input-hasicon .icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+
+        .input-hasicon input {
+            padding-right: 35px;
+        }
+
+    .text-danger {
+        color: #dc3545 !important;
+    }
+
+    .form-control[readonly] {
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+    }
+
+    .form-select[disabled] {
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+    }
+
+    .edit-mode .form-control[readonly], .edit-mode .form-select[disabled] {
+        background-color: #ffffff;
+        border-color: #ced4da;
+    }
+
+    .select2-container .select2-selection--single {
+        height: 38px;
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 36px;
+        padding-left: 12px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 36px;
+    }
+
+    .select2-container--default.select2-container--focus .select2-selection--single {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+
+    .select2-container--default .select2-selection--single.select2-selection--disabled {
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+    }
+
+    .is-invalid + .select2-container .select2-selection--single {
+        border-color: #dc3545;
+    }
+
+    .swal2-popup {
+        border-radius: 15px !important;
+        padding: 2rem !important;
+    }
+
+    .swal2-icon.swal2-error {
+        border-color: #f27474 !important;
+        color: #f27474 !important;
+    }
+
+        .swal2-icon.swal2-error .swal2-x-mark {
+            display: none !important;
+        }
+
+        .swal2-icon.swal2-error::before {
+            content: "\f2ed" !important;
+            font-family: "Font Awesome 5 Free" !important;
+            font-weight: 900 !important;
+            font-size: 2.5rem !important;
+            color: #f27474 !important;
+            display: block !important;
+        }
+
+    .swal2-title {
+        font-size: 1.875rem !important;
+        font-weight: 600 !important;
+        color: #545454 !important;
+        margin: 1rem 0 0.5rem 0 !important;
+    }
+
+    .swal2-html-container {
+        font-size: 1rem !important;
+        color: #737373 !important;
+        margin: 0 0 2rem 0 !important;
+    }
+
+    .swal2-actions {
+        gap: 0.5rem !important;
+    }
+
+    .swal2-confirm {
+        border-color: #7c3aed !important;
+        color: white !important;
+        font-weight: 500 !important;
+        padding: 0.75rem 2rem !important;
+        border-radius: 8px !important;
+        font-size: 0.875rem !important;
+    }
+
+    .swal2-cancel {
+        background-color: #6b7280 !important;
+        border-color: #6b7280 !important;
+        color: white !important;
+        font-weight: 500 !important;
+        padding: 0.75rem 2rem !important;
+        border-radius: 8px !important;
+        font-size: 0.875rem !important;
+    }
+
+    .swal2-confirm:hover {
+        background-color: #6d28d9 !important;
+        border-color: #6d28d9 !important;
+    }
+
+    .swal2-cancel:hover {
+        background-color: #4b5563 !important;
+        border-color: #4b5563 !important;
+    }
+
+    .btn-success.shadow-sm:hover {
+        background-color: #1e7e34;
+        border-color: #1c7430;
+    }
+
+    .table th, .table td {
+        vertical-align: middle;
+    }
+
+    #leaveSetupTable .btn-sm i {
+        font-size: 0.875rem;
+    }
+
+    #leaveSetupTable .d-flex.gap-1 {
+        gap: 0.25rem !important;
+    }
+
+    .card-header {
+        border-bottom: none !important;
+    }
+
+    #leaveSetupTable thead th:nth-child(4),
+    #leaveSetupTable thead th:nth-child(6) {
+        text-align: right;
+    }
+</style>
+
+<script>
+    $(document).ready(function () {
+
+        MODULE = 'FSLeaveSetupM';
+            access = ROLE_ACCESS?.[MODULE];
+
+        if (access != 'READWRITE' && access != 'FULL') {
+              $('#btnAddLeaveSetup').hide();
+              $('#btnEditLeaveSetup').hide();
+        }
+
+        // CONFIGURATION
+        const config = {
+            toastr: {
+                positionClass: "toast-top-right",
+                timeOut: 5000,
+                closeButton: true,
+                progressBar: true,
+                preventDuplicates: true
+            },
+            endpoints: {
+                list: "/LeaveSetup/GetLeaveSetupData",
+                deleted: "/LeaveSetup/GetDeletedLeaveSetupData",
+                get: "/LeaveSetup/GetLeaveSetupById",
+                types: "/LeaveSetup/GetLeaveTypes",
+                credits: "/LeaveSetup/GetLeaveCredits",
+                save: "/LeaveSetup/SaveLeaveSetup",
+                delete: "/LeaveSetup/SoftDeleteLeaveSetup",
+                restore: "/LeaveSetup/RestoreLeaveSetup"
+            },
+            datepickerFormat: 'yyyy/mm/dd',
+            employeeNo: '@ViewBag.EmployeeNo'
+        };
+
+        toastr.options = config.toastr;
+        let isViewingDeleted = false;
+        let maxLeaveCredits = { add: 0, view: 0 }; // Store max credits for each form
+
+        // INITIALIZATION
+        initializeSelect2();
+        initializeDatepickers();
+        const table = initializeDataTable();
+
+        // Auto-refresh table every hour
+        setInterval(() => {
+            if (table && !$('.modal').is(':visible')) {
+                table.ajax.reload(null, false);
+            }
+        }, 3600000);
+
+        // EVENT HANDLERS - FILTERS
+        $('#filterRecordStatus').on('change', function () {
+            isViewingDeleted = $(this).val() === 'inactive';
+            updateTableView();
+        }).select2({ selectOnClose: true, minimumResultsForSearch: Infinity });
+
+        // EVENT HANDLERS - ADD MODAL
+        $('#btnAddLeaveSetup').click(() => {
+            resetForm('add');
+            $('#addLeaveSetupModal').modal('show');
+        });
+
+        $('#btnSaveNewLeaveSetup').click(() => {
+            if (validateForm('add')) {
+                saveLeaveSetup(false);
+            }
+        });
+
+        // EVENT HANDLERS - VIEW/EDIT MODAL
+        $(document).on('click', '.viewLeaveSetup', function (e) {
+            e.preventDefault();
+            const id = $(this).data('id');
+            const $btn = $(this);
+            toggleButtonLoading($btn, true);
+            loadLeaveSetupForView(id, $btn);
+        });
+
+        $('#btnEditLeaveSetup').click(() => {
+            setEditMode();
+            $('#viewLeaveType').focus();
+        });
+
+        $('#btnCancelEdit').click(() => {
+            const id = $('#viewLeaveSetupId').val();
+            loadLeaveSetupForView(id, null, true);
+        });
+
+        $('#btnSaveLeaveSetup').click(() => {
+            if (validateForm('view')) {
+                saveLeaveSetup(true);
+            }
+        });
+
+        // EVENT HANDLERS - DELETE/RESTORE
+        $(document).on('click', '.deleteLeaveSetup', function (e) {
+            e.preventDefault();
+            deleteWithReason({
+                title: 'Inactive Leave Setup',
+                text: 'Are you sure you want to inactive this leave setup?',
+                url: '/LeaveSetup/SoftDeleteLeaveSetup',
+                id: $(this).data('id'),
+                button: $(this),
+                table: table
+            });
+        });
+
+        $(document).on('click', '.restoreLeaveSetup', function (e) {
+            e.preventDefault();
+            const id = $(this).data('id');
+            const $btn = $(this);
+
+            Swal.fire({
+                title: 'Restore Record',
+                text: 'Are you sure you want to restore this leave setup?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Restore',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#6c757d',
+                reverseButtons: false,
+                allowOutsideClick: false,
+                allowEscapeKey: false
+            }).then(result => {
+                if (result.isConfirmed) {
+                    toggleButtonLoading($btn, true);
+                    restoreLeaveSetup(id, $btn);
+                }
+            });
+        });
+
+        // EVENT HANDLERS - MODAL LIFECYCLE
+        $('#addLeaveSetupModal').on('hidden.bs.modal', () => resetForm('add'));
+        $('#viewLeaveSetupModal').on('hidden.bs.modal', () => {
+            resetForm('view');
+            setViewMode();
+        });
+
+        // EVENT HANDLERS - KEYBOARD
+        $('#addLeaveSetupForm').on('keypress', e => {
+            if (e.which === 13) {
+                e.preventDefault();
+                $('#btnSaveNewLeaveSetup').click();
+            }
+        });
+
+        $('#viewLeaveSetupForm').on('keypress', e => {
+            if (e.which === 13 && $('#viewLeaveSetupModal .modal-body').hasClass('edit-mode')) {
+                e.preventDefault();
+                $('#btnSaveLeaveSetup').click();
+            }
+        });
+
+        // EVENT HANDLERS - VALIDATION AND LEAVE TYPE CHANGE
+        $('#addLeaveType').on('change', function() {
+            $(this).removeClass('is-invalid');
+            const leaveCode = $(this).val();
+
+            toggleDateFields(this, 'add');
+
+            if (leaveCode) {
+                fetchLeaveCredits(leaveCode, 'add');
+            } else {
+                resetLeaveCreditsField('add');
+            }
+        });
+
+        $('#addDateEntitled, #addDateFrom, #addDateTo, #viewDateEntitled, #viewDateFrom, #viewDateTo')
+            .on('input', function() { $(this).removeClass('is-invalid'); });
+
+        // EVENT HANDLERS - REMAINING BALANCE WITH VALIDATION
+        $('#addRemainingBalance, #viewRemainingBalance').on('input', function() {
+            $(this).removeClass('is-invalid');
+            const prefix = $(this).attr('id').startsWith('add') ? 'add' : 'view';
+            const value = parseFloat($(this).val());
+            const maxCredits = maxLeaveCredits[prefix];
+
+            if (!isNaN(value) && maxCredits > 0 && value > maxCredits) {
+                $(this).addClass('is-invalid');
+                $(this).siblings('.invalid-feedback').text(`Maximum credits allowed: ${maxCredits.toFixed(2)}`);
+                showNotification(`Leave credits cannot exceed ${maxCredits.toFixed(2)}`, 'error');
+            }
+        });
+
+        // EVENT HANDLERS - DATE CALCULATIONS
+        $('#addDateFrom, #addRemainingBalance').on('change input', function() {
+            calculateDateTo('add');
+        });
+
+        $('#viewDateFrom, #viewRemainingBalance').on('change input', function() {
+            if (!$('#viewDateFrom').prop('readonly')) {
+                calculateDateTo('view');
+            }
+        });
+
+        // INITIALIZATION FUNCTIONS
+        function initializeSelect2() {
+            $('#addLeaveType').select2({
+                placeholder: "Select Leave Type",
+                allowClear: true,
+                dropdownParent: $('#addLeaveSetupModal'),
+                ajax: {
+                    url: config.endpoints.types,
+                    dataType: 'json',
+                    delay: 250,
+                    processResults: data => ({
+                        results: data.map(item => ({
+                            id: item.leaveCode,
+                            text: item.leaveName,
+                            leaveCredits: item.leaveCredits
+                        }))
+                    }),
+                    cache: true
+                }
+            });
+        }
+
+        function initializeDatepickers() {
+            $('.bt-datepicker').datepicker({
+                format: config.datepickerFormat,
+                autoclose: true
+            });
+        }
+
+        function initializeDataTable() {
+            return $('#leaveSetupTable').DataTable({
+                processing: true,
+                serverSide: false,
+                ajax: {
+                    url: config.endpoints.list,
+                    type: "GET",
+                    data: { employeeNo: config.employeeNo },
+                    datatype: "json",
+                    error: (xhr, error) => showNotification('Error loading data. Please refresh the page.', 'error')
+                },
+                columns: [
+                    {
+                        data: "id",
+                        width: "15%",
+                        orderable: false,
+                        render: (data, type, row) => {
+
+                            let viewbtn ='';
+                            let restorebtn ='';
+                            let deletebtn ='';
+
+
+
+                            if (isViewingDeleted) {
+
+                                if (access === 'FULL'){
+                                    restorebtn = `
+                                        <div class="d-flex gap-1">
+                                            <button type="button" class="btn btn-sm btn-success shadow-sm restoreLeaveSetup" data-id="${data}" title="Restore">
+                                                <i class="fas fa-undo"></i>
+                                            </button>
+                                        </div>`;
+                                }
+
+                                return `${restorebtn}`;
+                            } else {
+
+
+                                if (access === 'FULL'){
+                                    deletebtn = ` <button type="button" class="btn btn-sm btn-danger shadow-sm deleteLeaveSetup" data-id="${data}" title="Delete">
+                                        <i class="fa fa-trash"></i>
+                                    </button>`;
+                                }
+
+                                viewbtn = `<button type="button" class="btn btn-sm btn-primary shadow-sm viewLeaveSetup" data-id="${data}" title="View">
+                                        <i class="fas fa-eye"></i>
+                                    </button>`;
+
+
+
+                                return `
+                                <div class="d-flex gap-1">
+                                    ${viewbtn}
+                                    ${deletebtn}
+                                </div>`;
+                            }
+
+                        }
+                    },
+                    { data: "leaveName", width: "25%" },
+                    {
+                        data: null,
+                        width: "20%",
+                        render: (data, type, row) => row.dateFrom && row.dateTo ? `${row.dateFrom} - ${row.dateTo}` : '-'
+                    },
+                    {
+                        data: null,
+                        width: "10%",
+                        className: "text-end",
+                        render: (data, type, row) => {
+                            if (row.dateFrom && row.dateTo) {
+                                return parseFloat(row.remainingDays || 0).toFixed(1);
+                            } else if (row.remainingDays && row.remainingDays > 0) {
+                                return parseFloat(row.remainingDays).toFixed(1);
+                            }
+                            return '-';
+                        }
+                    },
+                    { data: "dateEntitled", width: "15%", render: data => data || '-' },
+                    { data: "remainingBalance", width: "15%", className: "text-end", render: data => parseFloat(data || 0).toFixed(2) }
+                ],
+                order: [[0, 'asc']],
+                pageLength: 25,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                language: {
+                    processing: "Loading...",
+                    emptyTable: "No leave setup records found",
+                    zeroRecords: "No matching leave setup records found",
+                    paginate: {
+                        next: '<i class="fa fa-angle-double-right"></i>',
+                        previous: '<i class="fa fa-angle-double-left"></i>'
+                    }
+                }
+            });
+        }
+
+        // LEAVE CREDITS FUNCTIONS
+        function fetchLeaveCredits(leaveCode, prefix) {
+            $.get(config.endpoints.credits, { leaveCode: leaveCode })
+                .done(response => {
+                    if (response.success) {
+                        maxLeaveCredits[prefix] = response.leaveCredits;
+                        updateLeaveCreditsField(prefix, response.leaveCredits);
+                    } else {
+                        maxLeaveCredits[prefix] = 0;
+                        resetLeaveCreditsField(prefix);
+                    }
+                })
+                .fail(() => {
+                    maxLeaveCredits[prefix] = 0;
+                    resetLeaveCreditsField(prefix);
+                    showNotification('Unable to fetch leave credits', 'error');
+                });
+        }
+
+       function updateLeaveCreditsField(prefix, maxCredits) {
+            const $input = $(`#${prefix}RemainingBalance`);
+
+            if (maxCredits > 0) {
+                $input.attr('max', maxCredits);
+                $input.attr('placeholder', `Max: ${maxCredits.toFixed(2)}`);
+
+                // If current value exceeds max, clear it
+                const currentValue = parseFloat($input.val());
+                if (!isNaN(currentValue) && currentValue > maxCredits) {
+                    $input.val('');
+                    showNotification(`Maximum credits for this leave type: ${maxCredits.toFixed(2)}`, 'info');
+                }
+            } else {
+                // LWOP or leave type with 0 credits — no ceiling, set to 0
+                $input.attr('max', '');
+                $input.attr('placeholder', '0');
+                $input.val('0');
+            }
+        }
+
+        function resetLeaveCreditsField(prefix) {
+            const $input = $(`#${prefix}RemainingBalance`);
+            $input.attr('max', '');
+            $input.attr('placeholder', 'Enter leave credits');
+            $input.val('');
+        }
+
+        // DATA OPERATIONS
+        function loadLeaveSetupForView(id, $btn, isCancel = false) {
+            if ($btn && !$btn.data('original-html')) {
+                $btn.data('original-html', $btn.html());
+            }
+
+            $.get(config.endpoints.get, { id })
+                .done(response => {
+                    if (response.success) {
+                        resetForm('view');
+                        setViewMode();
+                        populateViewForm(response.data);
+                        toggleDateFields($('#viewLeaveType')[0], 'view');
+                        if (!isCancel) $('#viewLeaveSetupModal').modal('show');
+                    } else {
+                        showNotification(response.message, 'error');
+                    }
+                })
+                .fail(() => showNotification('Unable to load leave setup data', 'error'))
+                .always(() => {
+                    if ($btn) {
+                        const defaultIcon = '<i class="fas fa-eye"></i>';
+                        $btn.prop('disabled', false).html($btn.data('original-html') || defaultIcon);
+                        $btn.removeData('original-html');
+                    }
+                });
+        }
+
+        function saveLeaveSetup(isEdit) {
+            const formData = getFormData(isEdit ? 'view' : 'add');
+            const $saveBtn = isEdit ? $('#btnSaveLeaveSetup') : $('#btnSaveNewLeaveSetup');
+
+            toggleButtonLoading($saveBtn, true, 'Saving...');
+
+            $.ajax({
+                url: config.endpoints.save,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(formData),
+                success: response => {
+                    if (response.success) {
+                        if (isEdit) {
+                            setViewMode();
+                        } else {
+                            $('#addLeaveSetupModal').modal('hide');
+                        }
+                        table.ajax.reload(null, false);
+                        showNotification(response.message, 'success');
+                    } else {
+                        showNotification(response.message, 'error');
+                    }
+                },
+                error: () => showNotification('Unable to save leave setup. Please try again.', 'error'),
+                complete: () => toggleButtonLoading($saveBtn, false)
+            });
+        }
+
+        function deleteLeaveSetup(id, $btn) {
+            $.post(config.endpoints.delete, { id })
+                .done(response => {
+                    if (response.success) {
+                        table.ajax.reload(null, false);
+                        showNotification(response.message, 'success');
+                    } else {
+                        showNotification(response.message, 'error');
+                    }
+                })
+                .fail(() => showNotification('Unable to delete leave setup. Please try again.', 'error'))
+                .always(() => toggleButtonLoading($btn, false));
+        }
+
+        function restoreLeaveSetup(id, $btn) {
+            $.post(config.endpoints.restore, { id })
+                .done(response => {
+                    if (response.success) {
+                        table.ajax.reload(null, false);
+                        showNotification(response.message, 'success');
+                    } else {
+                        showNotification(response.message, 'error');
+                    }
+                })
+                .fail(() => showNotification('Unable to restore leave setup. Please try again.', 'error'))
+                .always(() => toggleButtonLoading($btn, false));
+        }
+
+        // FORM HELPERS
+        function populateViewForm(data) {
+            $('#viewLeaveSetupId').val(data.id);
+
+            // Store leave code in hidden field and display leave name in readonly text field
+            $('#viewLeaveType').val(data.leaveCode);
+            $('#viewLeaveTypeDisplay').val(data.leaveName);
+
+            $('#viewDateEntitled').val(data.dateEntitled);
+            $('#viewDateFrom').val(data.dateFrom);
+            $('#viewDateTo').val(data.dateTo);
+            $('#viewRemainingBalance').val(data.remainingBalance);
+
+            // Fetch credits for the selected leave type
+            if (data.leaveCode) {
+                fetchLeaveCredits(data.leaveCode, 'view');
+            }
+        }
+
+        function getFormData(prefix) {
+            const isView = prefix === 'view';
+            const remainingBalance = parseFloat($(`#${prefix}RemainingBalance`).val()) || 0;
+
+            return {
+                ...(isView && { Id: parseInt($(`#${prefix}LeaveSetupId`).val()) }),
+                EmployeeNo: $(`#${prefix}EmployeeNoHidden`).val(),
+                LeaveCode: isView ? $(`#${prefix}LeaveType`).val() : $(`#${prefix}LeaveType`).val(),
+                DateEntitled: $(`#${prefix}DateEntitled`).val(),
+                DateFrom: $(`#${prefix}DateFrom`).val(),
+                DateTo: $(`#${prefix}DateTo`).val(),
+                RemainingBalance: remainingBalance,
+                IsActive: true
+            };
+        }
+
+        function resetForm(prefix) {
+            $(`#${prefix}LeaveSetupForm`)[0].reset();
+            $(`#${prefix}LeaveType`).val(null).trigger('change');
+            clearValidation(`#${prefix}LeaveSetupForm`);
+            $(`#btnSave${prefix === 'view' ? 'LeaveSetup' : 'NewLeaveSetup'}`).prop('disabled', false).html('Save');
+            $(`#${prefix}DateEntitledContainer`).show();
+            $(`#${prefix}DateRangeContainer`).hide();
+            $(`#${prefix}DateEntitled`).prop('required', true);
+            $(`#${prefix}DateFrom, #${prefix}DateTo`).prop('required', false);
+
+            // Reset leave credits tracking
+            maxLeaveCredits[prefix] = 0;
+            resetLeaveCreditsField(prefix);
+        }
+
+        // VIEW MODE MANAGEMENT
+        function setViewMode() {
+            $('#viewModalTitle').text('View Leave Setup');
+            $('#viewLeaveSetupModal .modal-body').removeClass('edit-mode');
+            $('#viewDateEntitled, #viewDateFrom, #viewDateTo, #viewRemainingBalance').prop('readonly', true);
+            $('#viewDateEntitled, #viewDateFrom, #viewDateTo').datepicker('remove');
+            $('.edit-required').addClass('d-none');
+            $('#btnEditLeaveSetup').removeClass('d-none');
+            $('#btnSaveLeaveSetup, #btnCancelEdit').addClass('d-none');
+            clearValidation('#viewLeaveSetupForm');
+        }
+
+        function setEditMode() {
+            $('#viewModalTitle').text('Edit Leave Setup');
+            $('#viewLeaveSetupModal .modal-body').addClass('edit-mode');
+            $('#viewRemainingBalance').prop('readonly', false);
+            $('#viewDateEntitled, #viewDateFrom, #viewDateTo').prop('readonly', false);
+            $('#viewDateEntitled, #viewDateFrom, #viewDateTo').datepicker({
+                format: config.datepickerFormat,
+                autoclose: true
+            });
+            $('.edit-required').removeClass('d-none');
+            $('#btnEditLeaveSetup').addClass('d-none');
+            $('#btnSaveLeaveSetup, #btnCancelEdit').removeClass('d-none');
+        }
+
+        // VALIDATION
+        function validateForm(prefix) {
+            let isValid = true;
+            const leaveTypeVal = prefix === 'view' ? $('#viewLeaveType').val() : $('#addLeaveType').val();
+            const selectedOption = prefix === 'view' ? $('#viewLeaveTypeDisplay').val() : $('#addLeaveType option:selected').text();
+            const isMaternityOrPaternity = selectedOption.toLowerCase().includes('maternity') ||
+                                          selectedOption.toLowerCase().includes('paternity');
+
+            if (!leaveTypeVal) {
+                if (prefix === 'add') {
+                    $('#addLeaveType').addClass('is-invalid');
+                }
+                isValid = false;
+            }
+
+            if (isMaternityOrPaternity) {
+                if (!$(`#${prefix}DateFrom`).val()) {
+                    $(`#${prefix}DateFrom`).addClass('is-invalid');
+                    isValid = false;
+                }
+            } else {
+                if (!$(`#${prefix}DateEntitled`).val()) {
+                    $(`#${prefix}DateEntitled`).addClass('is-invalid');
+                    isValid = false;
+                }
+            }
+
+            const balance = parseFloat($(`#${prefix}RemainingBalance`).val());
+            const maxCredits = maxLeaveCredits[prefix];
+
+            if (isNaN(balance) || balance < 0) {
+                $(`#${prefix}RemainingBalance`).addClass('is-invalid');
+                $(`#${prefix}RemainingBalance`).siblings('.invalid-feedback').text('Leave credits cannot be negative');
+                isValid = false;
+            } else if (maxCredits > 0 && balance > maxCredits) {
+                $(`#${prefix}RemainingBalance`).addClass('is-invalid');
+                $(`#${prefix}RemainingBalance`).siblings('.invalid-feedback').text(`Maximum credits allowed: ${maxCredits.toFixed(2)}`);
+                showNotification(`Leave credits cannot exceed ${maxCredits.toFixed(2)}`, 'error');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function clearValidation(formSelector) {
+            $(`${formSelector} .form-control, ${formSelector} .form-select`).removeClass('is-invalid');
+        }
+
+        // UI HELPERS
+        function updateTableView() {
+            const url = isViewingDeleted ? config.endpoints.deleted : config.endpoints.list;
+            table.ajax.url(`${url}?employeeNo=${config.employeeNo}`).load();
+            $('#btnAddLeaveSetup').toggle(!isViewingDeleted);
+        }
+
+        function toggleDateFields(selectElement, prefix) {
+            const selectedOption = $(selectElement).find('option:selected').text();
+            const isMaternityOrPaternity = selectedOption.toLowerCase().includes('maternity') ||
+                                          selectedOption.toLowerCase().includes('paternity');
+
+            if (isMaternityOrPaternity) {
+                $(`#${prefix}DateEntitledContainer`).hide();
+                $(`#${prefix}DateRangeContainer`).show();
+                $(`#${prefix}DateEntitled`).prop('required', false).val('');
+                $(`#${prefix}DateFrom`).prop('required', true);
+                $(`#${prefix}DateTo`).prop('required', false).prop('readonly', true).css('background-color', '#f8f9fa');
+                $(`#${prefix}DateTo`).datepicker('destroy');
+                $(`#${prefix}DateEntitled`).removeClass('is-invalid');
+            } else {
+                $(`#${prefix}DateEntitledContainer`).show();
+                $(`#${prefix}DateRangeContainer`).hide();
+                $(`#${prefix}DateEntitled`).prop('required', true);
+                $(`#${prefix}DateFrom, #${prefix}DateTo`).prop('required', false).val('');
+                $(`#${prefix}DateTo`).prop('readonly', false).css('background-color', '');
+                $(`#${prefix}DateTo`).datepicker({ format: config.datepickerFormat, autoclose: true });
+                $(`#${prefix}DateFrom, #${prefix}DateTo`).removeClass('is-invalid');
+            }
+        }
+
+        function calculateDateTo(prefix) {
+            const selectedLeaveType = $(`#${prefix}LeaveType option:selected`).text();
+            const isMaternityOrPaternity = selectedLeaveType.toLowerCase().includes('maternity') ||
+                                          selectedLeaveType.toLowerCase().includes('paternity');
+
+            if (isMaternityOrPaternity) {
+                const dateFrom = $(`#${prefix}DateFrom`).val();
+                const leaveDays = parseFloat($(`#${prefix}RemainingBalance`).val());
+
+                if (dateFrom && leaveDays > 0) {
+                    const dateTo = calculateDateToExcludingWeekends(dateFrom, leaveDays);
+                    $(`#${prefix}DateTo`).val(dateTo);
+                } else {
+                    $(`#${prefix}DateTo`).val('');
+                }
+            }
+        }
+
+        function calculateDateToExcludingWeekends(dateFrom, leaveDays) {
+            if (!dateFrom || !leaveDays || leaveDays <= 0) return '';
+
+            let currentDate = new Date(dateFrom.replace(/\//g, '-'));
+            currentDate.setDate(currentDate.getDate() + leaveDays - 1);
+
+            const year = currentDate.getFullYear();
+            const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+            const day = String(currentDate.getDate()).padStart(2, '0');
+
+            return `${year}/${month}/${day}`;
+        }
+
+        function toggleButtonLoading($btn, loading, text = '') {
+            const iconMap = {
+                'viewLeaveSetup': '<i class="fas fa-eye"></i>',
+                'deleteLeaveSetup': '<i class="fa fa-trash"></i>',
+                'restoreLeaveSetup': '<i class="fas fa-undo"></i>'
+            };
+
+            if (loading) {
+                if (!$btn.data('original-html')) $btn.data('original-html', $btn.html());
+                const icon = text ? '<i class="fas fa-spinner fa-spin"></i> ' : '<i class="fas fa-spinner fa-spin"></i>';
+                $btn.prop('disabled', true).html(icon + text);
+            } else {
+                const btnClass = Object.keys(iconMap).find(cls => $btn.hasClass(cls));
+                const originalHtml = $btn.data('original-html') || iconMap[btnClass] || 'Save';
+                $btn.prop('disabled', false).html(originalHtml).removeData('original-html');
+            }
+        }
+
+        function showNotification(message, type) {
+            const types = { success: 'Success', error: 'Error', warning: 'Warning', info: 'Information' };
+            toastr[type](message, types[type] || 'Notification');
+        }
+
+        // Prevent 'e' and other non-numeric characters in number inputs
+        $('#addRemainingBalance, #viewRemainingBalance').on('keydown', function(e) {
+            // Prevent: e, E, +, -
+            if (e.key === 'e' || e.key === 'E' || e.key === '+' || e.key === '-') {
+                e.preventDefault();
+            }
+        });
+    });
+</script>

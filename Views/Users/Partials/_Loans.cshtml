@@ -1,0 +1,1201 @@
+﻿@model List<KEISAN_HRIS_v2.Models.Users.UsersLoansModel>
+
+<div class="card-header">
+    <div class="row" style="width:100%;">
+        <div class="row" style="margin-left:0px;width:100%;">
+            <div class="col-md-3">
+                <div class="form-group">
+                    <h5>Loan Status</h5>
+                    <select name="filterLoanStatus" id="filterLoanStatus" class="form-control">
+                        <option value="1" selected>Ongoing</option>
+                        <option value="3">Completed</option>
+                        <option value="0">Inactive</option>
+                        <option value="2">All</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-6"></div>
+            <div class="col-md-3 d-flex justify-content-end align-items-end">
+                <div class="form-group">
+                    <button type="button" class="btn btn-primary" id="btnAddLoan">
+                        <i class="fa fa-plus"></i> New Loan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card-body">
+    <div class="table-responsive">
+        <table id="loansTable" class="display" style="min-width: 845px">
+            <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>Loan Name</th>
+                    <th>Loan Amount</th>
+                    <th>Date Granted</th>
+                    <th>Monthly Amortization</th>
+                    <th>Months to Pay</th>
+                    <th>Deduction Start Date</th>
+                    <th>Deduction Schedule</th>
+                    <th>Outstanding Balance</th>
+                    <th>Status</th>
+                    <th>Remarks</th>
+                    <th>Date Added</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<!-- Add Loan Modal -->
+<div class="modal fade" id="addLoanModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">New Loan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addLoanForm">
+                    <input type="hidden" id="addEmployeeNoHidden" name="EmployeeNo" value="@ViewBag.EmployeeNo" />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Loan Type <span class="text-danger">*</span></label>
+                            <select id="addLoanType" name="LoanCode" class="form-select" required>
+                                <option value="">Select Loan Type</option>
+                            </select>
+                            <div class="invalid-feedback">Please select a loan type.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Principal Amount <span class="text-danger">*</span></label>
+                            <input type="number" id="addPrincipalAmount" name="PrincipalAmount" class="form-control" step="0.01" min="0" required placeholder="0.00" />
+                            <div class="invalid-feedback">Please enter principal amount.</div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Months to Pay <span class="text-danger">*</span></label>
+                            <input type="number" id="addMonthsToPay" name="MonthsToPay" class="form-control" min="1" required placeholder="0" />
+                            <div class="invalid-feedback">Please enter months to pay.</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Monthly Amortization <span class="text-danger">*</span></label>
+                            <input type="number" id="addDeductionPerCutoff" name="DeductionPerCutoff" class="form-control" step="0.01" min="0" required placeholder="0.00" />
+                            <div class="invalid-feedback">Please enter monthly amortization.</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Interest Amount</label>
+                            <input type="number" id="addInterestAmount" name="InterestAmount" class="form-control" step="0.01" min="0" placeholder="0.00" />
+                        </div>
+                    </div>
+
+                    <div class="row mt-2" id="addPerCutoffDisplayRow" style="display:none;">
+                        <div class="col-md-4 offset-md-4">
+                            <label class="form-label text-muted">
+                                <i class="fas fa-calculator me-1"></i>Amount Per Cutoff
+                            </label>
+                            <input type="text" id="addPerCutoffDisplay" class="form-control" readonly
+                                   style="background-color:#e9f7ef; border-color:#28a745; color:#155724; font-weight:600;">
+                            <small class="text-muted">Monthly Amortization ÷ 2</small>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Date Granted <span class="text-danger">*</span></label>
+                            <div class="input-hasicon">
+                                <input type="text" id="addDateGranted" name="DateGranted" class="form-control bt-datepicker" required />
+                                <div class="icon"><i class="far fa-calendar"></i></div>
+                            </div>
+                            <div class="invalid-feedback">Please select date granted.</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Deduction Start Date <span class="text-danger">*</span></label>
+                            <div class="input-hasicon">
+                                <input type="text" id="addDeductionStartDate" name="DeductionStartDate" class="form-control bt-datepicker" required />
+                                <div class="icon"><i class="far fa-calendar"></i></div>
+                            </div>
+                            <div class="invalid-feedback">Please select deduction start date.</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Deduction Schedule <span class="text-danger">*</span></label>
+                            <select id="addDeductionSchedule" name="DeductionSchedule" class="form-select" required>
+                                <option value="">Select Schedule</option>
+                                <option value="Per Cutoff">1st and 2nd Cutoff</option>
+                                <option value="1st Cutoff">1st Cutoff</option>
+                                <option value="2nd Cutoff">2nd Cutoff</option>
+                            </select>
+                            <div class="invalid-feedback">Please select deduction schedule.</div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Remarks</label>
+                            <textarea id="addRemarks" name="Remarks" class="form-control" rows="3" maxlength="500" placeholder="Enter remarks (optional)"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btnSaveNewLoan" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View/Edit Loan Modal -->
+<div class="modal fade" id="viewLoanModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewModalTitle">View Loan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="viewLoanForm">
+                    <input type="hidden" id="viewLoanId" name="Id" />
+                    <input type="hidden" id="viewEmployeeNoHidden" name="EmployeeNo" value="@ViewBag.EmployeeNo" />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label">Loan Type <span class="text-danger edit-required d-none">*</span></label>
+                            <input type="text" class="form-control" id="viewLoanTypeDisplay" readonly>
+                            <select id="viewLoanTypeSelect" name="LoanCode" class="form-select d-none" disabled>
+                                <option value="">Select Loan Type</option>
+                            </select>
+                            <input type="hidden" id="viewLoanType" name="LoanCode">
+                            <div class="invalid-feedback">Please select a loan type.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Principal Amount <span class="text-danger edit-required d-none">*</span></label>
+                            <input type="number" id="viewPrincipalAmount" name="PrincipalAmount" class="form-control" step="0.01" min="0" readonly />
+                            <div class="invalid-feedback">Please enter principal amount.</div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Months to Pay <span class="text-danger edit-required d-none">*</span></label>
+                            <input type="number" id="viewMonthsToPay" name="MonthsToPay" class="form-control" min="1" readonly />
+                            <div class="invalid-feedback">Please enter months to pay.</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Monthly Amortization <span class="text-danger edit-required d-none">*</span></label>
+                            <input type="number" id="viewDeductionPerCutoff" name="DeductionPerCutoff" class="form-control" step="0.01" min="0" readonly />
+                            <div class="invalid-feedback">Please enter monthly amortization.</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Interest Amount</label>
+                            <input type="number" id="viewInterestAmount" name="InterestAmount" class="form-control" step="0.01" min="0" readonly />
+                        </div>
+                    </div>
+
+                    <div class="row mt-2" id="viewPerCutoffDisplayRow" style="display:none;">
+                        <div class="col-md-4 offset-md-4">
+                            <label class="form-label text-muted">
+                                <i class="fas fa-calculator me-1"></i>Amount Per Cutoff
+                            </label>
+                            <input type="text" id="viewPerCutoffDisplay" class="form-control" readonly
+                                   style="background-color:#e9f7ef; border-color:#28a745; color:#155724; font-weight:600;">
+                            <small class="text-muted">Monthly Amortization ÷ 2</small>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Date Granted <span class="text-danger edit-required d-none">*</span></label>
+                            <div class="input-hasicon">
+                                <input type="text" id="viewDateGranted" name="DateGranted" class="form-control bt-datepicker" readonly />
+                                <div class="icon"><i class="far fa-calendar"></i></div>
+                            </div>
+                            <div class="invalid-feedback">Please select date granted.</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Deduction Start Date <span class="text-danger edit-required d-none">*</span></label>
+                            <div class="input-hasicon">
+                                <input type="text" id="viewDeductionStartDate" name="DeductionStartDate" class="form-control bt-datepicker" readonly />
+                                <div class="icon"><i class="far fa-calendar"></i></div>
+                            </div>
+                            <div class="invalid-feedback">Please select deduction start date.</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Deduction Schedule <span class="text-danger edit-required d-none">*</span></label>
+                            <select id="viewDeductionSchedule" name="DeductionSchedule" class="form-select" disabled>
+                                <option value="">Select Schedule</option>
+                                <option value="Per Cutoff">1st and 2nd Cutoff</option>
+                                <option value="1st Cutoff">1st Cutoff</option>
+                                <option value="2nd Cutoff">2nd Cutoff</option>
+                            </select>
+                            <div class="invalid-feedback">Please select deduction schedule.</div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Remarks</label>
+                            <textarea id="viewRemarks" name="Remarks" class="form-control" rows="3" maxlength="500" readonly></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="btnEditLoan">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+                <button type="button" class="btn btn-success d-none" id="btnSaveLoan">Save</button>
+                <button type="button" class="btn btn-danger d-none" id="btnCancelEdit">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment History Modal -->
+<div class="modal fade" id="paymentHistoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Payment History</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table id="paymentHistoryTable" class="display" style="min-width: 845px">
+                        <thead>
+                            <tr>
+                                <th>Transaction Date</th>
+                                <th>Payment</th>
+                                <th>Remarks</th>
+                                <th>Processed By</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Complete Loan Modal -->
+<div class="modal fade" id="completeLoanModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Complete Loan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="completeLoanForm">
+                    <input type="hidden" id="completeLoanId" />
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label class="form-label">Remarks <span class="text-danger">*</span></label>
+                            <textarea id="completeRemarks" class="form-control" rows="4" maxlength="500" required placeholder="Enter remarks for completing this loan"></textarea>
+                            <div class="invalid-feedback">Remarks are required.</div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btnConfirmComplete" class="btn btn-success">Complete Loan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Inactivate Loan Modal -->
+<div class="modal fade" id="inactivateLoanModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Inactivate Loan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="inactivateLoanForm">
+                    <input type="hidden" id="inactivateLoanId" />
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label class="form-label">Remarks <span class="text-danger">*</span></label>
+                            <textarea id="inactivateRemarks" class="form-control" rows="4" maxlength="500" required placeholder="Enter reason for inactivating this loan"></textarea>
+                            <div class="invalid-feedback">Remarks are required.</div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btnConfirmInactivate" class="btn btn-danger">Inactivate Loan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .table-responsive {
+        border-radius: 0.375rem;
+    }
+
+    #loansTable_wrapper .dataTables_length, #loansTable_wrapper .dataTables_filter {
+        margin-bottom: 1rem;
+    }
+
+    #loansTable_wrapper .dataTables_info, #loansTable_wrapper .dataTables_paginate {
+        margin-top: 1rem;
+    }
+
+    #loansTable .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .modal-content {
+        border-radius: 0.5rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+
+    .invalid-feedback {
+        display: none;
+    }
+
+    .form-control.is-invalid, .form-select.is-invalid {
+        border-color: #dc3545;
+    }
+
+        .form-control.is-invalid ~ .invalid-feedback, .form-select.is-invalid ~ .invalid-feedback {
+            display: block;
+        }
+
+    .input-hasicon {
+        position: relative;
+    }
+
+        .input-hasicon .icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+
+        .input-hasicon input {
+            padding-right: 35px;
+        }
+
+    .text-danger {
+        color: #dc3545 !important;
+    }
+
+    .form-control[readonly] {
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+    }
+
+    .form-select[disabled] {
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+    }
+
+    .edit-mode .form-control[readonly], .edit-mode .form-select[disabled] {
+        background-color: #ffffff;
+        border-color: #ced4da;
+    }
+
+    .select2-container .select2-selection--single {
+        height: 38px;
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 36px;
+        padding-left: 12px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 36px;
+    }
+
+    .table th, .table td {
+        vertical-align: middle;
+    }
+
+    #loansTable .btn-sm i {
+        font-size: 0.875rem;
+    }
+
+    #loansTable .d-flex.gap-1 {
+        gap: 0.25rem !important;
+    }
+
+    .card-header {
+        border-bottom: none !important;
+    }
+
+    #loansTable thead th:nth-child(3),
+    #loansTable thead th:nth-child(5),
+    #loansTable thead th:nth-child(6),
+    #loansTable thead th:nth-child(9) {
+        text-align: right;
+    }
+</style>
+
+<script>
+    $(document).ready(function () {
+
+        MODULE = 'FSLoansM';
+        access = ROLE_ACCESS?.[MODULE];
+
+        if (access != 'READWRITE' && access != 'FULL') {
+            $('#btnAddLoan').hide();
+            $('#btnEditLoan').hide();
+        }
+
+        // CONFIGURATION
+        const config = {
+            toastr: {
+                positionClass: "toast-top-right",
+                timeOut: 5000,
+                closeButton: true,
+                progressBar: true,
+                preventDuplicates: true
+            },
+            endpoints: {
+                list: "/Loans/GetLoansList",
+                inactive: "/Loans/GetLoansListInactive",
+                get: "/Loans/GetLoanById",
+                types: "/Loans/GetLoanTypes",
+                payments: "/Loans/GetLoanPayments",
+                save: "/Loans/SaveLoan",
+                complete: "/Loans/CompleteLoan",
+                inactivate: "/Loans/InactivateLoan",
+                restore: "/Loans/RestoreLoan"
+            },
+            datepickerFormat: 'yyyy/mm/dd',
+            employeeNo: '@ViewBag.EmployeeNo'
+        };
+
+        toastr.options = config.toastr;
+        let currentLoanStatus = '1';
+
+        // INITIALIZATION
+        initializeSelect2();
+        initializeDatepickers();
+        const table = initializeDataTable();
+
+        // EVENT HANDLERS - FILTERS
+        $('#filterLoanStatus').on('change', function () {
+            currentLoanStatus = $(this).val();
+            updateTableView();
+        }).select2({ selectOnClose: true, minimumResultsForSearch: Infinity });
+
+        // EVENT HANDLERS - ADD MODAL
+        $('#btnAddLoan').click(() => {
+            resetForm('add');
+            $('#addLoanModal').modal('show');
+        });
+
+        $('#btnSaveNewLoan').click(() => {
+            if (validateForm('add')) {
+                saveLoan(false);
+            }
+        });
+
+        // EVENT HANDLERS - VIEW/EDIT MODAL
+        $(document).on('click', '.viewLoan', function (e) {
+            e.preventDefault();
+            const id = $(this).data('id');
+            const $btn = $(this);
+            toggleButtonLoading($btn, true);
+            loadLoanForView(id, $btn);
+        });
+
+        $('#btnEditLoan').click(() => {
+            setEditMode();
+            $('#viewLoanType').focus();
+        });
+
+        $(document).on('click', '.editLoan', function (e) {
+            e.preventDefault();
+            const id = $(this).data('id');
+            const $btn = $(this);
+            toggleButtonLoading($btn, true);
+            loadLoanForView(id, $btn);
+        });
+
+        $('#btnCancelEdit').click(() => {
+            const id = $('#viewLoanId').val();
+            loadLoanForView(id, null, true);
+        });
+
+        $('#btnSaveLoan').click(() => {
+            if (validateForm('view')) {
+                saveLoan(true);
+            }
+        });
+
+        // EVENT HANDLERS - PAYMENT HISTORY
+        $(document).on('click', '.viewPayments', function (e) {
+            e.preventDefault();
+            const id = $(this).data('id');
+            loadPaymentHistory(id);
+        });
+
+        // EVENT HANDLERS - COMPLETE LOAN
+        $(document).on('click', '.completeLoan', function (e) {
+            e.preventDefault();
+            const id = $(this).data('id');
+            $('#completeLoanId').val(id);
+            $('#completeRemarks').val('').removeClass('is-invalid');
+            $('#completeLoanModal').modal('show');
+        });
+
+        $('#btnConfirmComplete').click(() => {
+            const id = $('#completeLoanId').val();
+            const remarks = $('#completeRemarks').val().trim();
+
+            if (!remarks) {
+                $('#completeRemarks').addClass('is-invalid');
+                return;
+            }
+
+            const $btn = $('#btnConfirmComplete');
+            toggleButtonLoading($btn, true, 'Completing...');
+
+            $.ajax({
+                url: config.endpoints.complete,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ Id: parseInt(id), Remarks: remarks }),
+                success: response => {
+                    if (response.success) {
+                        $('#completeLoanModal').modal('hide');
+                        table.ajax.reload(null, false);
+                        showNotification(response.message, 'success');
+                    } else {
+                        showNotification(response.message, 'error');
+                    }
+                },
+                error: () => showNotification('Unable to complete loan. Please try again.', 'error'),
+                complete: () => toggleButtonLoading($btn, false)
+            });
+        });
+
+        // EVENT HANDLERS - INACTIVATE LOAN
+        $(document).on('click', '.inactivateLoan', function (e) {
+            e.preventDefault();
+            const id = $(this).data('id');
+            $('#inactivateLoanId').val(id);
+            $('#inactivateRemarks').val('').removeClass('is-invalid');
+            $('#inactivateLoanModal').modal('show');
+        });
+
+        $('#btnConfirmInactivate').click(() => {
+            const id = $('#inactivateLoanId').val();
+            const remarks = $('#inactivateRemarks').val().trim();
+
+            if (!remarks) {
+                $('#inactivateRemarks').addClass('is-invalid');
+                return;
+            }
+
+            const $btn = $('#btnConfirmInactivate');
+            toggleButtonLoading($btn, true, 'Inactivating...');
+
+            $.ajax({
+                url: config.endpoints.inactivate,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ Id: parseInt(id), Remarks: remarks }),
+                success: response => {
+                    if (response.success) {
+                        $('#inactivateLoanModal').modal('hide');
+                        table.ajax.reload(null, false);
+                        showNotification(response.message, 'success');
+                    } else {
+                        showNotification(response.message, 'error');
+                    }
+                },
+                error: () => showNotification('Unable to inactivate loan. Please try again.', 'error'),
+                complete: () => toggleButtonLoading($btn, false)
+            });
+        });
+
+        // EVENT HANDLERS - RESTORE LOAN
+        $(document).on('click', '.restoreLoan', function (e) {
+            e.preventDefault();
+            const id = $(this).data('id');
+            const $btn = $(this);
+
+            Swal.fire({
+                title: 'Restore Loan',
+                text: 'Are you sure you want to restore this loan?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Restore',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#6c757d',
+                reverseButtons: false,
+                allowOutsideClick: false,
+                allowEscapeKey: false
+            }).then(result => {
+                if (result.isConfirmed) {
+                    toggleButtonLoading($btn, true);
+                    restoreLoan(id, $btn);
+                }
+            });
+        });
+
+        // EVENT HANDLERS - MODAL LIFECYCLE
+        $('#addLoanModal').on('hidden.bs.modal', () => resetForm('add'));
+        $('#viewLoanModal').on('hidden.bs.modal', () => {
+            resetForm('view');
+            setViewMode();
+        });
+
+        // EVENT HANDLERS - KEYBOARD
+        $('#addLoanForm').on('keypress', e => {
+            if (e.which === 13) {
+                e.preventDefault();
+                $('#btnSaveNewLoan').click();
+            }
+        });
+
+        $('#viewLoanForm').on('keypress', e => {
+            if (e.which === 13 && $('#viewLoanModal .modal-body').hasClass('edit-mode')) {
+                e.preventDefault();
+                $('#btnSaveLoan').click();
+            }
+        });
+
+        // EVENT HANDLERS - VALIDATION
+        $('#addLoanType, #addPrincipalAmount, #addMonthsToPay, #addDeductionPerCutoff, #addDateGranted, #addDeductionStartDate, #addDeductionSchedule')
+            .on('input change', function () { $(this).removeClass('is-invalid'); });
+
+        $('#viewPrincipalAmount, #viewMonthsToPay, #viewDeductionPerCutoff, #viewDateGranted, #viewDeductionStartDate, #viewDeductionSchedule')
+            .on('input change', function () { $(this).removeClass('is-invalid'); });
+
+        // EVENT HANDLERS - DATE VALIDATION
+        $('#addDeductionStartDate').on('change', function () {
+            const dateGranted = $('#addDateGranted').val();
+            const deductionStart = $(this).val();
+
+            if (dateGranted && deductionStart) {
+                const dg = new Date(dateGranted.replace(/\//g, '-'));
+                const ds = new Date(deductionStart.replace(/\//g, '-'));
+
+                if (ds < dg) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Invalid Date',
+                        text: 'Deduction start date cannot be earlier than date granted.',
+                        confirmButtonText: 'OK'
+                    });
+                    $(this).val('').addClass('is-invalid');
+                }
+            }
+        });
+
+        $('#viewDeductionStartDate').on('change', function () {
+            if (!$(this).prop('readonly')) {
+                const dateGranted = $('#viewDateGranted').val();
+                const deductionStart = $(this).val();
+
+                if (dateGranted && deductionStart) {
+                    const dg = new Date(dateGranted.replace(/\//g, '-'));
+                    const ds = new Date(deductionStart.replace(/\//g, '-'));
+
+                    if (ds < dg) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Invalid Date',
+                            text: 'Deduction start date cannot be earlier than date granted.',
+                            confirmButtonText: 'OK'
+                        });
+                        $(this).val('').addClass('is-invalid');
+                    }
+                }
+            }
+        });
+
+        // EVENT HANDLERS - CALCULATION
+        $('#addPrincipalAmount, #addInterestAmount').on('input', function () {
+            calculateTotalLoan('add');
+        });
+
+        $('#viewPrincipalAmount, #viewInterestAmount').on('input', function () {
+            if (!$('#viewPrincipalAmount').prop('readonly')) {
+                calculateTotalLoan('view');
+            }
+        });
+
+        // Per cutoff display - Add modal
+        $('#addDeductionPerCutoff, #addDeductionSchedule').on('input change', function () {
+            updatePerCutoffDisplay('add');
+        });
+
+        // Per cutoff display - View/Edit modal
+        $('#viewDeductionPerCutoff, #viewDeductionSchedule').on('input change', function () {
+            updatePerCutoffDisplay('view');
+        });
+
+        // INITIALIZATION FUNCTIONS
+        function initializeSelect2() {
+            $('#addLoanType').select2({
+                placeholder: "Select Loan Type",
+                allowClear: true,
+                dropdownParent: $('#addLoanModal'),
+                ajax: {
+                    url: config.endpoints.types,
+                    dataType: 'json',
+                    delay: 250,
+                    processResults: data => ({
+                        results: data.map(item => ({
+                            id: item.loanCode,
+                            text: item.loanName
+                        }))
+                    }),
+                    cache: true
+                }
+            });
+
+            $('#addDeductionSchedule, #viewDeductionSchedule').select2({
+                minimumResultsForSearch: Infinity
+            });
+
+            $('#viewLoanTypeSelect').select2({
+                placeholder: "Select Loan Type",
+                allowClear: false,
+                dropdownParent: $('#viewLoanModal'),
+                ajax: {
+                    url: config.endpoints.types,
+                    dataType: 'json',
+                    delay: 250,
+                    processResults: data => ({
+                        results: data.map(item => ({ id: item.loanCode, text: item.loanName }))
+                    }),
+                    cache: true
+                }
+            });
+        }
+
+        function initializeDatepickers() {
+            $('.bt-datepicker').datepicker({
+                format: config.datepickerFormat,
+                autoclose: true
+            });
+        }
+
+        function initializeDataTable() {
+            return $('#loansTable').DataTable({
+                processing: true,
+                serverSide: false,
+                ajax: {
+                    url: config.endpoints.list,
+                    type: "GET",
+                    data: function (d) {
+                        d.employeeNo = config.employeeNo;
+                        d.loanStatus = currentLoanStatus;
+                    },
+                    datatype: "json",
+                    error: (xhr, error) => showNotification('Error loading data. Please refresh the page.', 'error')
+                },
+                columns: [
+                    {
+                        data: "id",
+                        width: "15%",
+                        orderable: false,
+                        render: (data, type, row) => {
+                                let viewbtn = '';
+                                let editbtn = '';
+                                let completebtn = '';
+                                let inactivebtn = '';
+                                let restorebtn = '';
+
+                            if (currentLoanStatus === '0') {
+                                if (access === 'FULL') {
+                                    restorebtn = `
+                                        <button type="button" class="btn btn-sm btn-success shadow-sm restoreLoan" data-id="${data}" title="Restore">
+                                            <i class="fas fa-undo"></i>
+                                        </button>`;
+                                }
+                                return `<div class="d-flex gap-1">${restorebtn}</div>`;
+                            }
+
+                            viewbtn = `
+                                <button type="button" class="btn btn-sm btn-primary shadow-sm viewPayments" data-id="${data}" title="View Payments">
+                                    <i class="fa fa-eye"></i>
+                                </button>`;
+
+                            if (currentLoanStatus === '1' && (access === 'READWRITE' || access === 'FULL')) {
+                                editbtn = `<button type="button" class="btn btn-sm btn-primary shadow-sm editLoan" data-id="${data}" title="Edit Loan">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </button>`;
+                            }
+
+                            if (currentLoanStatus === '1' && row.loanPayments == 0) {
+                                if (access === 'READWRITE' || access === 'FULL') {
+                                    completebtn = `
+                                        <button type="button" class="btn btn-sm btn-success shadow-sm completeLoan" data-id="${data}" title="Complete Loan">
+                                            <i class="fa fa-check"></i>
+                                        </button>`;
+                                }
+                                if (access === 'FULL') {
+                                    inactivebtn = `
+                                        <button type="button" class="btn btn-sm btn-warning shadow-sm inactivateLoan" data-id="${data}" title="Inactivate Loan">
+                                            <i class="fa fa-ban"></i>
+                                        </button>`;
+                                }
+                            } else if (currentLoanStatus === '1' && row.loanPayments > 0) {
+                                if (access === 'READWRITE' || access === 'FULL') {
+                                    completebtn = `
+                                        <button type="button" class="btn btn-sm btn-success shadow-sm completeLoan" data-id="${data}" title="Complete Loan">
+                                            <i class="fa fa-check"></i>
+                                        </button>`;
+                                }
+                            }
+
+                            return `<div class="d-flex gap-1">${viewbtn}${editbtn}${completebtn}${inactivebtn}</div>`;
+                        }
+                    },
+                    { data: "loanName", width: "15%" },
+                    { data: "totalLoanAmount", width: "10%", className: "text-end", render: data => parseFloat(data || 0).toFixed(2) },
+                    { data: "dateGranted", width: "10%" },
+                    { data: "deductionPerCutoff", width: "10%", className: "text-end", render: data => parseFloat(data || 0).toFixed(2) },
+                    { data: "monthsToPay", width: "8%", className: "text-end" },
+                    { data: "deductionStartDate", width: "10%" },
+                    { data: "deductionSchedule", width: "10%" },
+                    { data: "outstandingBalance", width: "10%", className: "text-end", render: data => parseFloat(data || 0).toFixed(2) },
+                    { data: "loanStatus", width: "8%" },
+                    {
+                        data: "remarks",
+                        width: "15%",
+                        render: data => data ? `<span title="${data}" style="display:inline-block;max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${data}</span>` : ''
+                    },
+                    { data: "dtAdded", width: "10%" }
+                ],
+                order: [[10, 'desc']],
+                pageLength: 25,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                language: {
+                    processing: "Loading...",
+                    emptyTable: "No loan records found",
+                    zeroRecords: "No matching loan records found",
+                    paginate: {
+                        next: '<i class="fa fa-angle-double-right"></i>',
+                        previous: '<i class="fa fa-angle-double-left"></i>'
+                    }
+                }
+            });
+        }
+
+        // DATA OPERATIONS
+        function loadLoanForView(id, $btn, isCancel = false) {
+            if ($btn && !$btn.data('original-html')) {
+                $btn.data('original-html', $btn.html());
+            }
+
+            $.get(config.endpoints.get, { id })
+                .done(response => {
+                    if (response.success) {
+                        resetForm('view');
+                        setViewMode();
+                        populateViewForm(response.data);
+                        if (!isCancel) $('#viewLoanModal').modal('show');
+                    } else {
+                        showNotification(response.message, 'error');
+                    }
+                })
+                .fail(() => showNotification('Unable to load loan data', 'error'))
+                .always(() => {
+                    if ($btn) {
+                        const defaultIcon = $btn.hasClass('editLoan')
+                            ? '<i class="fas fa-pencil-alt"></i>'
+                            : '<i class="fa fa-eye"></i>';
+                        $btn.prop('disabled', false).html($btn.data('original-html') || defaultIcon);
+                        $btn.removeData('original-html');
+                    }
+                });
+        }
+
+        function saveLoan(isEdit) {
+            const formData = getFormData(isEdit ? 'view' : 'add');
+            const $saveBtn = isEdit ? $('#btnSaveLoan') : $('#btnSaveNewLoan');
+
+            toggleButtonLoading($saveBtn, true, 'Saving...');
+
+            $.ajax({
+                url: config.endpoints.save,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(formData),
+                success: response => {
+                    if (response.success) {
+                        if (isEdit) {
+                            setViewMode();
+                        } else {
+                            $('#addLoanModal').modal('hide');
+                        }
+                        table.ajax.reload(null, false);
+                        showNotification(response.message, 'success');
+                    } else {
+                        showNotification(response.message, 'error');
+                    }
+                },
+                error: () => showNotification('Unable to save loan. Please try again.', 'error'),
+                complete: () => toggleButtonLoading($saveBtn, false)
+            });
+        }
+
+        function loadPaymentHistory(loanId) {
+            $('#paymentHistoryModal').modal('show');
+
+            $('#paymentHistoryTable').DataTable({
+                processing: true,
+                serverSide: false,
+                destroy: true,
+                ajax: {
+                    url: config.endpoints.payments,
+                    type: "GET",
+                    data: { id: loanId },
+                    datatype: "json",
+                    error: (xhr, error) => showNotification('Error loading payment history.', 'error')
+                },
+                columns: [
+                    { data: "dtAdded", width: "20%" },
+                    { data: "loanPayments", width: "20%", className: "text-end", render: data => parseFloat(data || 0).toFixed(2) },
+                    { data: "remarks", width: "40%" },
+                    { data: "addedByUser", width: "20%" }
+                ],
+                order: [[0, 'desc']],
+                pageLength: 25,
+                lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                language: {
+                    processing: "Loading...",
+                    emptyTable: "No payment records found",
+                    zeroRecords: "No matching payment records found",
+                    paginate: {
+                        next: '<i class="fa fa-angle-double-right"></i>',
+                        previous: '<i class="fa fa-angle-double-left"></i>'
+                    }
+                }
+            });
+        }
+
+        function restoreLoan(id, $btn) {
+            $.post(config.endpoints.restore, { id })
+                .done(response => {
+                    if (response.success) {
+                        table.ajax.reload(null, false);
+                        showNotification(response.message, 'success');
+                    } else {
+                        showNotification(response.message, 'error');
+                    }
+                })
+                .fail(() => showNotification('Unable to restore loan. Please try again.', 'error'))
+                .always(() => toggleButtonLoading($btn, false));
+        }
+
+        // FORM HELPERS
+        function populateViewForm(data) {
+            $('#viewLoanId').val(data.id);
+            $('#viewLoanType').val(data.loanCode);
+            $('#viewLoanTypeDisplay').val(data.loanName);
+            const existingOption = new Option(data.loanName, data.loanCode, true, true);
+            $('#viewLoanTypeSelect').empty().append(existingOption).trigger('change');
+            $('#viewLoanTypeSelect').next('.select2-container').hide();
+            $('#viewPrincipalAmount').val(data.principalAmount);
+            $('#viewInterestAmount').val(data.interestAmount || 0);
+            $('#viewMonthsToPay').val(data.monthsToPay);
+            $('#viewDeductionPerCutoff').val(data.deductionPerCutoff);
+            $('#viewDateGranted').val(data.dateGranted);
+            $('#viewDeductionStartDate').val(data.deductionStartDate);
+            $('#viewDeductionSchedule').val(data.deductionSchedule).trigger('change');
+            $('#viewRemarks').val(data.remarks);
+
+            updatePerCutoffDisplay('view');
+        }
+
+        function getFormData(prefix) {
+            const isView = prefix === 'view';
+            const principalAmount = parseFloat($(`#${prefix}PrincipalAmount`).val()) || 0;
+            const interestAmount = parseFloat($(`#${prefix}InterestAmount`).val()) || 0;
+
+            return {
+                ...(isView && { Id: parseInt($(`#${prefix}LoanId`).val()) }),
+                EmployeeNo: $(`#${prefix}EmployeeNoHidden`).val(),
+                LoanCode: isView ? ($('#viewLoanTypeSelect').val() || $('#viewLoanType').val()) : $(`#${prefix}LoanType`).val(),
+                PrincipalAmount: principalAmount,
+                InterestAmount: interestAmount,
+                TotalLoanAmount: principalAmount + interestAmount,
+                MonthsToPay: parseInt($(`#${prefix}MonthsToPay`).val()) || 0,
+                DeductionPerCutoff: parseFloat($(`#${prefix}DeductionPerCutoff`).val()) || 0,
+                DateGranted: $(`#${prefix}DateGranted`).val(),
+                DeductionStartDate: $(`#${prefix}DeductionStartDate`).val(),
+                DeductionSchedule: $(`#${prefix}DeductionSchedule`).val(),
+                Remarks: $(`#${prefix}Remarks`).val(),
+                IsActive: true
+            };
+        }
+
+        function resetForm(prefix) {
+            $(`#${prefix}LoanForm`)[0].reset();
+            if (prefix === 'add') {
+                $(`#${prefix}LoanType`).val(null).trigger('change');
+            }
+            if (prefix === 'view') {
+                $('#viewLoanTypeSelect').empty().trigger('change');
+                $('#viewLoanTypeDisplay').val('');
+            }
+            clearValidation(`#${prefix}LoanForm`);
+            $(`#btnSave${prefix === 'view' ? '' : 'New'}Loan`).prop('disabled', false).html('Save');
+        }
+
+        // VIEW MODE MANAGEMENT
+        function setViewMode() {
+            $('#viewModalTitle').text('View Loan');
+            $('#viewLoanModal .modal-body').removeClass('edit-mode');
+            $('#viewPrincipalAmount, #viewInterestAmount, #viewMonthsToPay, #viewDeductionPerCutoff, #viewDateGranted, #viewDeductionStartDate, #viewRemarks').prop('readonly', true);
+            $('#viewDeductionSchedule').prop('disabled', true);
+            $('#viewDateGranted, #viewDeductionStartDate').datepicker('remove');
+            // Loan type: show plain text, hide select2
+            $('#viewLoanTypeDisplay').removeClass('d-none');
+            $('#viewLoanTypeSelect').addClass('d-none').prop('disabled', true);
+            $('#viewLoanTypeSelect').next('.select2-container').hide();
+            $('.edit-required').addClass('d-none');
+            $('#btnEditLoan').removeClass('d-none');
+            $('#btnSaveLoan, #btnCancelEdit').addClass('d-none');
+            clearValidation('#viewLoanForm');
+        }
+
+        function setEditMode() {
+            $('#viewModalTitle').text('Edit Loan');
+            $('#viewLoanModal .modal-body').addClass('edit-mode');
+            $('#viewPrincipalAmount, #viewInterestAmount, #viewMonthsToPay, #viewDeductionPerCutoff, #viewDateGranted, #viewDeductionStartDate, #viewRemarks').prop('readonly', false);
+            $('#viewDeductionSchedule').prop('disabled', false);
+            $('#viewDateGranted, #viewDeductionStartDate').datepicker({
+                format: config.datepickerFormat,
+                autoclose: true
+            });
+            // Loan type: hide plain text, show select2
+            $('#viewLoanTypeDisplay').addClass('d-none');
+            $('#viewLoanTypeSelect').removeClass('d-none').prop('disabled', false);
+            $('#viewLoanTypeSelect').next('.select2-container').show();
+            $('.edit-required').removeClass('d-none');
+            $('#btnEditLoan').addClass('d-none');
+            $('#btnSaveLoan, #btnCancelEdit').removeClass('d-none');
+        }
+
+        // VALIDATION
+        function validateForm(prefix) {
+            let isValid = true;
+
+            if (prefix === 'add') {
+                const loanType = $('#addLoanType').val();
+                if (!loanType) {
+                    $('#addLoanType').addClass('is-invalid');
+                    isValid = false;
+                }
+            }
+
+            const principal = parseFloat($(`#${prefix}PrincipalAmount`).val());
+            if (isNaN(principal) || principal <= 0) {
+                $(`#${prefix}PrincipalAmount`).addClass('is-invalid');
+                isValid = false;
+            }
+
+            const months = parseInt($(`#${prefix}MonthsToPay`).val());
+            if (isNaN(months) || months <= 0) {
+                $(`#${prefix}MonthsToPay`).addClass('is-invalid');
+                isValid = false;
+            }
+
+            const deduction = parseFloat($(`#${prefix}DeductionPerCutoff`).val());
+            if (isNaN(deduction) || deduction <= 0) {
+                $(`#${prefix}DeductionPerCutoff`).addClass('is-invalid');
+                isValid = false;
+            }
+
+            if (!$(`#${prefix}DateGranted`).val()) {
+                $(`#${prefix}DateGranted`).addClass('is-invalid');
+                isValid = false;
+            }
+
+            if (!$(`#${prefix}DeductionStartDate`).val()) {
+                $(`#${prefix}DeductionStartDate`).addClass('is-invalid');
+                isValid = false;
+            }
+
+            if (!$(`#${prefix}DeductionSchedule`).val()) {
+                $(`#${prefix}DeductionSchedule`).addClass('is-invalid');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function clearValidation(formSelector) {
+            $(`${formSelector} .form-control, ${formSelector} .form-select`).removeClass('is-invalid');
+        }
+
+        // UI HELPERS
+        function updateTableView() {
+            table.ajax.reload();
+            $('#btnAddLoan').toggle(currentLoanStatus !== '0');
+        }
+
+        function calculateTotalLoan(prefix) {
+            const principal = parseFloat($(`#${prefix}PrincipalAmount`).val()) || 0;
+            const interest = parseFloat($(`#${prefix}InterestAmount`).val()) || 0;
+            // Total is calculated on server side, no need to display here
+        }
+
+        function updatePerCutoffDisplay(prefix) {
+            const schedule  = $(`#${prefix}DeductionSchedule`).val();
+            const amortization = parseFloat($(`#${prefix}DeductionPerCutoff`).val()) || 0;
+            const $row      = $(`#${prefix}PerCutoffDisplayRow`);
+            const $display  = $(`#${prefix}PerCutoffDisplay`);
+
+            if (schedule === 'Per Cutoff' && amortization > 0) {
+                const perCutoff = amortization / 2;
+                $display.val(perCutoff.toFixed(2));
+                $row.show();
+            } else {
+                $display.val('');
+                $row.hide();
+            }
+        }
+
+        function toggleButtonLoading($btn, loading, text = '') {
+            if (loading) {
+                if (!$btn.data('original-html')) $btn.data('original-html', $btn.html());
+                const icon = text ? '<i class="fas fa-spinner fa-spin"></i> ' : '<i class="fas fa-spinner fa-spin"></i>';
+                $btn.prop('disabled', true).html(icon + text);
+            } else {
+                const originalHtml = $btn.data('original-html') || 'Save';
+                $btn.prop('disabled', false).html(originalHtml).removeData('original-html');
+            }
+        }
+
+        function showNotification(message, type) {
+            const types = { success: 'Success', error: 'Error', warning: 'Warning', info: 'Information' };
+            toastr[type](message, types[type] || 'Notification');
+        }
+
+        // Prevent 'e' and other non-numeric characters in number inputs
+        $('#addPrincipalAmount, #addInterestAmount, #addMonthsToPay, #addDeductionPerCutoff, #viewPrincipalAmount, #viewInterestAmount, #viewMonthsToPay, #viewDeductionPerCutoff').on('keydown', function (e) {
+            if (e.key === 'e' || e.key === 'E' || e.key === '+' || e.key === '-') {
+                e.preventDefault();
+            }
+        });
+    });
+</script>

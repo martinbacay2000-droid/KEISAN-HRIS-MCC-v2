@@ -1,0 +1,925 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutFillow.cshtml";
+    ViewData["Title"] = "Holiday List";
+}
+
+<div class="col-12">
+    <div class="card">
+        <div class="card-header">
+            <div class="row" style="width:100%;">
+                <h4 class="card-title">Holiday List</h4>
+                <br> <br> <br>
+
+                <div class="row" style="margin-left:0px;width:100%;">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Record Status</h5>
+                            <select name="filterRecordStatus" id="filterRecordStatus" class="form-control">
+                                <option value="active" selected>ACTIVE</option>
+                                <option value="inactive">INACTIVE</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                    </div>
+                    <div class="col-md-3 d-flex justify-content-end align-items-end">
+                        <div class="form-group">
+                            <button type="button" class="btn btn-primary" id="btnAddHoliday">
+                                <i class="fa fa-plus"></i> New Holiday
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="holidayTable" class="display" style="min-width: 845px">
+                    <thead>
+                        <tr>
+                            <th>Action</th>
+                            <th>Holiday Name</th>
+                            <th>Holiday Date</th>
+                            <th>Holiday Type</th>
+                            <th>Branch</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+
+        <!-- Modal for Add -->
+        <div class="modal fade" id="addHolidayModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Holiday Form</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addHolidayForm">
+                            <div class="mb-3">
+                                <label for="addHolidayName" class="form-label">Holiday Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="addHolidayName" name="holidayName" required maxlength="255">
+                                <div class="invalid-feedback">
+                                    Please provide a valid holiday name.
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="addHolidayType" class="form-label">Holiday Type <span class="text-danger">*</span></label>
+                                <select class="form-control" id="addHolidayType" name="holidayType" required>
+                                    <option value="">Select Holiday Type</option>
+                                    <option value="Special Holiday">Special Holiday</option>
+                                    <option value="Legal Holiday">Legal Holiday</option>
+                                </select>
+                                <div class="invalid-feedback">
+                                    Please select a holiday type.
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="addHolidayDate" class="form-label">Holiday Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="addHolidayDate" name="holidayDate" required>
+                                <div class="invalid-feedback">
+                                    Please provide a valid holiday date.
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Branch <span class="text-danger">*</span></label>
+                                <div id="branchCheckboxContainer" class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                                    <!-- Branch checkboxes will be loaded here -->
+                                </div>
+                                <div class="invalid-feedback" id="branchError">
+                                    Please select at least one branch.
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="btnSaveNewHoliday">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal for View/Edit -->
+        <div class="modal fade" id="viewHolidayModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="viewModalTitle">View Holiday Form</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="viewHolidayForm">
+                            <input type="hidden" id="viewHolidayId" name="id">
+
+                            <div class="mb-3">
+                                <label for="viewHolidayName" class="form-label">Holiday Name <span class="text-danger edit-required d-none">*</span></label>
+                                <input type="text" class="form-control" id="viewHolidayName" name="holidayName" readonly maxlength="255">
+                                <div class="invalid-feedback">
+                                    Please provide a valid holiday name.
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="viewHolidayType" class="form-label">Holiday Type <span class="text-danger edit-required d-none">*</span></label>
+                                <select class="form-control" id="viewHolidayType" name="holidayType" disabled>
+                                    <option value="">Select Holiday Type</option>
+                                    <option value="Special Holiday">Special Holiday</option>
+                                    <option value="Legal Holiday">Legal Holiday</option>
+                                </select>
+                                <div class="invalid-feedback">
+                                    Please select a holiday type.
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="viewHolidayDate" class="form-label">Holiday Date <span class="text-danger edit-required d-none">*</span></label>
+                                <input type="date" class="form-control" id="viewHolidayDate" name="holidayDate" readonly>
+                                <div class="invalid-feedback">
+                                    Please provide a valid holiday date.
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Branch <span class="text-danger edit-required d-none">*</span></label>
+                                <div id="viewBranchCheckboxContainer" class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                                    <!-- Branch checkboxes will be loaded here -->
+                                </div>
+                                <div class="invalid-feedback" id="viewBranchError">
+                                    Please select at least one branch.
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="btnEditHoliday">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button type="button" class="btn btn-success d-none" id="btnSaveHoliday">Save</button>
+                        <button type="button" class="btn btn-danger d-none" id="btnCancelEdit">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Fillow_style
+{
+    <style>
+        .table-responsive {
+            border-radius: 0.375rem;
+        }
+
+        #holidayTable_wrapper .dataTables_length,
+        #holidayTable_wrapper .dataTables_filter {
+            margin-bottom: 1rem;
+        }
+
+        #holidayTable_wrapper .dataTables_info,
+        #holidayTable_wrapper .dataTables_paginate {
+            margin-top: 1rem;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .modal-content {
+            border-radius: 0.5rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        .invalid-feedback {
+            display: none;
+        }
+
+        .form-control.is-invalid,
+        .form-select.is-invalid {
+            border-color: #dc3545;
+        }
+
+            .form-control.is-invalid ~ .invalid-feedback,
+            .form-select.is-invalid ~ .invalid-feedback {
+                display: block;
+            }
+
+        #branchError.d-block,
+        #viewBranchError.d-block {
+            display: block !important;
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        .form-control[readonly] {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        .form-select[disabled] {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        .edit-mode .form-control[readonly] {
+            background-color: #ffffff;
+            border-color: #ced4da;
+        }
+
+        .edit-mode .form-select[disabled] {
+            background-color: #ffffff;
+            border-color: #ced4da;
+        }
+
+        .swal2-popup {
+            border-radius: 15px !important;
+            padding: 2rem !important;
+        }
+
+        .swal2-icon.swal2-error {
+            border-color: #f27474 !important;
+            color: #f27474 !important;
+        }
+
+            .swal2-icon.swal2-error .swal2-x-mark {
+                display: none !important;
+            }
+
+            .swal2-icon.swal2-error::before {
+                content: "\f2ed" !important;
+                font-family: "Font Awesome 5 Free" !important;
+                font-weight: 900 !important;
+                font-size: 2.5rem !important;
+                color: #f27474 !important;
+                display: block !important;
+            }
+
+        .swal2-title {
+            font-size: 1.875rem !important;
+            font-weight: 600 !important;
+            color: #545454 !important;
+            margin: 1rem 0 0.5rem 0 !important;
+        }
+
+        .swal2-html-container {
+            font-size: 1rem !important;
+            color: #737373 !important;
+            margin: 0 0 2rem 0 !important;
+        }
+
+        .swal2-actions {
+            gap: 0.5rem !important;
+        }
+
+        .swal2-confirm {
+            background-color: #7c3aed !important;
+            border-color: #7c3aed !important;
+            color: white !important;
+            font-weight: 500 !important;
+            padding: 0.75rem 2rem !important;
+            border-radius: 8px !important;
+            font-size: 0.875rem !important;
+        }
+
+        .swal2-cancel {
+            background-color: #6b7280 !important;
+            border-color: #6b7280 !important;
+            color: white !important;
+            font-weight: 500 !important;
+            padding: 0.75rem 2rem !important;
+            border-radius: 8px !important;
+            font-size: 0.875rem !important;
+        }
+
+        .swal2-confirm:hover {
+            background-color: #6d28d9 !important;
+            border-color: #6d28d9 !important;
+        }
+
+        .swal2-cancel:hover {
+            background-color: #4b5563 !important;
+            border-color: #4b5563 !important;
+        }
+
+        .btn-success.shadow-sm:hover {
+            background-color: #1e7e34;
+            border-color: #1c7430;
+        }
+
+        .card-header {
+            border-bottom: none !important;
+        }
+
+        #filterRecordStatus {
+            width: 100%;
+        }
+
+        .form-check {
+            margin-bottom: 0.5rem;
+        }
+
+        .form-check-input {
+            cursor: pointer;
+        }
+
+        .form-check-label {
+            cursor: pointer;
+        }
+
+        #branchCheckboxContainer::-webkit-scrollbar,
+        #viewBranchCheckboxContainer::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #branchCheckboxContainer::-webkit-scrollbar-track,
+        #viewBranchCheckboxContainer::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        #branchCheckboxContainer::-webkit-scrollbar-thumb,
+        #viewBranchCheckboxContainer::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+
+            #branchCheckboxContainer::-webkit-scrollbar-thumb:hover,
+            #viewBranchCheckboxContainer::-webkit-scrollbar-thumb:hover {
+                background: #555;
+            }
+    </style>
+}
+
+@section Fillow_script
+{
+    <script>
+        $(document).ready(function () {
+
+            MODULE = 'SholidayM';
+            access = ROLE_ACCESS?.[MODULE];
+
+            if (access != 'READWRITE' && access != 'FULL') {
+                $('#btnAddHoliday').hide();
+                $('#btnEditHoliday').hide();
+            }
+
+            // Initialize toastr options
+            toastr.options = {
+                positionClass: "toast-top-right",
+                timeOut: 5000,
+                closeButton: true,
+                debug: false,
+                newestOnTop: true,
+                progressBar: true,
+                preventDuplicates: true,
+                onclick: null,
+                showDuration: "300",
+                hideDuration: "1000",
+                extendedTimeOut: "1000",
+                showEasing: "swing",
+                hideEasing: "linear",
+                showMethod: "fadeIn",
+                hideMethod: "fadeOut",
+                tapToDismiss: false
+            };
+
+            // View state management
+            let isViewingDeleted = false;
+            let branchesData = [];
+
+            // Initialize Select2 for the filter
+            $('#filterRecordStatus').select2({
+                selectOnClose: true,
+                minimumResultsForSearch: Infinity
+            });
+
+            // Initialize Select2 for Holiday Type dropdowns
+            $('#addHolidayType').select2({
+                dropdownParent: $('#addHolidayModal'),
+                placeholder: 'Select Holiday Type',
+                allowClear: true
+            });
+
+            $('#viewHolidayType').select2({
+                dropdownParent: $('#viewHolidayModal'),
+                placeholder: 'Select Holiday Type',
+                allowClear: true
+            });
+
+            // Load branches on page load
+            loadBranches();
+
+            // Handle filter change
+            $('#filterRecordStatus').on('change', function () {
+                isViewingDeleted = $(this).val() === 'inactive';
+                updateTableView();
+            });
+
+            var table = $('#holidayTable').DataTable({
+                processing: true,
+                serverSide: false,
+                ajax: {
+                    url: "/HolidayList/GetHolidayList",
+                    type: "GET",
+                    datatype: "json",
+                    error: function (xhr, error, code) {
+                        console.log('Error loading data:', error);
+                        showNotification('Error loading holiday data. Please refresh the page.', 'error');
+                    }
+                },
+                columns: [
+                    {
+                        data: "id",
+                        width: "20%",
+                        orderable: false,
+                        render: function (data) {
+                            if (isViewingDeleted) {
+                                return `
+                                    <div class="d-flex gap-1">
+                                        <button type="button" class="btn btn-sm btn-success shadow-sm restoreHoliday" data-id="${data}" title="Restore">
+                                            <i class="fas fa-undo"></i>
+                                        </button>
+                                    </div>`;
+                            } else {
+                                return `
+                                    <div class="d-flex gap-1">
+                                        <button type="button" class="btn btn-sm btn-primary shadow-sm viewHoliday" data-id="${data}" title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-danger shadow-sm deleteHoliday" data-id="${data}" title="Delete">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
+                                    </div>`;
+                            }
+                        }
+                    },
+                    {
+                        data: "holidayName",
+                        width: "25%"
+                    },
+                    {
+                        data: "holidayDate",
+                        width: "15%",
+                        render: function (data) {
+                            if (data) {
+                                var date = new Date(data);
+                                return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+                            }
+                            return '';
+                        }
+                    },
+                    {
+                        data: "holidayType",
+                        width: "15%"
+                    },
+                    {
+                        data: null,
+                        width: "25%",
+                        orderable: false,
+                        render: function (data, type, row) {
+                            var branchCodes = row.branchCode ? row.branchCode.split(',') : [];
+                            var branchNames = [];
+
+                            branchCodes.forEach(function(code) {
+                                var branch = branchesData.find(b => b.branchCode === code.trim());
+                                if (branch) {
+                                    branchNames.push(branch.branchName);
+                                }
+                            });
+
+                            return branchNames.join('<br>');
+                        }
+                    }                   
+                ],
+                order: [],
+                pageLength: 25,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                language: {
+                    processing: "Loading...",
+                    emptyTable: "No holidays found",
+                    zeroRecords: "No matching holidays found",
+                    paginate: {
+                        next: '<i class="fa fa-angle-double-right" aria-hidden="true"></i>',
+                        previous: '<i class="fa fa-angle-double-left" aria-hidden="true"></i>'
+                    }
+                }
+            });
+
+            // Load branches function
+            function loadBranches() {
+                $.get('/HolidayList/GetBranches', function (data) {
+                    branchesData = data;
+                    renderBranchCheckboxes(data, '#branchCheckboxContainer');
+                    renderBranchCheckboxes(data, '#viewBranchCheckboxContainer');
+                }).fail(function () {
+                    showNotification('Error loading branches', 'error');
+                });
+            }
+
+            // Render branch checkboxes
+            function renderBranchCheckboxes(branches, containerId) {
+                var container = $(containerId);
+                container.empty();
+
+                branches.forEach(function (branch) {
+                    var checkboxHtml = `
+                        <div class="form-check">
+                            <input class="form-check-input branch-checkbox" type="checkbox" value="${branch.branchCode}" id="${containerId}_${branch.branchCode}">
+                            <label class="form-check-label" for="${containerId}_${branch.branchCode}">
+                                ${branch.branchName}
+                            </label>
+                        </div>
+                    `;
+                    container.append(checkboxHtml);
+                });
+            }
+
+            // Add New Holiday
+            $('#btnAddHoliday').click(function () {
+                resetAddForm();
+                $('#addHolidayModal').modal('show');
+
+                $('#addHolidayModal').on('shown.bs.modal', function () {
+                    $('#addHolidayName').focus();
+                });
+            });
+
+            // View Holiday
+            $(document).on('click', '.viewHoliday', function (e) {
+                e.preventDefault();
+                var id = $(this).data('id');
+                var $btn = $(this);
+
+                $btn.prop('disabled', true);
+                $btn.html('<i class="fas fa-spinner fa-spin"></i>');
+
+                $.get('/HolidayList/GetHoliday', { id: id }, function (data) {
+                    if (data) {
+                        resetViewForm();
+                        setViewMode();
+
+                        $('#viewHolidayId').val(data.id);
+                        $('#viewHolidayName').val(data.holidayName);
+                        $('#viewHolidayType').val(data.holidayType).trigger('change');
+
+                        if (data.holidayDate) {
+                            var date = new Date(data.holidayDate);
+                            var formattedDate = date.toISOString().split('T')[0];
+                            $('#viewHolidayDate').val(formattedDate);
+                        }
+
+                        // Check the appropriate branch checkboxes
+                        $('#viewBranchCheckboxContainer .branch-checkbox').prop('checked', false);
+                        if (data.branchCode) {
+                            var branchCodes = data.branchCode.split(',');
+                            branchCodes.forEach(function (code) {
+                                $('#viewBranchCheckboxContainer_' + code.trim()).prop('checked', true);
+                            });
+                        }
+
+                        $('#viewHolidayModal').modal('show');
+                    } else {
+                        showNotification('Unable to load holiday data', 'error');
+                    }
+                }).fail(function (xhr, status, error) {
+                    console.log('Error loading holiday:', error);
+                    showNotification('Unable to load holiday data', 'error');
+                }).always(function () {
+                    $btn.prop('disabled', false);
+                    $btn.html('<i class="fas fa-eye"></i>');
+                });
+            });
+
+            // Edit button in view modal
+            $('#btnEditHoliday').click(function () {
+                setEditMode();
+                $('#viewHolidayName').focus();
+            });
+
+            // Cancel edit button
+            $('#btnCancelEdit').click(function () {
+                var id = $('#viewHolidayId').val();
+                $.get('/HolidayList/GetHoliday', { id: id }, function (data) {
+                    if (data) {
+                        $('#viewHolidayName').val(data.holidayName);
+                        $('#viewHolidayType').val(data.holidayType).trigger('change');
+
+                        if (data.holidayDate) {
+                            var date = new Date(data.holidayDate);
+                            var formattedDate = date.toISOString().split('T')[0];
+                            $('#viewHolidayDate').val(formattedDate);
+                        }
+
+                        $('#viewBranchCheckboxContainer .branch-checkbox').prop('checked', false);
+                        if (data.branchCode) {
+                            var branchCodes = data.branchCode.split(',');
+                            branchCodes.forEach(function (code) {
+                                $('#viewBranchCheckboxContainer_' + code.trim()).prop('checked', true);
+                            });
+                        }
+
+                        setViewMode();
+                        clearValidation('#viewHolidayForm');
+                    }
+                });
+            });
+
+            // Save Holiday (from view/edit modal)
+            $('#btnSaveHoliday').click(function () {
+                clearValidation('#viewHolidayForm');
+
+                if (!validateViewForm()) {
+                    return;
+                }
+
+                var selectedBranches = [];
+                $('#viewBranchCheckboxContainer .branch-checkbox:checked').each(function () {
+                    selectedBranches.push($(this).val());
+                });
+
+                var formData = {
+                    id: parseInt($('#viewHolidayId').val()),
+                    holidayName: $('#viewHolidayName').val().trim(),
+                    holidayType: $('#viewHolidayType').val(),
+                    holidayDate: $('#viewHolidayDate').val(),
+                    branchCode: selectedBranches.join(',')
+                };
+
+                var $saveBtn = $('#btnSaveHoliday');
+                $saveBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+
+                $.post('/HolidayList/UpdateHoliday', formData, function (response) {
+                    if (response.success) {
+                        setViewMode();
+                        table.ajax.reload(null, false);
+                        showNotification(response.message, 'success');
+                    } else {
+                        showNotification(response.message, 'error');
+                    }
+                }).fail(function (xhr, status, error) {
+                    console.log('Error saving holiday:', error);
+                    showNotification('Unable to save holiday. Please try again.', 'error');
+                }).always(function () {
+                    $saveBtn.prop('disabled', false).html('Save');
+                });
+            });
+
+            // Save New Holiday (from add modal)
+            $('#btnSaveNewHoliday').click(function () {
+                clearValidation('#addHolidayForm');
+
+                if (!validateAddForm()) {
+                    return;
+                }
+
+                var selectedBranches = [];
+                $('#branchCheckboxContainer .branch-checkbox:checked').each(function () {
+                    selectedBranches.push($(this).val());
+                });
+
+                var formData = {
+                    holidayName: $('#addHolidayName').val().trim(),
+                    holidayType: $('#addHolidayType').val(),
+                    holidayDate: $('#addHolidayDate').val(),
+                    branchCode: selectedBranches.join(',')
+                };
+
+                var $saveBtn = $('#btnSaveNewHoliday');
+                $saveBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+
+                $.post('/HolidayList/AddHoliday', formData, function (response) {
+                    if (response.success) {
+                        $('#addHolidayModal').modal('hide');
+                        table.ajax.reload(null, false);
+                        showNotification(response.message, 'success');
+                    } else {
+                        showNotification(response.message, 'error');
+                    }
+                }).fail(function (xhr, status, error) {
+                    console.log('Error saving holiday:', error);
+                    showNotification('Unable to save holiday. Please try again.', 'error');
+                }).always(function () {
+                    $saveBtn.prop('disabled', false).html('Save');
+                });
+            });
+
+            // Delete Holiday with reason - REUSABLE ALREADY IN THE GLOBAL
+            $(document).on('click', '.deleteHoliday', function (e) {
+                e.preventDefault();
+                deleteWithReason({
+                    title: 'Inactive Holiday',
+                    text: 'Are you sure you want to inactive this holiday?',
+                    url: '/HolidayList/DeleteHoliday',
+                    id: $(this).data('id'),
+                    button: $(this),
+                    table: table
+                });
+            });
+
+            // Reset forms when modals are hidden
+            $('#addHolidayModal').on('hidden.bs.modal', function () {
+                resetAddForm();
+            });
+
+            $('#viewHolidayModal').on('hidden.bs.modal', function () {
+                resetViewForm();
+                setViewMode();
+            });
+
+            // Enter key handling for forms
+            $('#addHolidayForm').on('keypress', function (e) {
+                if (e.which === 13) {
+                    e.preventDefault();
+                    $('#btnSaveNewHoliday').click();
+                }
+            });
+
+            $('#viewHolidayForm').on('keypress', function (e) {
+                if (e.which === 13 && $('#viewHolidayModal .modal-body').hasClass('edit-mode')) {
+                    e.preventDefault();
+                    $('#btnSaveHoliday').click();
+                }
+            });
+
+            // Helper Functions
+            function updateTableView() {
+                if (isViewingDeleted) {
+                    table.ajax.url('/HolidayList/GetDeletedHoliday').load();
+                    $('#btnAddHoliday').hide();
+                } else {
+                    table.ajax.url('/HolidayList/GetHolidayList').load();
+                    $('#btnAddHoliday').show();
+                }
+            }
+
+            function resetAddForm() {
+                $('#addHolidayForm')[0].reset();
+                $('#addHolidayType').val('').trigger('change');
+                $('#branchCheckboxContainer .branch-checkbox').prop('checked', false);
+                clearValidation('#addHolidayForm');
+                $('#btnSaveNewHoliday').prop('disabled', false).html('Save');
+            }
+
+            function resetViewForm() {
+                $('#viewHolidayForm')[0].reset();
+                $('#viewHolidayType').val('').trigger('change');
+                $('#viewBranchCheckboxContainer .branch-checkbox').prop('checked', false);
+                clearValidation('#viewHolidayForm');
+                $('#btnSaveHoliday').prop('disabled', false).html('Save');
+            }
+
+            function setViewMode() {
+                $('#viewModalTitle').text('View Holiday');
+                $('#viewHolidayModal .modal-body').removeClass('edit-mode');
+
+                $('#viewHolidayName').prop('readonly', true);
+                $('#viewHolidayType').prop('disabled', true).trigger('change');
+                $('#viewHolidayDate').prop('readonly', true);
+                $('#viewBranchCheckboxContainer .branch-checkbox').prop('disabled', true);
+
+                $('.edit-required').addClass('d-none');
+
+                $('#btnEditHoliday').removeClass('d-none');
+                $('#btnSaveHoliday').addClass('d-none');
+                $('#btnCancelEdit').addClass('d-none');
+
+                clearValidation('#viewHolidayForm');
+            }
+
+            function setEditMode() {
+                $('#viewModalTitle').text('Edit Holiday');
+                $('#viewHolidayModal .modal-body').addClass('edit-mode');
+
+                $('#viewHolidayName').prop('readonly', false);
+                $('#viewHolidayType').prop('disabled', false).trigger('change');
+                $('#viewHolidayDate').prop('readonly', false);
+                $('#viewBranchCheckboxContainer .branch-checkbox').prop('disabled', false);
+
+                $('.edit-required').removeClass('d-none');
+
+                $('#btnEditHoliday').addClass('d-none');
+                $('#btnSaveHoliday').removeClass('d-none');
+                $('#btnCancelEdit').removeClass('d-none');
+            }
+
+            function clearValidation(formSelector) {
+                $(formSelector + ' .form-control, ' + formSelector + ' .form-select').removeClass('is-invalid');
+                $(formSelector + ' .invalid-feedback').hide();
+                $('#branchError').removeClass('d-block');
+                $('#viewBranchError').removeClass('d-block');
+            }
+
+            function validateAddForm() {
+                var isValid = true;
+
+                var holidayName = $('#addHolidayName').val().trim();
+                if (!holidayName) {
+                    $('#addHolidayName').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                var holidayType = $('#addHolidayType').val();
+                if (!holidayType) {
+                    $('#addHolidayType').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                var holidayDate = $('#addHolidayDate').val();
+                if (!holidayDate) {
+                    $('#addHolidayDate').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                var selectedBranches = $('#branchCheckboxContainer .branch-checkbox:checked').length;
+                if (selectedBranches === 0) {
+                    $('#branchError').addClass('d-block');
+                    isValid = false;
+                }
+
+                return isValid;
+            }
+
+            function validateViewForm() {
+                var isValid = true;
+
+                var holidayName = $('#viewHolidayName').val().trim();
+                if (!holidayName) {
+                    $('#viewHolidayName').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                var holidayType = $('#viewHolidayType').val();
+                if (!holidayType) {
+                    $('#viewHolidayType').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                var holidayDate = $('#viewHolidayDate').val();
+                if (!holidayDate) {
+                    $('#viewHolidayDate').addClass('is-invalid');
+                    isValid = false;
+                }
+
+                var selectedBranches = $('#viewBranchCheckboxContainer .branch-checkbox:checked').length;
+                if (selectedBranches === 0) {
+                    $('#viewBranchError').addClass('d-block');
+                    isValid = false;
+                }
+
+                return isValid;
+            }
+
+            function showNotification(message, type) {
+                if (type === 'success') {
+                    toastr.success(message, "Success");
+                } else if (type === 'error') {
+                    toastr.error(message, "Error");
+                } else if (type === 'warning') {
+                    toastr.warning(message, "Warning");
+                } else if (type === 'info') {
+                    toastr.info(message, "Information");
+                } else {
+                    toastr.info(message, "Notification");
+                }
+            }
+
+            // Remove validation classes when user starts typing or selecting
+            $('#addHolidayName, #addHolidayDate').on('input', function () {
+                $(this).removeClass('is-invalid');
+            });
+
+            $('#addHolidayType').on('change', function () {
+                $(this).removeClass('is-invalid');
+            });
+
+            $('#branchCheckboxContainer').on('change', '.branch-checkbox', function () {
+                $('#branchError').removeClass('d-block');
+            });
+
+            $('#viewHolidayName, #viewHolidayDate').on('input', function () {
+                $(this).removeClass('is-invalid');
+            });
+
+            $('#viewHolidayType').on('change', function () {
+                $(this).removeClass('is-invalid');
+            });
+
+            $('#viewBranchCheckboxContainer').on('change', '.branch-checkbox', function () {
+                $('#viewBranchError').removeClass('d-block');
+            });
+        });
+    </script>
+}

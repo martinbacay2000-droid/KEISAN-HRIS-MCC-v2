@@ -1,0 +1,1079 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutFillow.cshtml";
+    ViewData["Title"] = "Disciplinary Action";
+}
+
+<div class="col-12">
+    <div class="card">
+        <div class="card-header">
+            <div class="row" style="width:100%;">
+                <h4 class="card-title">Disciplinary Action</h4>
+                <br><br><br>
+
+                <div class="row" style="margin-left:0px;width:100%;">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Record Status</h5>
+                            <select name="filterRecordStatus" id="filterRecordStatus" class="form-control">
+                                <option value="active" selected>ACTIVE</option>
+                                <option value="inactive">INACTIVE</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Employee</h5>
+                            <select name="filterEmployee" id="filterEmployee" class="form-control">
+                                <option value="">All Employees</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Department</h5>
+                            <select name="filterDepartment" id="filterDepartment" class="form-control"></select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12 d-flex justify-content-end align-items-center mt-2 gap-2">
+                        <button type="button" class="btn btn-warning" id="btnExportToExcel">
+                            <i class="fas fa-file-excel"></i> Export to Excel
+                        </button>
+                        <button type="button" class="btn btn-primary" id="btnAddDisciplinaryAction">
+                            <i class="fa fa-plus"></i> New Disciplinary Action
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="disciplinaryTable" class="display" style="min-width: 845px">
+                    <thead>
+                        <tr>
+                            <th>Action</th>
+                            <th>Employee Name</th>
+                            <th>Offense</th>
+                            <th>Complainant</th>
+                            <th>Section</th>
+                            <th>Penalty</th>
+                            <th>Date Issued</th>
+                            <th>Attachment</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════════════════
+             ADD MODAL
+        ══════════════════════════════════════════════════════════════════ -->
+        <div class="modal fade" id="addDisciplinaryModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add Disciplinary Action</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addDisciplinaryForm">
+
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="addEmployeeName" class="form-label">
+                                        Employee Name <span class="text-danger">*</span>
+                                    </label>
+                                    <select class="form-select" id="addEmployeeName" name="employeeNo"
+                                            style="width:100%" required>
+                                        <option value="">Select Employee...</option>
+                                    </select>
+                                    <div class="invalid-feedback">Please select an employee.</div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="addOffense" class="form-label">
+                                        Offense <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="addOffense"
+                                           name="offense" maxlength="25" required
+                                           placeholder="Enter offense" autocomplete="off">
+                                    <div class="invalid-feedback">Please provide the offense.</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="addComplainant" class="form-label">
+                                        Complainant <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="addComplainant"
+                                           name="complainant" maxlength="100" required
+                                           placeholder="Enter complainant name" autocomplete="off">
+                                    <div class="invalid-feedback">Please provide the complainant.</div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="addSection" class="form-label">Section</label>
+                                    <input type="text" class="form-control" id="addSection"
+                                           name="section" maxlength="45"
+                                           placeholder="Enter section (optional)" autocomplete="off">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="addPenalty" class="form-label">
+                                        Penalty <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="addPenalty"
+                                           name="penalty" maxlength="45" required
+                                           placeholder="Enter penalty" autocomplete="off">
+                                    <div class="invalid-feedback">Please provide the penalty.</div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="addDateIssued" class="form-label">
+                                        Date Issued <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-hasicon">
+                                        <input type="text" class="form-control formInput"
+                                               id="addDateIssued" name="dateIssued"
+                                               placeholder="mm/dd/yyyy" required autocomplete="off">
+                                        <div class="icon"><i class="far fa-calendar"></i></div>
+                                    </div>
+                                    <div class="invalid-feedback">Please select a date issued.</div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="addDisciplinaryReason" class="form-label">
+                                    Disciplinary Reason <span class="text-danger">*</span>
+                                </label>
+                                <textarea class="form-control" id="addDisciplinaryReason"
+                                          name="disciplinaryReason" rows="3" maxlength="255" required
+                                          placeholder="Describe the reason for this disciplinary action..."></textarea>
+                                <div class="invalid-feedback">Please provide the disciplinary reason.</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="addDisciplinaryAction" class="form-label">
+                                    Disciplinary Action Taken <span class="text-danger">*</span>
+                                </label>
+                                <textarea class="form-control" id="addDisciplinaryAction"
+                                          name="disciplinaryAction" rows="3" maxlength="255" required
+                                          placeholder="Describe the action taken..."></textarea>
+                                <div class="invalid-feedback">Please provide the action taken.</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="addAttachment" class="form-label">Attachment</label>
+                                <input type="file" class="form-control" id="addAttachment"
+                                       name="attachment" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                                <small class="text-muted">
+                                    Allowed formats: PDF, JPG, PNG, DOC, DOCX (Max: 5MB)
+                                </small>
+                            </div>
+
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="btnSaveNewDisciplinary">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════════════════
+             VIEW / EDIT MODAL
+        ══════════════════════════════════════════════════════════════════ -->
+        <div class="modal fade" id="viewDisciplinaryModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="viewModalTitle">View Disciplinary Action</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="viewDisciplinaryForm">
+                            <input type="hidden" id="viewDisciplinaryId" name="id">
+
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label for="viewEmployeeName" class="form-label">
+                                        Employee Name
+                                        <span class="text-danger edit-required d-none">*</span>
+                                    </label>
+                                    <select class="form-select" id="viewEmployeeName"
+                                            name="employeeNo" style="width:100%" disabled>
+                                        <option value="">Select Employee...</option>
+                                    </select>
+                                    <div class="invalid-feedback">Please select an employee.</div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="viewOffense" class="form-label">
+                                        Offense
+                                        <span class="text-danger edit-required d-none">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="viewOffense"
+                                           name="offense" maxlength="25" readonly autocomplete="off">
+                                    <div class="invalid-feedback">Please provide the offense.</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="viewComplainant" class="form-label">
+                                        Complainant
+                                        <span class="text-danger edit-required d-none">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="viewComplainant"
+                                           name="complainant" maxlength="100" readonly autocomplete="off">
+                                    <div class="invalid-feedback">Please provide the complainant.</div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="viewSection" class="form-label">Section</label>
+                                    <input type="text" class="form-control" id="viewSection"
+                                           name="section" maxlength="45" readonly autocomplete="off">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="viewPenalty" class="form-label">
+                                        Penalty
+                                        <span class="text-danger edit-required d-none">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="viewPenalty"
+                                           name="penalty" maxlength="45" readonly autocomplete="off">
+                                    <div class="invalid-feedback">Please provide the penalty.</div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="viewDateIssued" class="form-label">
+                                        Date Issued
+                                        <span class="text-danger edit-required d-none">*</span>
+                                    </label>
+                                    <div class="input-hasicon">
+                                        <input type="text" class="form-control formInput"
+                                               id="viewDateIssued" name="dateIssued"
+                                               placeholder="mm/dd/yyyy" readonly autocomplete="off">
+                                        <div class="icon"><i class="far fa-calendar"></i></div>
+                                    </div>
+                                    <div class="invalid-feedback">Please select a date issued.</div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="viewDisciplinaryReason" class="form-label">
+                                    Disciplinary Reason
+                                    <span class="text-danger edit-required d-none">*</span>
+                                </label>
+                                <textarea class="form-control" id="viewDisciplinaryReason"
+                                          name="disciplinaryReason" rows="3"
+                                          maxlength="255" readonly></textarea>
+                                <div class="invalid-feedback">Please provide the disciplinary reason.</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="viewDisciplinaryActionField" class="form-label">
+                                    Disciplinary Action Taken
+                                    <span class="text-danger edit-required d-none">*</span>
+                                </label>
+                                <textarea class="form-control" id="viewDisciplinaryActionField"
+                                          name="disciplinaryAction" rows="3"
+                                          maxlength="255" readonly></textarea>
+                                <div class="invalid-feedback">Please provide the action taken.</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Attachment</label>
+                                <div id="currentAttachments" class="mb-2"></div>
+                                <input type="file" class="form-control d-none" id="viewAttachment"
+                                       name="attachment" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                                <small class="text-muted d-none edit-mode-only">
+                                    Allowed formats: PDF, JPG, PNG, DOC, DOCX (Max: 5MB)
+                                </small>
+                            </div>
+
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary d-none" id="btnEditDisciplinary">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button type="button" class="btn btn-success d-none" id="btnSaveDisciplinary">Save</button>
+                        <button type="button" class="btn btn-danger d-none" id="btnCancelEdit">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════════════════
+             ATTACHMENT VIEW MODAL
+        ══════════════════════════════════════════════════════════════════ -->
+        <div class="modal fade" id="attachmentModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">View Attachments</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="attachmentList"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- /.card -->
+</div><!-- /.col-12 -->
+@section Fillow_style {
+    <style>
+        .table-responsive {
+            border-radius: 0.375rem;
+        }
+
+        #disciplinaryTable_wrapper .dataTables_length,
+        #disciplinaryTable_wrapper .dataTables_filter {
+            margin-bottom: 1rem;
+        }
+
+        #disciplinaryTable_wrapper .dataTables_info,
+        #disciplinaryTable_wrapper .dataTables_paginate {
+            margin-top: 1rem;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .modal-content {
+            border-radius: 0.5rem;
+            box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15);
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 .2rem rgba(13,110,253,.25);
+        }
+
+        .form-control[readonly], .form-select[disabled] {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        .edit-mode .form-control[readonly],
+        .edit-mode .form-select[disabled] {
+            background-color: #fff;
+            border-color: #ced4da;
+        }
+
+        .invalid-feedback {
+            display: none;
+        }
+
+        .form-control.is-invalid, .form-select.is-invalid {
+            border-color: #dc3545;
+        }
+
+            .form-control.is-invalid ~ .invalid-feedback,
+            .form-select.is-invalid ~ .invalid-feedback {
+                display: block;
+            }
+
+        .is-invalid + .select2-container .select2-selection--single {
+            border-color: #dc3545;
+        }
+
+        .select2-container .select2-selection--single {
+            height: 38px;
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 36px;
+            padding-left: 12px;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 36px;
+        }
+
+        .select2-container--default.select2-container--focus .select2-selection--single {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 .2rem rgba(13,110,253,.25);
+        }
+
+        .select2-container--default .select2-selection--single.select2-selection--disabled {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        .card-header {
+            border-bottom: none !important;
+        }
+
+        .attachment-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            background-color: #f8f9fa;
+        }
+
+            .attachment-item a {
+                text-decoration: none;
+                color: #0d6efd;
+            }
+
+                .attachment-item a:hover {
+                    text-decoration: underline;
+                }
+
+        .truncate {
+            max-width: 150px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: inline-block;
+        }
+
+        /* ── SweetAlert2 ─────────────────────────────────────────────── */
+        .swal2-popup {
+            border-radius: 15px !important;
+            padding: 2rem !important;
+        }
+
+        .swal2-confirm {
+            background-color: #7c3aed !important;
+            border-color: #7c3aed !important;
+            color: white !important;
+            font-weight: 500 !important;
+            padding: .75rem 2rem !important;
+            border-radius: 8px !important;
+            font-size: .875rem !important;
+        }
+
+            .swal2-confirm:hover {
+                background-color: #6d28d9 !important;
+            }
+
+        .swal2-cancel {
+            background-color: #6b7280 !important;
+            border-color: #6b7280 !important;
+            color: white !important;
+            font-weight: 500 !important;
+            padding: .75rem 2rem !important;
+            border-radius: 8px !important;
+            font-size: .875rem !important;
+        }
+
+            .swal2-cancel:hover {
+                background-color: #4b5563 !important;
+            }
+    </style>
+}
+
+@section Fillow_script {
+    <script>
+        $(document).ready(function () {
+
+            // ── ACCESS CONTROL ─────────────────────────────────────────────────────
+            MODULE = 'FDisciplinaryAction';
+            access = ROLE_ACCESS?.[MODULE];
+
+            if (access !== 'READWRITE' && access !== 'FULL') {
+                $('#btnAddDisciplinaryAction').hide();
+            }
+
+            // ── CONFIG ─────────────────────────────────────────────────────────────
+            const config = {
+                toastr: {
+                    positionClass: "toast-top-right", timeOut: 5000,
+                    closeButton: true, progressBar: true, preventDuplicates: true
+                },
+                endpoints: {
+                    list:        '/DisciplinaryAction/GetDisciplinaryActionList',
+                    get:         '/DisciplinaryAction/GetDisciplinaryAction',
+                    employees:   '/DisciplinaryAction/GetEmployeeList',
+                    attachments: '/DisciplinaryAction/GetDisciplinaryAttachments',
+                    add:         '/DisciplinaryAction/AddDisciplinaryAction',
+                    update:      '/DisciplinaryAction/UpdateDisciplinaryAction',
+                    delete:      '/DisciplinaryAction/DeleteDisciplinaryAction',
+                    restore:     '/DisciplinaryAction/RestoreDisciplinaryAction'
+                }
+            };
+
+            toastr.options = config.toastr;
+            let isViewingDeleted = false;
+
+            // ── INIT ───────────────────────────────────────────────────────────────
+            initSelect2();
+
+            $('#addDateIssued, #viewDateIssued').datepicker({
+                format: 'mm/dd/yyyy',
+                autoclose: true,
+                todayHighlight: true
+            });
+
+            $('#filterRecordStatus').select2({
+                selectOnClose: true,
+                minimumResultsForSearch: Infinity
+            });
+
+            $('#filterRecordStatus').on('change', function () {
+                isViewingDeleted = $(this).val() === 'inactive';
+                updateTableView();
+            });
+
+            $('#filterEmployee, #filterDepartment').on('change', function () {
+                table.ajax.reload(null, false);
+            });
+
+            // ── DATATABLE ──────────────────────────────────────────────────────────
+            const table = $('#disciplinaryTable').DataTable({
+                processing: true,
+                serverSide: false,
+                ajax: {
+                    url: config.endpoints.list,
+                    type: 'GET',
+                    data: () => ({
+                        status:     isViewingDeleted ? 'inactive' : 'active',
+                        employeeNo: $('#filterEmployee').val() || '',
+                        department: $('#filterDepartment').val() || ''
+                    }),
+                    error: () => showNotification('Error loading data. Please refresh the page.', 'error')
+                },
+                columns: [
+                    {
+                        data: null, width: '10%', orderable: false,
+                        render: (data, type, row) => {
+                            let viewBtn    = '';
+                            let deleteBtn  = '';
+                            let restoreBtn = '';
+
+                            if (isViewingDeleted) {
+                                if (access === 'FULL') {
+                                    restoreBtn = `<button class="btn btn-sm btn-success shadow-sm restoreDisciplinary"
+                                                    data-id="${row.id}" title="Restore">
+                                                    <i class="fas fa-undo"></i>
+                                                  </button>`;
+                                }
+                                return `<div class="d-flex gap-1">${restoreBtn}</div>`;
+                            }
+
+                            if (access === 'READ' || access === 'READWRITE' || access === 'FULL') {
+                                viewBtn = `<button class="btn btn-sm btn-primary shadow-sm viewDisciplinary"
+                                             data-id="${row.id}" title="View">
+                                             <i class="fas fa-eye"></i>
+                                           </button>`;
+                            }
+                            if (access === 'FULL') {
+                                deleteBtn = `<button class="btn btn-sm btn-danger shadow-sm deleteDisciplinary"
+                                               data-id="${row.id}" title="Delete">
+                                               <i class="fa fa-trash"></i>
+                                             </button>`;
+                            }
+                            return `<div class="d-flex gap-1">${viewBtn}${deleteBtn}</div>`;
+                        }
+                    },
+                    {
+                        data: 'employeeName', width: '16%',
+                        render: d => `<span class="truncate" title="${escHtml(d)}">${escHtml(d)}</span>`
+                    },
+                    {
+                        data: 'offense', width: '13%',
+                        render: d => `<span class="truncate" title="${escHtml(d)}">${escHtml(d)}</span>`
+                    },
+                    {
+                        data: 'complainant', width: '13%',
+                        render: d => `<span class="truncate" title="${escHtml(d)}">${escHtml(d)}</span>`
+                    },
+                    {
+                        data: 'section', width: '10%',
+                        render: d => `<span class="truncate" title="${escHtml(d)}">${escHtml(d)}</span>`
+                    },
+                    {
+                        data: 'penalty', width: '10%',
+                        render: d => `<span class="truncate" title="${escHtml(d)}">${escHtml(d)}</span>`
+                    },
+                    { data: 'dateIssued', width: '10%', render: d => formatDateDisplay(d) },
+                    {
+                        data: null, width: '8%', orderable: false,
+                        render: (data, type, row) =>
+                            `<button class="btn btn-sm btn-outline-primary viewAttachment"
+                                       data-employee="${escHtml(row.employeeNo)}" title="View Attachments">
+                               <i class="fas fa-paperclip"></i>
+                             </button>`
+                    }
+                ],
+                order: [[0, 'desc']],
+                pageLength: 25,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+                language: {
+                    processing: 'Loading...',
+                    emptyTable: 'No disciplinary actions found',
+                    zeroRecords: 'No matching records found',
+                    paginate: {
+                        next: '<i class="fa fa-angle-double-right"></i>',
+                        previous: '<i class="fa fa-angle-double-left"></i>'
+                    }
+                }
+            });
+
+            // ── ADD ────────────────────────────────────────────────────────────────
+            $('#btnAddDisciplinaryAction').click(() => {
+                resetAddForm();
+                loadEmployees('#addEmployeeName');
+                $('#addDisciplinaryModal').modal('show');
+            });
+
+            $('#btnSaveNewDisciplinary').click(() => {
+                if (!validateForm('#addDisciplinaryForm', [
+                    'addEmployeeName', 'addOffense', 'addComplainant',
+                    'addPenalty', 'addDateIssued', 'addDisciplinaryReason', 'addDisciplinaryAction'
+                ])) return;
+
+                const fd = new FormData();
+                fd.append('employeeNo',         $('#addEmployeeName').val());
+                fd.append('offense',            $('#addOffense').val().trim());
+                fd.append('complainant',        $('#addComplainant').val().trim());
+                fd.append('section',            $('#addSection').val().trim());
+                fd.append('penalty',            $('#addPenalty').val().trim());
+                fd.append('dateIssued',         $('#addDateIssued').val());
+                fd.append('disciplinaryReason', $('#addDisciplinaryReason').val().trim());
+                fd.append('disciplinaryAction', $('#addDisciplinaryAction').val().trim());
+
+                const file = $('#addAttachment')[0].files[0];
+                if (file) fd.append('attachment', file);
+
+                ajaxSave(config.endpoints.add, fd, '#btnSaveNewDisciplinary', true);
+            });
+
+            // ── VIEW / EDIT ────────────────────────────────────────────────────────
+            $(document).on('click', '.viewDisciplinary', function (e) {
+                e.preventDefault();
+                const id   = $(this).data('id');
+                const $btn = $(this);
+                toggleLoading($btn, true);
+
+                $.get(config.endpoints.get, { id })
+                    .done(data => {
+                        if (!data) { showNotification('Unable to load record.', 'error'); return; }
+                        resetViewForm();
+                        setViewMode();
+                        loadEmployeesAsync('#viewEmployeeName').done(() => {
+                            populateViewForm(data);
+                            loadCurrentAttachments(data.employeeNo);
+                            $('#viewDisciplinaryModal').modal('show');
+                        });
+                    })
+                    .fail(() => showNotification('Unable to load record.', 'error'))
+                    .always(() => toggleLoading($btn, false));
+            });
+
+            $('#btnEditDisciplinary').click(() => {
+                setEditMode();
+                $('#viewOffense').focus();
+            });
+
+            $('#btnCancelEdit').click(() => {
+                const id = $('#viewDisciplinaryId').val();
+                $.get(config.endpoints.get, { id }).done(data => {
+                    if (data) { populateViewForm(data); setViewMode(); clearValidation('#viewDisciplinaryForm'); }
+                });
+            });
+
+            $('#btnSaveDisciplinary').click(() => {
+                if (!validateForm('#viewDisciplinaryForm', [
+                    'viewEmployeeName', 'viewOffense', 'viewComplainant',
+                    'viewPenalty', 'viewDateIssued', 'viewDisciplinaryReason', 'viewDisciplinaryActionField'
+                ])) return;
+
+                const fd = new FormData();
+                fd.append('id',                 $('#viewDisciplinaryId').val());
+                fd.append('employeeNo',         $('#viewEmployeeName').val());
+                fd.append('offense',            $('#viewOffense').val().trim());
+                fd.append('complainant',        $('#viewComplainant').val().trim());
+                fd.append('section',            $('#viewSection').val().trim());
+                fd.append('penalty',            $('#viewPenalty').val().trim());
+                fd.append('dateIssued',         $('#viewDateIssued').val());
+                fd.append('disciplinaryReason', $('#viewDisciplinaryReason').val().trim());
+                fd.append('disciplinaryAction', $('#viewDisciplinaryActionField').val().trim());
+
+                const file = $('#viewAttachment')[0].files[0];
+                if (file) fd.append('attachment', file);
+
+                ajaxSave(config.endpoints.update, fd, '#btnSaveDisciplinary', false);
+            });
+
+            // ── DELETE ─────────────────────────────────────────────────────────────
+            $(document).on('click', '.deleteDisciplinary', function (e) {
+                e.preventDefault();
+                deleteWithReason({
+                    title:  'Inactive Disciplinary Action',
+                    text:   'Are you sure you want to inactive this record?',
+                    url:    config.endpoints.delete,
+                    id:     $(this).data('id'),
+                    button: $(this),
+                    table
+                });
+            });
+
+            // ── RESTORE ────────────────────────────────────────────────────────────
+            $(document).on('click', '.restoreDisciplinary', function (e) {
+                e.preventDefault();
+                const id   = $(this).data('id');
+                const $btn = $(this);
+
+                Swal.fire({
+                    title: 'Restore Record',
+                    text:  'Are you sure you want to restore this record?',
+                    icon:  'question',
+                    showCancelButton:   true,
+                    confirmButtonText:  'Yes, Restore',
+                    cancelButtonText:   'Cancel',
+                    confirmButtonColor: '#28a745',
+                    cancelButtonColor:  '#6c757d',
+                    allowOutsideClick:  false,
+                    allowEscapeKey:     false
+                }).then(result => {
+                    if (!result.isConfirmed) return;
+                    toggleLoading($btn, true);
+                    $.post(config.endpoints.restore, { id })
+                        .done(res => {
+                            if (res.success) { table.ajax.reload(null, false); showNotification(res.message, 'success'); }
+                            else             { showNotification(res.message, 'error'); }
+                        })
+                        .fail(() => showNotification('Unable to restore. Please try again.', 'error'))
+                        .always(() => toggleLoading($btn, false));
+                });
+            });
+
+            // ── ATTACHMENTS ────────────────────────────────────────────────────────
+            $(document).on('click', '.viewAttachment', function (e) {
+                e.preventDefault();
+                loadAttachmentsList($(this).data('employee'));
+                $('#attachmentModal').modal('show');
+            });
+
+            // ── MODAL LIFECYCLE ────────────────────────────────────────────────────
+            $('#addDisciplinaryModal').on('hidden.bs.modal', resetAddForm);
+            $('#viewDisciplinaryModal').on('hidden.bs.modal', () => { resetViewForm(); setViewMode(); });
+
+            // ── KEYBOARD ───────────────────────────────────────────────────────────
+            $('#addDisciplinaryForm').on('keypress', e => {
+                if (e.which === 13) { e.preventDefault(); $('#btnSaveNewDisciplinary').click(); }
+            });
+            $('#viewDisciplinaryForm').on('keypress', e => {
+                if (e.which === 13 && $('#viewDisciplinaryModal .modal-body').hasClass('edit-mode')) {
+                    e.preventDefault(); $('#btnSaveDisciplinary').click();
+                }
+            });
+
+            // ── INLINE VALIDATION CLEAR ────────────────────────────────────────────
+            $(document).on('input change',
+                '#addEmployeeName, #addOffense, #addComplainant, #addPenalty, ' +
+                '#addDateIssued, #addDisciplinaryReason, #addDisciplinaryAction, ' +
+                '#viewEmployeeName, #viewOffense, #viewComplainant, #viewPenalty, ' +
+                '#viewDateIssued, #viewDisciplinaryReason, #viewDisciplinaryActionField',
+                function () { $(this).removeClass('is-invalid'); }
+            );
+
+            // ══════════════════════════════════════════════════════════════════════
+            // HELPERS
+            // ══════════════════════════════════════════════════════════════════════
+
+            function initSelect2() {
+                $('#addEmployeeName').select2({
+                    placeholder: 'Select Employee', allowClear: true,
+                    dropdownParent: $('#addDisciplinaryModal'), width: '100%'
+                });
+                $('#viewEmployeeName').select2({
+                    placeholder: 'Select Employee', allowClear: true,
+                    dropdownParent: $('#viewDisciplinaryModal'), width: '100%'
+                });
+                $('#filterEmployee').select2({
+                    placeholder: 'All Employees',
+                    allowClear: true,
+                    ajax: {
+                        url: '/Setup/GetEmployeeName',
+                        dataType: 'json',
+                        delay: 250,
+                        data: function (params) {
+                            return { employeeName: params.term || '' };
+                        },
+                        processResults: function (data) {
+                            return {
+                                results: $.map(data, function (item) {
+                                    return { id: item.employeeNo, text: item.employeeName };
+                                })
+                            };
+                        }
+                    }
+                });
+                $('#filterDepartment').select2({
+                    placeholder: 'Select Department',
+                    allowClear: true,
+                    ajax: {
+                        url: '/Setup/GetEmployeeDepartment',
+                        dataType: 'json',
+                        delay: 250,
+                        processResults: data => ({
+                            results: [{ id: 'ALL', text: 'All Departments' }].concat(
+                                data.map(item => ({ id: item.departmentCode, text: item.departmentName }))
+                            )
+                        })
+                    }
+                });
+            }
+
+            function loadEmployees(selector) {
+                $.get(config.endpoints.employees, data => {
+                    const $s = $(selector).empty().append('<option value="">Select Employee...</option>');
+                    data.forEach(i => $s.append(`<option value="${escHtml(i.employeeNo)}">${escHtml(i.employeeName)}</option>`));
+                });
+            }
+
+            function loadEmployeesAsync(selector) {
+                return $.get(config.endpoints.employees).done(data => {
+                    const $s = $(selector).empty().append('<option value="">Select Employee...</option>');
+                    data.forEach(i => $s.append(`<option value="${escHtml(i.employeeNo)}">${escHtml(i.employeeName)}</option>`));
+                });
+            }
+
+            function populateViewForm(data) {
+                $('#viewDisciplinaryId').val(data.id);
+                $('#viewEmployeeName').val(data.employeeNo).trigger('change');
+                $('#viewOffense').val(data.offense || '');
+                $('#viewComplainant').val(data.complainant || '');
+                $('#viewSection').val(data.section || '');
+                $('#viewPenalty').val(data.penalty || '');
+                $('#viewDateIssued').val(formatDateDisplay(data.dateIssued));
+                $('#viewDisciplinaryReason').val(data.disciplinaryReason || '');
+                $('#viewDisciplinaryActionField').val(data.disciplinaryAction || '');
+
+                if (access === 'READWRITE' || access === 'FULL') {
+                    $('#btnEditDisciplinary').removeClass('d-none');
+                } else {
+                    $('#btnEditDisciplinary').addClass('d-none');
+                }
+            }
+
+            function loadCurrentAttachments(employeeNo) {
+                $.get(config.endpoints.attachments, { employeeNo }, data => {
+                    const $c = $('#currentAttachments').empty();
+                    if (data && data.length > 0) {
+                        data.forEach(a => {
+                            const name = a.attachmentPath.split('/').pop();
+                            $c.append(`
+                                <div class="attachment-item">
+                                    <i class="fas fa-file"></i>
+                                    <a href="${a.attachmentPath}" target="_blank">${escHtml(name)}</a>
+                                    <small class="text-muted ms-auto">
+                                        ${new Date(a.dtAdded).toLocaleDateString()}
+                                    </small>
+                                </div>`);
+                        });
+                    } else {
+                        $c.append('<small class="text-muted">No attachments found</small>');
+                    }
+                });
+            }
+
+            function loadAttachmentsList(employeeNo) {
+                $.get(config.endpoints.attachments, { employeeNo }, data => {
+                    const $c = $('#attachmentList').empty();
+                    if (data && data.length > 0) {
+                        data.forEach(a => {
+                            const name = a.attachmentPath.split('/').pop();
+                            $c.append(`
+                                <div class="attachment-item mb-3">
+                                    <i class="fas fa-file-alt fa-2x me-3"></i>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">
+                                            <a href="${a.attachmentPath}" target="_blank"
+                                               class="text-decoration-none">${escHtml(name)}</a>
+                                        </h6>
+                                        <small class="text-muted">
+                                            Added: ${new Date(a.dtAdded).toLocaleDateString()}
+                                        </small>
+                                    </div>
+                                    <a href="${a.attachmentPath}" target="_blank"
+                                       class="btn btn-sm btn-outline-primary ms-2">
+                                        <i class="fas fa-download"></i> View
+                                    </a>
+                                </div>`);
+                        });
+                    } else {
+                        $c.append('<p class="text-muted text-center">No attachments found.</p>');
+                    }
+                });
+            }
+
+            function updateTableView() {
+                table.ajax.reload(null, false);
+                const canAdd = access === 'READWRITE' || access === 'FULL';
+                $('#btnAddDisciplinaryAction')[isViewingDeleted || !canAdd ? 'hide' : 'show']();
+                $('#btnExportToExcel')[isViewingDeleted ? 'hide' : 'show']();
+            }
+
+            $('#btnExportToExcel').click(function () {
+                const $btn     = $(this);
+                const pageInfo = table.page.info();
+
+                if (pageInfo.recordsDisplay === 0) {
+                    return showNotification('No data available to export', 'warning');
+                }
+
+                const params = new URLSearchParams({
+                    employeeNo: $('#filterEmployee').val()   || '',
+                    department: $('#filterDepartment').val() || '',
+                    offset:     pageInfo.start,
+                    limit:      pageInfo.length === -1 ? 0 : pageInfo.length
+                });
+
+                toggleLoading($btn, true, 'Exporting...');
+
+                const link = Object.assign(document.createElement('a'), {
+                    href:     `/DisciplinaryActionExport/ExportToExcel?${params}`,
+                    download: ''
+                });
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                setTimeout(() => {
+                    toggleLoading($btn, false);
+                    showNotification(
+                        `Exported ${pageInfo.recordsDisplay} record(s) successfully.`,
+                        'success'
+                    );
+                }, 1500);
+            });
+
+            function ajaxSave(url, data, btnSelector, closeModal) {
+                const $btn = $(btnSelector);
+                toggleLoading($btn, true, 'Saving...');
+                $.ajax({
+                    url, type: 'POST', data, processData: false, contentType: false,
+                    success: res => {
+                        if (res.success) {
+                            if (closeModal) $('#addDisciplinaryModal').modal('hide');
+                            else            setViewMode();
+                            table.ajax.reload(null, false);
+                            showNotification(res.message, 'success');
+                        } else {
+                            showNotification(res.message, 'error');
+                        }
+                    },
+                    error:    () => showNotification('Unable to save. Please try again.', 'error'),
+                    complete: () => toggleLoading($btn, false)
+                });
+            }
+
+            function resetAddForm() {
+                $('#addDisciplinaryForm')[0].reset();
+                $('#addEmployeeName').val(null).trigger('change');
+                clearValidation('#addDisciplinaryForm');
+                $('#btnSaveNewDisciplinary').prop('disabled', false).html('Save');
+            }
+
+            function resetViewForm() {
+                $('#viewDisciplinaryForm')[0].reset();
+                $('#viewEmployeeName').val(null).trigger('change');
+                $('#currentAttachments').empty();
+                clearValidation('#viewDisciplinaryForm');
+                $('#btnSaveDisciplinary').prop('disabled', false).html('Save');
+            }
+
+            function setViewMode() {
+                $('#viewModalTitle').text('View Disciplinary Action');
+                $('#viewDisciplinaryModal .modal-body').removeClass('edit-mode');
+                $('#viewEmployeeName').prop('disabled', true);
+                $('#viewOffense, #viewComplainant, #viewSection, #viewPenalty, ' +
+                  '#viewDisciplinaryReason, #viewDisciplinaryActionField').prop('readonly', true);
+                $('#viewDateIssued').datepicker('remove').prop('readonly', true);
+                $('.edit-required').addClass('d-none');
+                $('#viewAttachment').addClass('d-none');
+                $('.edit-mode-only').addClass('d-none');
+                $('#btnSaveDisciplinary, #btnCancelEdit').addClass('d-none');
+                clearValidation('#viewDisciplinaryForm');
+            }
+
+            function setEditMode() {
+                $('#viewModalTitle').text('Edit Disciplinary Action');
+                $('#viewDisciplinaryModal .modal-body').addClass('edit-mode');
+                $('#viewEmployeeName').prop('disabled', false);
+                $('#viewOffense, #viewComplainant, #viewSection, #viewPenalty, ' +
+                  '#viewDisciplinaryReason, #viewDisciplinaryActionField').prop('readonly', false);
+                $('#viewDateIssued').prop('readonly', false).datepicker({
+                    format: 'mm/dd/yyyy', autoclose: true, todayHighlight: true
+                });
+                $('.edit-required').removeClass('d-none');
+                $('#viewAttachment').removeClass('d-none');
+                $('.edit-mode-only').removeClass('d-none');
+                $('#btnEditDisciplinary').addClass('d-none');
+                $('#btnSaveDisciplinary, #btnCancelEdit').removeClass('d-none');
+            }
+
+            function validateForm(formSelector, fields) {
+                clearValidation(formSelector);
+                let valid = true;
+                fields.forEach(f => {
+                    const $f = $(`#${f}`);
+                    if (!$f.val() || !$f.val().toString().trim()) {
+                        $f.addClass('is-invalid'); valid = false;
+                    }
+                });
+                return valid;
+            }
+
+            function clearValidation(formSelector) {
+                $(`${formSelector} .form-control, ${formSelector} .form-select`).removeClass('is-invalid');
+            }
+
+            function toggleLoading($btn, loading, text = '') {
+                if (loading) {
+                    if (!$btn.data('orig')) $btn.data('orig', $btn.html());
+                    $btn.prop('disabled', true).html(`<i class="fas fa-spinner fa-spin"></i>${text ? ' ' + text : ''}`);
+                } else {
+                    $btn.prop('disabled', false).html($btn.data('orig') || 'Save').removeData('orig');
+                }
+            }
+
+            function showNotification(message, type) {
+                const titles = { success: 'Success', error: 'Error', warning: 'Warning', info: 'Information' };
+                toastr[type](message, titles[type] || 'Notification');
+            }
+
+            function formatDateDisplay(isoString) {
+                if (!isoString) return '';
+                const d = new Date(isoString);
+                if (isNaN(d.getTime())) return '';
+                const m   = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                const y   = d.getFullYear();
+                return `${m}/${day}/${y}`;
+            }
+
+            function escHtml(str) {
+                if (!str) return '';
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;');
+            }
+
+        });
+    </script>
+}

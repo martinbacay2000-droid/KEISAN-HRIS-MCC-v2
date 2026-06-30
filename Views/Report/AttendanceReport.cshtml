@@ -1,0 +1,410 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutFillow.cshtml";
+    ViewData["Title"] = "Attendance Report";
+}
+
+<div class="col-12">
+    <div class="card">
+        <div class="card-header">
+
+            <div class="row" style="width:100%;">
+                <h4 class="card-title">Attendance Report</h4>
+                <br /><br /><br />
+
+                <div class="row" style="margin-left:0px;width:100%;">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Select Report</h5>
+                            <select name="filterReportName" id="filterReportName" class="form-control">
+                                <option value="PerfectAttendance" selected>Perfect Attendance</option>
+                                <option value="AbsentDetail">Absent Report Details</option>
+                                <option value="AbsentSummary">Absent Report Summary</option>
+                                <option value="TardinessSummary">Tardiness Report Summary</option>
+                                <option value="TardinessDetail">Tardiness Report Details</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Branch</h5>
+                            <select name="branch" id="filterBranch" class="form-control"></select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Department</h5>
+                            <select name="department" id="filterDepartment" class="form-control"></select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row align-items-end mt-2" style="margin-left:0px;width:100%;">
+                    <div class="col-md-3">
+                        <label>Date Month</label>
+                        <div class="input-hasicon">
+                            <input name="dateMonth" id="dateMonth" class="form-control formInput month-picker">
+                            <div class="icon"><i class="far fa-calendar"></i></div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label>Year</label>
+                        <div class="input-hasicon">
+                            <input name="dateYear" id="dateYear" class="form-control formInput year-picker">
+                            <div class="icon"><i class="far fa-calendar"></i></div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12 d-flex justify-content-end" style="margin-top:15px;gap:10px;">
+                        <div class="form-group">
+                            <button type="button" class="btn btn-warning" id="btnExportToExcel">
+                                <i class="fas fa-file-excel"></i> Export to Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="AttendanceTable" class="display" style="min-width: 845px">
+                    <thead></thead>
+                    <tfoot><tr></tr></tfoot>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Fillow_style
+{
+}
+
+@section Fillow_script
+{
+    <script>
+        $(document).ready(function () {
+
+            // ── Date pickers ──────────────────────────────────────────────────────
+            $('.month-picker').datepicker({
+                format: "MM",
+                minViewMode: 1,
+                startView: 1,
+                autoclose: true
+            }).on('show', function () {
+                $('.datepicker-years').hide();
+                $('.datepicker-switch').css('visibility', 'hidden');
+            }).val(function () {
+                const monthNames = [
+                    "January","February","March","April","May","June",
+                    "July","August","September","October","November","December"
+                ];
+                return monthNames[new Date().getMonth()];
+            });
+
+            $('.year-picker').datepicker({
+                format: 'yyyy',
+                minViewMode: 2,
+                autoclose: true
+            }).val(new Date().getFullYear());
+
+            // ── Branch Select2 ────────────────────────────────────────────────────
+            $('#filterBranch').select2({
+                placeholder: "Select Branch",
+                allowClear: true,
+                ajax: {
+                    url: '/Setup/GetEmployeeBranch',
+                    dataType: 'json',
+                    delay: 250,
+                    processResults: function (data) {
+                        const results = $.map(data, function (item) {
+                            return { id: item.branchCode, text: item.branchName };
+                        });
+                        results.unshift({ id: 'ALL', text: 'All Branches' });
+                        return { results: results };
+                    }
+                }
+            });
+
+            // ── Department Select2 ────────────────────────────────────────────────
+            $('#filterDepartment').select2({
+                placeholder: "Select Department",
+                allowClear: true,
+                ajax: {
+                    url: '/Setup/GetEmployeeDepartment',
+                    dataType: 'json',
+                    delay: 250,
+                    processResults: function (data) {
+                        const results = $.map(data, function (item) {
+                            return { id: item.departmentCode, text: item.departmentName };
+                        });
+                        results.unshift({ id: 'ALL', text: 'All Departments' });
+                        return { results: results };
+                    }
+                }
+            });
+
+            // ── Column definitions per report type ────────────────────────────────
+            const moneyFmt = $.fn.dataTable.render.number(',', '.', 2);
+
+            // Converts "08:00:00" or "2025-01-15T08:00:00" → "8:00 AM"
+            const fmt12hr = function (data) {
+                if (!data) return '';
+                // Handle plain time strings like "08:30:00"
+                const timeMatch = String(data).match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+                if (timeMatch) {
+                    let h = parseInt(timeMatch[1], 10);
+                    const m = timeMatch[2];
+                    const ampm = h >= 12 ? 'PM' : 'AM';
+                    h = h % 12 || 12;
+                    return `${h}:${m} ${ampm}`;
+                }
+                // Fallback: full datetime string
+                const dt = new Date(data);
+                if (!isNaN(dt)) {
+                    return dt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+                }
+                return data;
+            };
+
+            const commonCols = [
+                { title: "Employee No",        data: "employeeNo" },
+                { title: "Employee Name",      data: "employeeName",
+                  render: (data, type, row) =>
+                      `${row.lastName || ''}, ${row.firstName || ''} ${row.middleName || ''}`.trim()
+                },
+                { title: "Branch",             data: "branchCode" },
+                { title: "Department",         data: "departmentCode" },
+                { title: "Employment Status",  data: "employmentStatus" },
+                { title: "Position",           data: "positionCode" }
+            ];
+
+            const reportColumns = {
+                "PerfectAttendance": [
+                    ...commonCols,
+                    { title: "Present Days",    data: "presentDays", render: moneyFmt, className: "dt-right" },
+                    { title: "Paid Leave Days", data: "paidLeave",   render: moneyFmt, className: "dt-right" },
+                    { title: "With OB",         data: "withOB",      render: moneyFmt, className: "dt-right" }
+                ],
+                "AbsentDetail": [
+                    ...commonCols,
+                    { title: "Date Absent",     data: "dateAbsent",
+                      render: d => d ? new Date(d).toLocaleDateString('en-US') : '' },
+                    { title: "Schedule In",     data: "scheduleIn",  render: fmt12hr },
+                    { title: "Schedule Out",    data: "scheduleOut", render: fmt12hr },
+                    { title: "Status",          data: "attendanceStatus" },
+                    { title: "Absent Count",    data: "absentCount",     render: moneyFmt, className: "dt-right" },
+                    { title: "No Time Out",     data: "noTimeOut",       render: moneyFmt, className: "dt-right" },
+                    { title: "AWOL",            data: "awol",            render: moneyFmt, className: "dt-right" },
+                    { title: "Absent w/ Leave", data: "absentWithLeave", render: moneyFmt, className: "dt-right" },
+                    { title: "OB ID",           data: "obID",            render: moneyFmt, className: "dt-right" }
+                ],
+                "AbsentSummary": [
+                    ...commonCols,
+                    { title: "Total Absent",    data: "absentCount",     render: moneyFmt, className: "dt-right" },
+                    { title: "No Time Out",     data: "noTimeOut",       render: moneyFmt, className: "dt-right" },
+                    { title: "AWOL",            data: "awol",            render: moneyFmt, className: "dt-right" },
+                    { title: "Absent w/ Leave", data: "absentWithLeave", render: moneyFmt, className: "dt-right" }
+                ],
+                "TardinessSummary": [
+                    ...commonCols,
+                    { title: "Total Late (mins)",      data: "totalLate",          render: moneyFmt, className: "dt-right" },
+                    { title: "Total Undertime (mins)", data: "totalUndertime",     render: moneyFmt, className: "dt-right" },
+                    { title: "Late Frequency",         data: "lateFrequency",      render: moneyFmt, className: "dt-right" },
+                    { title: "Undertime Frequency",    data: "undertimeFrequency", render: moneyFmt, className: "dt-right" }
+                ],
+                "TardinessDetail": [
+                    ...commonCols,
+                    { title: "Date",                   data: "dateAbsent",
+                      render: d => d ? new Date(d).toLocaleDateString('en-US') : '' },
+                    { title: "Schedule In",            data: "scheduleIn",  render: fmt12hr },
+                    { title: "Schedule Out",           data: "scheduleOut", render: fmt12hr },
+                    { title: "Time In",                data: "timeIn",      render: fmt12hr },
+                    { title: "Time Out",               data: "timeOut",     render: fmt12hr },
+                    { title: "Status",                 data: "attendanceStatus" },
+                    { title: "Late (mins)",            data: "renderLate",         render: moneyFmt, className: "dt-right" },
+                    { title: "Undertime (mins)",       data: "renderUndertime",    render: moneyFmt, className: "dt-right" },
+                    { title: "Late Flag",              data: "lateFrequency",      render: moneyFmt, className: "dt-right" },
+                    { title: "UT Flag",                data: "undertimeFrequency", render: moneyFmt, className: "dt-right" }
+                ]
+            };
+
+            // ── DataTable init/rebuild ────────────────────────────────────────────
+            let AttendanceTable;
+
+            function initDataTable(reportType) {
+                if ($.fn.DataTable.isDataTable('#AttendanceTable')) {
+                    AttendanceTable.clear().destroy();
+                }
+
+                const columns = reportColumns[reportType];
+
+                let thead = '<thead><tr>';
+                let tfoot = '<tfoot><tr>';
+                columns.forEach(col => {
+                    thead += `<th>${col.title}</th>`;
+                    tfoot += `<th></th>`;
+                });
+                thead += '</tr></thead>';
+                tfoot += '</tr></tfoot>';
+
+                $('#AttendanceTable').empty().append(thead).append(tfoot);
+
+                AttendanceTable = $('#AttendanceTable').DataTable({
+                    responsive: false,
+                    pageLength: -1,
+                    lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+
+                    ajax: {
+                        url: '/AttendanceReport/GetReportList',
+                        type: 'GET',
+                        dataType: 'json',
+                        data: function (d) {
+                            d.status     = $('#filterReportName').val();
+                            d.branch     = $('#filterBranch').val()     || 'ALL';
+                            d.department = $('#filterDepartment').val() || 'ALL';
+                            d.dateMonth  = $('#dateMonth').val();
+                            d.dateYear   = $('#dateYear').val();
+                        }
+                    },
+                    columns: columns,
+
+                    footerCallback: function (row, data, start, end, display) {
+                        const api = this.api();
+                        $(api.column(0).footer()).html('<b>TOTAL</b>');
+
+                        api.columns('.dt-right', { page: 'current' }).every(function () {
+                            const total = this.data().reduce(function (sum, val) {
+                                const num = typeof val === 'string'
+                                    ? parseFloat(val.replace(/,/g, ''))
+                                    : val;
+                                return sum + (num || 0);
+                            }, 0);
+                            $(this.footer()).html(
+                                $.fn.dataTable.render.number(',', '.', 2).display(total)
+                            );
+                        });
+                    },
+
+                    language: {
+                        paginate: {
+                            next:     '<i class="fa fa-angle-double-right" aria-hidden="true"></i>',
+                            previous: '<i class="fa fa-angle-double-left" aria-hidden="true"></i>'
+                        }
+                    },
+                    dom: 'Blfrtip',
+                    buttons: [
+                        {
+                            extend: 'excelHtml5',
+                            text: '<i class="fa fa-file-excel-o"></i> Excel',
+                            className: 'btn btn-success',
+                            exportOptions: { columns: ':visible' }
+                        },
+                        {
+                            extend: 'pdfHtml5',
+                            text: '<i class="fa fa-file-pdf-o"></i> PDF',
+                            className: 'btn btn-danger',
+                            orientation: 'landscape',
+                            pageSize: 'A4',
+                            exportOptions: { columns: ':visible' }
+                        }
+                    ]
+                });
+            }
+
+            // ── Boot ──────────────────────────────────────────────────────────────
+            initDataTable($('#filterReportName').val());
+
+            $('#filterReportName').on('change', function () {
+                initDataTable($(this).val());
+            });
+
+            $('#filterBranch, #filterDepartment, #dateMonth, #dateYear').on('change', function () {
+                if (AttendanceTable) AttendanceTable.ajax.reload(null, true);
+            });
+
+            // ── Export to Excel ───────────────────────────────────────────────────
+            $(document).on('click', '#btnExportToExcel', function () {
+                const $btn = $(this);
+
+                if (AttendanceTable && AttendanceTable.rows({ search: 'applied' }).count() === 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'No Data',
+                        text: 'No data available to export.',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+
+                // Capture current DataTable sort state
+                let sortColumn = '';
+                let sortDir = '';
+                if (AttendanceTable) {
+                    const order = AttendanceTable.order();
+                    if (order && order.length > 0) {
+                        const colIdx = order[0][0];
+                        sortDir = order[0][1]; // 'asc' or 'desc'
+                        const colDef = AttendanceTable.settings().init().columns[colIdx];
+                        sortColumn = colDef ? (colDef.data || '') : '';
+                    }
+                }
+
+                const params = new URLSearchParams({
+                    status:     $('#filterReportName').val() || 'PerfectAttendance',
+                    branch:     $('#filterBranch').val()     || 'ALL',
+                    department: $('#filterDepartment').val() || 'ALL',
+                    dateMonth:  $('#dateMonth').val()        || '',
+                    dateYear:   $('#dateYear').val()         || '',
+                    sortColumn: sortColumn,
+                    sortDir:    sortDir
+                });
+
+                const originalHtml = $btn.html();
+                $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Exporting...');
+
+                fetch(`/AttendanceReportExport/ExportToExcel?${params.toString()}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => {
+                            throw new Error(`Server error (${response.status}): ${text}`);
+                        });
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    const url  = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href  = url;
+                    const reportType = $('#filterReportName').val() || 'PerfectAttendance';
+                    const year       = $('#dateYear').val()         || '';
+                    const month      = $('#dateMonth').val()        || '';
+                    link.download = `AttendanceReport_${reportType}_${year}_${month}_${new Date().getTime()}.xlsx`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+                    $btn.prop('disabled', false).html(originalHtml);
+                })
+                .catch(error => {
+                    $btn.prop('disabled', false).html(originalHtml);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Export Failed',
+                        text: error.message || 'An error occurred during export. Please try again.',
+                        confirmButtonText: 'OK'
+                    });
+                });
+            });
+
+        });
+    </script>
+}

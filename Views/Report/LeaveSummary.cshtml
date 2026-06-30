@@ -1,0 +1,311 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutFillow.cshtml";
+    ViewData["Title"] = "Leave Summary Report";
+}
+
+<div class="col-12">
+    <div class="card">
+        <div class="card-header">
+            <div class="row" style="width:100%;">
+                <h4 class="card-title">Leave Summary Report</h4>
+                <br> <br> <br>
+
+                <div class="row" style="margin-left:0px;width:100%;">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Company</h5>
+                            <select name="branch" id="filterBranch" class="form-control"></select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Department</h5>
+                            <select name="department" id="filterDepartment" class="form-control"></select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Leave Type</h5>
+                            <select name="leavetype" id="filterLeave" class="form-control"></select>
+                        </div>
+                    </div>
+                </div>
+                <br><br><br><br>
+                <div class="row" style="margin-left:0px;width:100%;">
+                    <div class="col-md-3">
+                        <h5>Leave Date From</h5>
+                        <div class="input-hasicon">
+                            <input name="dateFrom" id="dateFrom" class="form-control formInput bt-datepicker">
+                            <div class="icon"><i class="far fa-calendar"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <h5>Leave Date To</h5>
+                        <div class="input-hasicon">
+                            <input name="dateTo" id="dateTo" class="form-control formInput bt-datepicker">
+                            <div class="icon"><i class="far fa-calendar"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 d-flex justify-content-end">
+                        <div class="form-group">
+                            <h5>&nbsp;</h5>
+                            <button type="button" class="btn btn-warning" id="btnExportToExcel">
+                                <i class="fas fa-file-excel"></i> Export to Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="row">
+                <div class="table-responsive">
+                    <table id="requestTable" class="display" style="min-width: 845px">
+                        <thead>
+                            <tr>
+                                <th>Company</th>
+                                <th>Department</th>
+                                <th>Employee No</th>
+                                <th>Full Name</th>
+                                <th>Leave Type</th>
+                                <th>Leave Date From</th>
+                                <th>Leave Date To</th>
+                                <th>Leave Days</th>
+                                <th>Reason</th>
+                                <th>Date Requested</th>
+                                <th>Requested By</th>
+                                <th>Date Approved</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Fillow_style
+{
+    <style>
+    </style>
+}
+
+@section Fillow_script
+{
+    <script>
+        $(document).ready(function () {
+
+            // ── Datepicker ───────────────────────────────────────────────────────
+            $('.bt-datepicker').datepicker({
+                format: 'yyyy/mm/dd',
+                autoclose: true,
+                todayHighlight: true
+            });
+
+            // ── Select2 filters ──────────────────────────────────────────────────
+            $('#filterBranch').select2({
+                placeholder: "Select Company",
+                allowClear: true,
+                ajax: {
+                    url: '/Setup/GetEmployeeBranch',
+                    dataType: 'json',
+                    delay: 250,
+                    processResults: function (data) {
+                        var results = $.map(data, function (item) {
+                            return { id: item.branchCode, text: item.branchName };
+                        });
+                        results.unshift({ id: 'ALL', text: 'All Companies' });
+                        return { results: results };
+                    }
+                }
+            });
+
+            $('#filterDepartment').select2({
+                placeholder: "Select Department",
+                allowClear: true,
+                ajax: {
+                    url: '/Setup/GetEmployeeDepartment',
+                    dataType: 'json',
+                    delay: 250,
+                    processResults: function (data) {
+                        var results = $.map(data, function (item) {
+                            return { id: item.departmentCode, text: item.departmentName };
+                        });
+                        results.unshift({ id: 'ALL', text: 'All Departments' });
+                        return { results: results };
+                    }
+                }
+            });
+
+            $('#filterLeave').select2({
+                placeholder: "Select Leave Type",
+                allowClear: true,
+                ajax: {
+                    url: '/Setup/GetLeaveList',
+                    dataType: 'json',
+                    delay: 250,
+                    processResults: function (data) {
+                        var results = $.map(data, function (item) {
+                            return { id: item.leaveCode, text: item.leaveName };
+                        });
+                        results.unshift({ id: 'ALL', text: 'All Leave Types' });
+                        return { results: results };
+                    }
+                }
+            });
+
+            // ── DataTable ────────────────────────────────────────────────────────
+            const requestTable = $('#requestTable').DataTable({
+                ajax: {
+                    url: "/LeaveSummary/GetReportList",
+                    type: "GET",
+                    dataType: "json",
+                    data: function (d) {
+                        d.branch     = $('#filterBranch').val()     || 'ALL';
+                        d.department = $('#filterDepartment').val() || 'ALL';
+                        d.leavecode  = $('#filterLeave').val()      || 'ALL';
+                        d.dateFrom   = $('#dateFrom').val()         || '';
+                        d.dateTo     = $('#dateTo').val()           || '';
+                    },
+                    dataSrc: function(json) {
+                        console.log('Raw response:', json);
+                        console.log('Data length:', json.data.length);
+                        return json.data;
+                    }
+                },
+                columnDefs: [
+                    { targets: [7], className: 'dt-right' }
+                ],
+                columns: [
+                    { data: "branchName",      defaultContent: "" },
+                    { data: "departmentName",  defaultContent: "" },
+                    { data: "employeeNo",      defaultContent: "" },
+                    { data: "fullName",        defaultContent: "" },
+                    { data: "leaveName",       defaultContent: "" },
+                    { data: "displayDateFrom", defaultContent: "" },
+                    { data: "displayDateTo",   defaultContent: "" },
+                    { data: "leaveCountDays",  defaultContent: "0" },
+                    { data: "leaveReason",     defaultContent: "" },
+                    { data: "dateRequested",   defaultContent: "" },
+                    { data: "requestedByUser", defaultContent: "" },
+                    { data: "dateApproved",    defaultContent: "" }
+                ],
+                pageLength: 25,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                language: {
+                    paginate: {
+                        next: '<i class="fa fa-angle-double-right" aria-hidden="true"></i>',
+                        previous: '<i class="fa fa-angle-double-left" aria-hidden="true"></i>'
+                    },
+                    emptyTable: "No records found",
+                    zeroRecords: "No matching records found"
+                }
+            });
+
+            // ── Filter change handlers ───────────────────────────────────────────
+            $('#filterBranch, #filterDepartment, #filterLeave, #dateFrom, #dateTo')
+                .on('change', function () {
+                    requestTable.ajax.reload(null, true);
+                });
+
+            // ── Export to Excel ──────────────────────────────────────────────────
+            $('#btnExportToExcel').click(function () {
+                const $btn = $(this);
+
+                if (requestTable.rows({ search: 'applied' }).count() === 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'No Data',
+                        text: 'No data available to export',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+
+                const branch = $('#filterBranch').val();
+                if (!branch) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Company is required',
+                        text: 'Please select a company before exporting',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+
+                const pageInfo = requestTable.page.info();
+
+                const sortMap = [
+                    'Company', 'Department', 'EmployeeNo', 'EmployeeName',
+                    'LeaveType', 'LeaveDateFrom', 'LeaveDateTo', 'LeaveDays',
+                    'LeaveReason', 'DateRequested', 'RequestedByUser', 'DateApproved'
+                ];
+
+                const [sortIndex, sortDir] = requestTable.order()[0] || [2, 'asc'];
+
+                const params = new URLSearchParams({
+                    branch:     $('#filterBranch').val()     || 'ALL',
+                    department: $('#filterDepartment').val() || 'ALL',
+                    leavecode:  $('#filterLeave').val()      || 'ALL',
+                    dateFrom:   $('#dateFrom').val()         || '',
+                    dateTo:     $('#dateTo').val()           || '',
+                    offset:     pageInfo.start,
+                    limit:      pageInfo.length,
+                    sortColumn:    sortMap[sortIndex] || '',
+                    sortDirection: sortDir
+                });
+
+                const originalHtml = $btn.html();
+                $btn.prop('disabled', true)
+                    .html('<i class="fas fa-spinner fa-spin"></i> Exporting...');
+
+                fetch(`/LeaveSummaryExport/ExportToExcel?${params.toString()}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => {
+                            throw new Error(`Server error (${response.status}): ${text}`);
+                        });
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `LeaveRequestSummary_${new Date().getTime()}.xlsx`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+
+                    $btn.prop('disabled', false).html(originalHtml);
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Export Successful',
+                        text: `Exported ${pageInfo.length} rows from page ${pageInfo.page + 1}`,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                })
+                .catch(error => {
+                    $btn.prop('disabled', false).html(originalHtml);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Export Failed',
+                        text: 'An error occurred during export. Please try again.',
+                        confirmButtonText: 'OK'
+                    });
+                });
+            });
+
+        });
+    </script>
+}

@@ -1,0 +1,485 @@
+﻿﻿@{
+Layout = "~/Views/Shared/_LayoutFillow.cshtml";
+ViewData["Title"] = "Process Payroll";
+}
+
+<div class="col-12">
+    <div class="card">
+        <div class="card-header">
+
+            <div class="row" style="width:100%;">
+                <h4 class="card-title">Employee List</h4>
+                <br> <br> <br>
+
+                <div class="row" style="margin-left:0px;width:100%;">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Select Status</h5>
+                            <select name="filterStatusName" id="filterStatusName" class="form-control">
+                                <option value="All">ALL</option>
+                                <option value="Pending" selected>Pending</option>
+                                <option value="Approved">Approved</option>
+                                <option value="Cancelled">Cancelled</option>
+                                <option value="Declined">Declined</option>
+                                <option value="Processed">Processed</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label>Date From </label>
+                        <div class="input-hasicon">
+                            <input name="dateFrom" id="dateFrom" class="form-control formInput bt-datepicker ">
+                            <div class="icon"><i class="far fa-calendar"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label>Date To </label>
+                        <div class="input-hasicon">
+                            <input name="dateTo" id="dateTo" class="form-control formInput bt-datepicker ">
+                            <div class="icon"><i class="far fa-calendar"></i></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row align-items-end mt-2" style="margin-left:0px;width:100%;">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Branch</h5>
+                            <select name="branch" id="filterBranch" class="form-control"></select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Department</h5>
+                            <select name="department" id="filterDepartment" class="form-control"></select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                    </div>
+                    <div class="col-md-3 d-flex justify-content-end">
+                        <div class="form-group">
+                            <input type="button" class="btn btn-primary" id="btnNewRequest" value="New Request">
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+
+
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="requestTable" class="display" style="min-width: 845px">
+                    <thead>
+                        <tr>
+                            <th>Employee No</th>
+                            <th>Employee Name</th>
+                            <th>OT In</th>
+                            <th>OT Out</th>
+                            <th>Reason</th>
+                            <th>Date Requested</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+
+
+        <!-- Modal for New Request -->
+        <div class="modal fade" id="newRequestModal" tabindex="-1" aria-hidden="true" style="margin-top:20px!important">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content" style="box-shadow: -1px 1px 13px 0px #7d7979;">
+                    <div class="modal-header">
+                        <h5 class="modal-title">New Overtime Request</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="newRequestForm">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <label> Employee Name <span class="text-danger">*</span> </label>
+                                    <select id="employeeName" class="form-control formInput select2 required-field" style="width:100%">
+                                    </select>
+
+                                </div>
+
+                            </div>
+                            <br />
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <label>Date In <span class="text-danger">*</span> </label>
+                                    <div class="input-hasicon">
+                                        <input name="dateFrom" id="dateFrom" class="form-control formInput bt-datepicker required-field ">
+                                        <div class="icon"><i class="far fa-calendar"></i></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <label>Time In <span class="text-danger">*</span> </label>
+                                    <div class="input-hasicon">
+                                        <input name="timeIn" id="timeIn" class="form-control formInput bt-timepicker required-field ">
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label>Date To <span class="text-danger">*</span> </label>
+                                    <div class="input-hasicon">
+                                        <input name="dateTo" id="dateTo" class="form-control formInput bt-datepicker required-field ">
+                                        <div class="icon"><i class="far fa-calendar"></i></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <label>Time Out <span class="text-danger">*</span> </label>
+                                    <div class="input-hasicon">
+                                        <input name="timeOut" id="timeOut" class="form-control formInput bt-timepicker required-field">
+                                    </div>
+                                </div>
+
+                            </div>
+                            <br />
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <label for="reason" class="form-label">Reason <span class="text-danger">*</span> </label>
+                                    <textarea name="reason" id="reason"
+                                              maxlength="255"
+                                              class="form-control formInput"
+                                              placeholder="Reason"
+                                              rows="3"></textarea>
+                                </div>
+                            </div>
+                            <br>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    @* <label for="attachmentTxt" class="form-label"><span class="text-danger">*</span> Attachment</label>
+                                <input type="text" name="attachmentTxt" id="attachmentTxt" maxlength="255" class="form-control formInput" placeholder="Attachment" /> *@
+                                    <div class="input-group fileupload-v1">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <label for="attachment" class="form-label">Attachment </label>
+                                                <input id="fileUpload"
+                                                       accept=".xlsx,.xls,image/*,.doc, .docx,.ppt, .pptx,.txt,.pdf"
+                                                       type="file" name="manualfile" class="fileupload-v1-file hidden" />
+                                                <input id="filePath" type="text" class="form-control fileupload-v1-path"
+                                                       placeholder="File Path..." style="display:none" disabled />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="btnSaveNewRecord">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+@section Fillow_style
+{
+
+
+}
+
+@section Fillow_script
+{
+
+
+    <script>
+        $(document).ready(function () {
+                //datepicker
+                $('.bt-datepicker').datepicker({
+                    format: 'yyyy/mm/dd',
+                    autoclose: true
+                });
+
+                initializeFilterSelect2();
+
+
+                const requestTable = $('#requestTable').DataTable({
+                responsive: true,
+                ajax: {
+                    url: "/ProcessPayroll/GetEmployeeListPayroll",
+                    type: "GET",
+                    dataType: "json",
+                    data: function (d) {
+                    d.status = $('#filterStatusName').val();
+                    d.branch = $('#filterBranch').val();
+                    d.department = $('#filterDepartment').val();
+                    d.dateFrom = $('#dateFrom').val();
+                    d.dateTo = $('#dateTo').val();
+                    }
+                },
+                columns: [
+                   // { data: "id" },
+                    { data: "employeeNo" },
+                    { data: "fullName" },
+                    { data: "requestIn" },
+                    { data: "requestOut" },
+                    { data: "reason" },
+                    { data: "dateRequested" },
+                    { data: "statusName" }
+                    
+                ],
+                language: {
+                    paginate: {
+                    next: '<i class="fa fa-angle-double-right" aria-hidden="true"></i>',
+                    previous: '<i class="fa fa-angle-double-left" aria-hidden="true"></i>'
+                    }
+                }
+                });
+
+                //apply filter when user chose a param
+                $('#filterStatusName, #filterBranch, #filterDepartment, #dateFrom, #dateTo')
+                .on('change', function () {
+                    requestTable.ajax.reload(null, true); // true = reset paging to first page
+                });
+
+                $('#btnNewRequest').on('click', function () {
+                    loadEmployeeOptionsAsync('#employeeName').done(function() {
+                    $('#newRequestModal').modal('show');
+                    
+                });
+                });
+
+                $('#employeeName').select2({
+                    placeholder: "Select Employee",
+                    allowClear: true,
+                    dropdownParent: $('#newRequestModal'),
+                    width: '100%'
+                });
+
+               $('#btnSaveNewRecord').on('click', function() {
+               let $form = $('#newRequestForm');
+               //Clear previous validation states
+               clearValidation($form);
+
+               //Validate form
+               if (!validateForm($form)) {
+                   return;
+               }
+
+               Swal.fire({
+                    title: 'Continue save new request?',
+                    text: '',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Confirm',
+                    cancelButtonText: 'Cancel',
+                    reverseButtons: false,
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    customClass: {
+                        popup: 'swal-custom-popup',
+                        title: 'swal-custom-title',
+                        htmlContainer: 'swal-custom-text',
+                        confirmButton: 'swal-custom-confirm',
+                        cancelButton: 'swal-custom-cancel'
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        var formData = {
+                           employeeNo: '@Model.employeeNo',
+                           dateFrom:  $('#dateFrom').val(),
+                           dateTo: $('#dateTo').val(),
+                           timeIn: $('#timeIn').val(),
+                           timeOut: $('#timeOut').val(),                           
+                           reason: $('#reason').val()
+                       };
+
+                       $.post('/ProcessPayroll/NewRequest', formData, function (response) {
+                           if (response.success) {
+                               requestTable.ajax.reload(null, true); // true = reset paging to first page
+                               $('#newRequestModal').modal('hide');
+                                showNotification(response.message, 'success');
+                           } else {
+                                showNotification(response.message, 'error');
+                           }
+                       }).fail(function(xhr, status, error) {
+                           console.log('Error saving new loan:', error);
+                           showNotification('Unable to save. Please try again.', 'error');
+                       }).always(function() {
+                           // Re-enable the save button
+                           // $saveBtn.prop('disabled', false).html('Save');
+                       });
+                        }
+                    });
+                });
+
+
+
+                 $(document).on("click", ".deleteEmployee", function (e) {
+                    e.preventDefault();
+                    var employeeNo = $(this).data("employeeno");
+
+                    var $btn = $(this);
+
+                    console.log(employeeNo);
+
+                    Swal.fire({
+                        title: 'Oops...',
+                        text: 'Are you sure you want to delete this Employee?',
+                        icon: 'error',
+                        showCancelButton: true,
+                        confirmButtonText: 'OK',
+                        cancelButtonText: 'Cancel',
+                        reverseButtons: false,
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        customClass: {
+                            popup: 'swal-custom-popup',
+                            title: 'swal-custom-title',
+                            htmlContainer: 'swal-custom-text',
+                            confirmButton: 'swal-custom-confirm',
+                            cancelButton: 'swal-custom-cancel'
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Disable button and show loading
+
+                           $btn.prop('disabled', true);
+                            $btn.html('<i class="fas fa-spinner fa-spin"></i>');
+
+                            $.ajax({
+                                url: '/Users/DeleteUser',
+                                type: 'POST',
+                                data: { employeeNo: employeeNo },
+                                dataType: 'json',
+                                success: function (response) {
+                                    if (response.success) {
+                                        $('#requestTable').DataTable().ajax.reload(null, false); // Keep current page
+                                        showNotification(response.message, 'success');
+                                    } else {
+                                        showNotification(response.message, 'error');
+                                    }
+                                },
+                                error: function (xhr, status, error) {
+                                    console.log('Error deleting adjustment:', error);
+                                    showNotification('Unable to delete adjustment. Please try again.', 'error');
+                                },
+                                complete: function () {
+                                    // Re-enable button
+                                    $btn.prop('disabled', false);
+                                    $btn.html('<i class="fa fa-trash"></i>');
+                                }
+                            });
+
+
+                        }
+                    });
+
+                });
+
+
+
+        });
+
+
+        function loadEmployeeOptionsAsync(selector) {
+                return $.get('/Biometrics/GetEmployeeList', function(data) {
+                    var select = $(selector);
+                    select.empty();
+                    select.append('<option value="">Select Employee </option>');
+                    $.each(data, function(index, item) {
+                        select.append('<option value="' + item.employeeNo + '">' + item.employeeName + '</option>');
+                    });
+                });
+            }
+
+         function initializeFilterSelect2(){
+
+                    
+                        // branch
+
+                       $('#filterBranch').select2({
+                        placeholder: "Select Branch",
+                        allowClear: true,
+                        ajax: {
+                            url: '/Setup/GetEmployeeBranch',
+                            dataType: 'json',
+                            delay: 250,
+                            processResults: function (data) {
+                                // Add "All" option manually
+                                var allOption = {
+                                    id: 'ALL',
+                                    text: 'All Branches'
+                                };
+
+                                var results = $.map(data, function (item) {
+                                    return {
+                                        id: item.branchCode,
+                                        text: item.branchName
+                                    };
+                                });
+
+                                // Put "All" on top
+                                results.unshift(allOption);
+
+                                return {
+                                    results: results
+                                };
+                            }
+                        }
+                    });
+
+                     // department
+                     $('#filterDepartment').select2({
+                        placeholder: "Select Employee Department",
+                        allowClear: true,
+                        ajax: {
+                            url: '/Setup/GetEmployeeDepartment',
+                            dataType: 'json',
+                            delay: 250,
+                            processResults: function (data) {
+                                // Map your results as usual
+                                var results = $.map(data, function (item) {
+                                    return {
+                                        id: item.departmentCode,
+                                        text: item.departmentName
+                                    };
+                                });
+
+                                // Add the "All" option at the top
+                                results.unshift({
+                                    id: 'ALL',
+                                    text: 'All Departments'
+                                });
+
+                                return {
+                                    results: results
+                                };
+                            }
+                        }
+                    });
+
+                    // employeeList
+                     $('#employeeName').select2({
+                        placeholder: "Select Employee",
+                        allowClear: true,
+                        ajax: {
+                            url: '/OvertimeRequest/GetEmployeeList',
+                            dataType: 'json',
+                            delay: 250,
+                            processResults: function (data) {
+                                // Map your results as usual
+                                var results = $.map(data, function (item) {
+                                    return {
+                                        id: item.employeeNo,
+                                        text: item.employeeName
+                                    };
+                                });
+                            }
+                        }
+                    });
+
+                }
+
+    </script>
+
+}

@@ -1,0 +1,115 @@
+﻿@model KEISAN_HRIS_v2.Models.LERelation.CommendationListModel
+
+<div class="table-responsive">
+    <table id="empCommendationTable" class="display" style="width:100%">
+        <thead>
+            <tr>
+                <th>Type</th>
+                <th>Activity</th>
+                <th>Issued By</th>
+                <th>Date Issued</th>
+                <th>Remarks</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+
+<script>
+    $(document).ready(function () {
+
+        // Destroy existing instance if tab is reloaded
+        if ($.fn.DataTable.isDataTable('#empCommendationTable')) {
+            $('#empCommendationTable').DataTable().destroy();
+        }
+
+        $('#empCommendationTable').DataTable({
+            responsive: true,
+            processing: true,
+            serverSide: false,
+            ajax: {
+                url: '/CommendationList/GetCommendationByEmployee',
+                type: 'GET',
+                data: { employeeNo: '@Model.employeeNo' },
+                dataSrc: function (json) {
+                    return json.data || [];
+                },
+                error: function () {
+                    console.error('Error loading commendation data.');
+                }
+            },
+            columns: [
+                {
+                    data: 'commendationType',
+                    width: '18%',
+                    render: function (data) {
+                        return data
+                            ? `<span title="${escHtmlCom(data)}">${escHtmlCom(data)}</span>`
+                            : '<span class="text-muted">—</span>';
+                    }
+                },
+                {
+                    data: 'activity',
+                    width: '25%',
+                    render: function (data) {
+                        if (!data) return '<span class="text-muted">—</span>';
+                        const truncated = data.length > 60 ? data.substring(0, 60) + '...' : data;
+                        return `<span title="${escHtmlCom(data)}">${escHtmlCom(truncated)}</span>`;
+                    }
+                },
+                {
+                    data: 'issuedBy',
+                    width: '18%',
+                    render: function (data) {
+                        return data
+                            ? `<span title="${escHtmlCom(data)}">${escHtmlCom(data)}</span>`
+                            : '<span class="text-muted">—</span>';
+                    }
+                },
+                {
+                    data: 'dateissued',
+                    width: '14%',
+                    render: function (data) {
+                        if (!data) return '<span class="text-muted">—</span>';
+                        const d = new Date(data);
+                        if (isNaN(d.getTime())) return data;
+                        const y   = d.getFullYear();
+                        const m   = String(d.getMonth() + 1).padStart(2, '0');
+                        const day = String(d.getDate()).padStart(2, '0');
+                        return `${y}/${m}/${day}`;
+                    }
+                },
+                {
+                    data: 'remarks',
+                    width: '25%',
+                    render: function (data) {
+                        if (!data) return '<span class="text-muted">—</span>';
+                        const truncated = data.length > 60 ? data.substring(0, 60) + '...' : data;
+                        return `<span title="${escHtmlCom(data)}">${escHtmlCom(truncated)}</span>`;
+                    }
+                }
+            ],
+            order: [[3, 'desc']],
+            pageLength: 10,
+            lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'All']],
+            language: {
+                processing: 'Loading...',
+                emptyTable: 'No commendations found for this employee.',
+                zeroRecords: 'No matching records found.',
+                paginate: {
+                    next: '<i class="fa fa-angle-double-right"></i>',
+                    previous: '<i class="fa fa-angle-double-left"></i>'
+                }
+            }
+        });
+
+        // Scoped escHtml to avoid collision with parent page's escHtml
+        function escHtmlCom(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+    });
+</script>

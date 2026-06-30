@@ -1,0 +1,1736 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutFillow.cshtml";
+    ViewData["Title"] = "Role Management";
+}
+
+<div class="col-12">
+    <div class="card">
+        <div class="card-header">
+            <div class="row" style="width:100%;">
+                <h4 class="card-title">Role Management</h4>
+                <br> <br> <br>
+
+                <div class="row" style="margin-left:0px;width:100%;">
+                    <div class="col-md-9"></div>
+                    <div class="col-md-3 d-flex justify-content-end align-items-end">
+                        <div class="form-group">
+                            <button type="button" class="btn btn-primary" id="btnAddRole">
+                                <i class="fa fa-plus"></i> New Role
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover" id="roleTable">
+                    <thead>
+                        <tr>
+                            <th width="15%">Action</th>
+                            <th width="15%">Role Code</th>
+                            <th width="35%">Role Name</th>
+                            <th width="35%">Data Scope</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+
+        <!-- View Role Modal -->
+        <div class="modal fade" id="viewRoleModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="viewRoleTitle"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fa fa-search"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="viewSearchInput" placeholder="Search modules...">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <select class="form-control" id="viewFilterAccess">
+                                    <option value="">All Access Levels</option>
+                                    <option value="FULL">Full Access</option>
+                                    <option value="READWRITE">Read / Write / Create</option>
+                                    <option value="EDIT">Edit Only</option>
+                                    <option value="READ">Read Only</option>
+                                    <option value="NO_ACCESS">No Access</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Tree container wraps the original tbody so original JS still targets #viewRoleBody -->
+                        <div class="tree-scroll-container">
+                            <table class="tree-hidden-table">
+                                <tbody id="viewRoleBody"></tbody>
+                            </table>
+                            <!-- The visual tree is rendered here by renderViewModules -->
+                            <div id="viewRoleTree"></div>
+                        </div>
+
+                        <div id="viewNoResults" class="alert alert-info d-none mt-3">
+                            <i class="fa fa-info-circle"></i> No modules found matching your search criteria.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Module Access Modal -->
+        <div class="modal fade" id="editRoleModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editRoleTitle"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="editRoleCode" />
+
+                        <div class="row mb-3">
+                            <div class="col-md-5">
+                                <div class="input-group">
+                                    <span class="input-group-text bg-primary text-white">
+                                        <i class="fa fa-search"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="editSearchInput" placeholder="Search by module name or type...">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <select class="form-control" id="editFilterAccess">
+                                    <option value="">Filter by Access Level</option>
+                                    <option value="FULL">Full Access</option>
+                                    <option value="READWRITE">Read / Write / Create</option>
+                                    <option value="EDIT">Edit Only</option>
+                                    <option value="READ">Read Only</option>
+                                    <option value="NO_ACCESS">No Access</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 d-flex gap-1">
+                                <button class="btn btn-sm btn-outline-primary flex-fill" id="expandAllBtn">
+                                    <i class="fa fa-expand-alt"></i> Expand All
+                                </button>
+                                <button class="btn btn-sm btn-outline-info flex-fill" id="collapseAllBtn">
+                                    <i class="fa fa-compress-alt"></i> Collapse All
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Tree container wraps the original tbody so original JS still targets #editRoleBody -->
+                        <div class="tree-scroll-container">
+                            <table class="tree-hidden-table">
+                                <tbody id="editRoleBody"></tbody>
+                            </table>
+                            <!-- The visual tree is rendered here by renderEditModules -->
+                            <div id="editRoleTree"></div>
+                        </div>
+
+                        <div id="editNoResults" class="alert alert-info d-none mt-3">
+                            <i class="fa fa-info-circle"></i> No modules found matching your search criteria.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-success w-100" onclick="saveRoleAccess()">
+                            <i class="fa fa-save"></i> Update Module Access
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- EDIT DATA SCOPE MODAL -->
+        <div class="modal fade" id="editDataScopeModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editDataScopeTitle"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="dataScopeRoleCode" />
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Data Access Scope <span class="text-danger">*</span></label>
+                            <select class="form-control" id="scopeType">
+                                <option value="OWN_ONLY">Own Record Only</option>
+                                <option value="OWN_AND_ASSIGNED">Own Record + Assigned Employees (Approver)</option>
+                                <option value="DEPARTMENT">Own Department</option>
+                                <option value="BRANCH">Specific Branch(es)</option>
+                                <option value="RANK_FILTER">Specific Rank(s)</option>
+                                <option value="POSITION_FILTER">Specific Position(s)</option>
+                                <option value="EMPLOYMENT_STATUS">Specific Employment Status(es)</option>
+                                <option value="CUSTOM">Custom (Multiple Filters)</option>
+                                <option value="ALL">All Employees</option>
+                            </select>
+                            <small class="text-muted">This controls which employee records this role can view</small>
+                        </div>
+
+                        <div id="assignedEmployeeInfo" class="alert alert-primary mt-2" style="display:none;">
+                            <i class="fa fa-info-circle"></i>
+                            <strong>Own Record + Assigned Employees:</strong>
+                            Users with this role will see their own record <strong>plus</strong> any employees
+                            they are configured to approve in the <strong>Employee Approver</strong> module.
+                            No additional configuration is needed here — assignments are managed
+                            per-employee in the approver settings.
+                        </div>
+
+                        <div id="rankFilterSection" class="mb-3" style="display:none;">
+                            <label class="form-label fw-bold">Allowed Ranks</label>
+                            <select class="form-control" id="allowedRanks" multiple></select>
+                            <small class="text-muted">Select which ranks this role can view</small>
+                        </div>
+
+                        <div id="branchFilterSection" class="mb-3" style="display:none;">
+                            <label class="form-label fw-bold">Allowed Branches</label>
+                            <select class="form-control" id="allowedBranches" multiple></select>
+                            <small class="text-muted">Select which branches this role can view</small>
+                        </div>
+
+                        <div id="departmentFilterSection" class="mb-3" style="display:none;">
+                            <label class="form-label fw-bold">Allowed Departments</label>
+                            <select class="form-control" id="allowedDepartments" multiple></select>
+                            <small class="text-muted">Select which departments this role can view</small>
+                        </div>
+
+                        <div id="positionFilterSection" class="mb-3" style="display:none;">
+                            <label class="form-label fw-bold">Allowed Positions</label>
+                            <select class="form-control" id="allowedPositions" multiple></select>
+                            <small class="text-muted">Select which positions this role can view</small>
+                        </div>
+
+                        <div id="employmentStatusFilterSection" class="mb-3" style="display:none;">
+                            <label class="form-label fw-bold">Allowed Employment Statuses</label>
+                            <select class="form-control" id="allowedEmploymentStatuses" multiple></select>
+                            <small class="text-muted">Select which employment statuses this role can view</small>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-success w-100" onclick="saveDataScope()">
+                            <i class="fa fa-save"></i> Update Data Access
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HIDE EMPLOYEES MODAL -->
+        <div class="modal fade" id="hideEmployeesModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="hideEmployeesTitle"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="hideEmployeesRoleCode" />
+
+                        <div class="alert alert-primary">
+                            <i class="fa fa-info-circle"></i>
+                            <strong>Note:</strong> Hidden employees will be completely invisible to users with this role, regardless of other data scope settings.
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Select Employees to Hide</label>
+                            <select class="form-control" id="hiddenEmployees" multiple></select>
+                            <small class="text-muted">Select one or more employees that should be hidden from this role</small>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-success w-100" onclick="saveHiddenEmployees()">
+                            <i class="fa fa-save"></i> Update Hidden Employees
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Role Modal -->
+        <div class="modal fade" id="addRoleModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">New Role</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addRoleForm">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Role Code <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="roleCode" placeholder="e.g., HR-001" required>
+                                    <div class="invalid-feedback">Please provide a role code.</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Role Name <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="roleName" placeholder="e.g., HR Manager" required>
+                                    <div class="invalid-feedback">Please provide a role name.</div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-success w-100" onclick="saveRole()">
+                            <i class="fa fa-save"></i> Save
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Fillow_style
+{
+    <style>
+        /* ── DataTable ── */
+        .table-responsive {
+            border-radius: 0.375rem;
+        }
+
+        #roleTable_wrapper .dataTables_length, #roleTable_wrapper .dataTables_filter {
+            margin-bottom: 1rem;
+        }
+
+        #roleTable_wrapper .dataTables_info, #roleTable_wrapper .dataTables_paginate {
+            margin-top: 1rem;
+        }
+
+        /* ── Shared modal ── */
+        .modal-content {
+            border-radius: 0.5rem;
+            box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15);
+        }
+
+        .modal-xl .modal-body {
+            padding: 1.5rem;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 .2rem rgba(13,110,253,.25);
+        }
+
+        .form-control[readonly] {
+            background-color: #f8f9fa;
+            border-color: #dee2e6;
+        }
+
+        .invalid-feedback {
+            display: none;
+        }
+
+        .form-control.is-invalid, .form-select.is-invalid {
+            border-color: #dc3545;
+        }
+
+            .form-control.is-invalid ~ .invalid-feedback, .form-select.is-invalid ~ .invalid-feedback {
+                display: block;
+            }
+
+        /* ── Select2 ── */
+        .select2-container {
+            width: 100% !important;
+        }
+
+            .select2-container .select2-selection--single,
+            .select2-container .select2-selection--multiple {
+                height: auto;
+                min-height: 38px;
+                border: 1px solid #ced4da;
+                border-radius: 0.375rem;
+            }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 36px;
+            padding-left: 12px;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 36px;
+        }
+
+        .select2-container--default.select2-container--focus .select2-selection--single,
+        .select2-container--default.select2-container--focus .select2-selection--multiple {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 .2rem rgba(13,110,253,.25);
+        }
+
+        .is-invalid + .select2-container .select2-selection--single,
+        .is-invalid + .select2-container .select2-selection--multiple {
+            border-color: #dc3545;
+        }
+
+        /* ── Original accessLevel select (still used by saveRoleAccess) ── */
+        .accessLevel {
+            cursor: pointer;
+        }
+
+            .accessLevel:hover {
+                border-color: #0d6efd;
+            }
+
+        /* ── Card header ── */
+        .card-header {
+            border-bottom: none !important;
+        }
+
+        /* ── Input group ── */
+        .input-group-text {
+            background-color: #f8f9fa;
+            border-color: #ced4da;
+        }
+
+        /* ── Hidden table: original tbody stays in DOM for JS compatibility ── */
+        .tree-hidden-table {
+            display: none !important;
+        }
+
+        /* ── Tree scroll container ── */
+        .tree-scroll-container {
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            max-height: 520px;
+            overflow-y: auto;
+        }
+
+        /* ── Level 1: Group header ── */
+        .tg-group {
+            border-bottom: 1px solid #cbd5e1;
+        }
+
+            .tg-group:last-child {
+                border-bottom: none;
+            }
+
+        .tg-group-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 12px;
+            background: linear-gradient(135deg, #1e3a5f, #2d5a8e);
+            color: #fff;
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+
+        /* Dedicated toggle button — the ONLY clickable element that collapses */
+        .tg-toggle {
+            flex-shrink: 0;
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 4px;
+            color: #fff;
+            width: 24px;
+            height: 24px;
+            padding: 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+            .tg-toggle:focus {
+                outline: none;
+            }
+
+            .tg-toggle:hover {
+                background: rgba(255,255,255,0.28);
+            }
+
+            .tg-toggle i {
+                font-size: 0.68rem;
+                transition: transform 0.2s ease;
+            }
+
+            .tg-toggle.is-collapsed i {
+                transform: rotate(-90deg);
+            }
+
+        /* Parent-level toggle (lighter row style) */
+        .tg-parent-toggle {
+            flex-shrink: 0;
+            background: rgba(0,0,0,0.06);
+            border: 1px solid rgba(0,0,0,0.12);
+            border-radius: 4px;
+            color: #374151;
+            width: 22px;
+            height: 22px;
+            padding: 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+            .tg-parent-toggle:focus {
+                outline: none;
+            }
+
+            .tg-parent-toggle:hover {
+                background: rgba(0,0,0,0.12);
+            }
+
+            .tg-parent-toggle i {
+                font-size: 0.65rem;
+                transition: transform 0.2s ease;
+            }
+
+            .tg-parent-toggle.is-collapsed i {
+                transform: rotate(-90deg);
+            }
+
+        .tg-group-icon {
+            opacity: 0.8;
+            flex-shrink: 0;
+            font-size: 0.85rem;
+        }
+
+        .tg-group-label {
+            font-weight: 700;
+            font-size: 0.875rem;
+            flex: 1;
+        }
+
+        .tg-group-code {
+            font-size: 0.68rem;
+            font-family: monospace;
+            opacity: 0.55;
+        }
+
+        /* ── Level 2: Parent module row (has sub-children) ── */
+        .tg-parent-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 12px 7px 32px;
+            background: #eef2f7;
+            border-bottom: 1px solid #dde3ec;
+        }
+
+        .tg-parent-label {
+            font-weight: 600;
+            font-size: 0.82rem;
+            color: #374151;
+            flex: 1;
+        }
+
+        .tg-parent-code {
+            font-size: 0.67rem;
+            color: #9ca3af;
+            font-family: monospace;
+        }
+
+        /* ── Level 2: Standalone child (no sub-children) ── */
+        .tg-child-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px 6px 32px;
+            background: #fff;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+            .tg-child-row:last-child {
+                border-bottom: none;
+            }
+
+            .tg-child-row:hover {
+                background: #f8f9ff;
+            }
+
+        /* ── Level 3: Sub-child ── */
+        .tg-sub-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px 6px 54px;
+            background: #fff;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+            .tg-sub-row:last-child {
+                border-bottom: none;
+            }
+
+            .tg-sub-row:hover {
+                background: #f8f9ff;
+            }
+
+        .tg-row-label {
+            font-size: 0.81rem;
+            color: #4b5563;
+            flex: 1;
+        }
+
+        .tg-row-code {
+            font-size: 0.67rem;
+            color: #c0c0c0;
+            font-family: monospace;
+        }
+
+        /* Collapsible body */
+        .tg-body {
+            overflow: hidden;
+        }
+
+        /* ── Access badge (view mode) ── */
+        .tg-badge {
+            display: inline-block;
+            font-size: 0.7rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: 20px;
+            font-weight: 600;
+            white-space: nowrap;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .tg-badge-full {
+            background: #3b82f6;
+            color: #fff;
+        }
+
+        .tg-badge-readwrite {
+            background: #10b981;
+            color: #fff;
+        }
+
+        .tg-badge-edit {
+            background: #f59e0b;
+            color: #fff;
+        }
+
+        .tg-badge-read {
+            background: #06b6d4;
+            color: #fff;
+        }
+
+        .tg-badge-noaccess {
+            background: #ef4444;
+            color: #fff;
+        }
+
+        /* ── Access select (edit mode) — same .accessLevel class as original ── */
+        .tg-access-select {
+            font-size: 0.78rem;
+            padding: 3px 6px;
+            border-radius: 6px;
+            border: 1px solid #ced4da;
+            min-width: 160px;
+            cursor: pointer;
+        }
+
+            .tg-access-select:focus {
+                border-color: #0d6efd;
+                outline: none;
+                box-shadow: 0 0 0 2px rgba(13,110,253,.2);
+            }
+
+        /* ── Hidden rows when filtering ── */
+        .tg-row-hidden {
+            display: none !important;
+        }
+
+        /* SweetAlert2 */
+        .swal2-popup {
+            border-radius: 15px !important;
+            padding: 2rem !important;
+        }
+
+        .swal2-title {
+            font-size: 1.875rem !important;
+            font-weight: 600 !important;
+            color: #545454 !important;
+            margin: 1rem 0 0.5rem 0 !important;
+        }
+
+        .swal2-html-container {
+            font-size: 1rem !important;
+            color: #737373 !important;
+            margin: 0 0 2rem 0 !important;
+        }
+
+        .swal2-actions {
+            gap: 0.5rem !important;
+        }
+
+        .swal2-confirm {
+            background-color: #7c3aed !important;
+            border-color: #7c3aed !important;
+            color: white !important;
+            font-weight: 500 !important;
+            padding: 0.75rem 2rem !important;
+            border-radius: 8px !important;
+            font-size: 0.875rem !important;
+        }
+
+        .swal2-cancel {
+            background-color: #6b7280 !important;
+            border-color: #6b7280 !important;
+            color: white !important;
+            font-weight: 500 !important;
+            padding: 0.75rem 2rem !important;
+            border-radius: 8px !important;
+            font-size: 0.875rem !important;
+        }
+
+        .swal2-confirm:hover {
+            background-color: #6d28d9 !important;
+            border-color: #6d28d9 !important;
+        }
+
+        .swal2-cancel:hover {
+            background-color: #4b5563 !important;
+            border-color: #4b5563 !important;
+        }
+    </style>
+}
+
+@section Fillow_script
+{
+    <script>
+        // ================================================================
+        //  ORIGINAL CODE — COMPLETELY UNTOUCHED
+        //  DO NOT MODIFY ANYTHING IN THIS BLOCK
+        // ================================================================
+
+        let allModulesData = [];
+
+        $(document).ready(function () {
+
+            MODULE = 'SroleM';
+            access = ROLE_ACCESS?.[MODULE];
+
+            const config = {
+                toastr: {
+                    positionClass: "toast-top-right",
+                    timeOut: 5000,
+                    closeButton: true,
+                    progressBar: true,
+                    preventDuplicates: true
+                }
+            };
+
+            toastr.options = config.toastr;
+
+            if (access != 'READWRITE' && access != 'FULL') {
+                $('#btnAddRole').hide();
+            }
+
+            const roleTable = $('#roleTable').DataTable({
+                responsive: true,
+                processing: true,
+                ajax: {
+                    url: "/Role/GetRolelist",
+                    type: "GET",
+                    dataType: "json",
+                    error: () => showNotification('Error loading data. Please refresh the page.', 'error')
+                },
+                columns: [
+                    {
+                        data: null,
+                        orderable: false,
+                        searchable: false,
+                        render: function (data, type, row) {
+                            let viewBtn = `<button class="btn btn-primary btn-sm shadow-sm view-role-btn"
+                                            data-role-code="${row.roleCode}" title="View Details">
+                                                <i class="fa fa-info-circle"></i>
+                                            </button>`;
+
+                            let editBtn = '';
+                            let dataScopeBtn = '';
+                            let hideEmployeesBtn = '';
+                            let deleteBtn = '';
+
+                            if (access === 'READWRITE' || access === 'FULL') {
+                                editBtn = `<button class="btn btn-primary btn-sm shadow-sm edit-role-access-btn"
+                                            data-role-code="${row.roleCode}" title="Module Access">
+                                                <i class="fa fa-list"></i>
+                                            </button>`;
+
+                                dataScopeBtn = `<button class="btn btn-primary btn-sm shadow-sm edit-data-scope-btn"
+                                            data-role-code="${row.roleCode}" title="Data Access">
+                                                <i class="fa fa-database"></i>
+                                            </button>`;
+
+                                hideEmployeesBtn = `<button class="btn btn-primary btn-sm shadow-sm hide-employees-btn"
+                                            data-role-code="${row.roleCode}" title="Hide Employees">
+                                                <i class="fa fa-user-slash"></i>
+                                            </button>`;
+                            }
+
+                            if (access === 'FULL' && row.roleCode !== 'RL-000000') {
+                                deleteBtn = `<button class="btn btn-danger btn-sm shadow-sm delete-role-btn"
+                                            data-role-code="${row.roleCode}">
+                                        <i class="fa fa-trash"></i>
+                                </button>`;
+                            }
+
+                            return `<div class="d-flex gap-1 justify-content-center">
+                                    ${viewBtn}
+                                    ${editBtn}
+                                    ${dataScopeBtn}
+                                    ${hideEmployeesBtn}
+                                    ${deleteBtn}
+                                </div>`;
+                        }
+                    },
+                    { data: "roleCode" },
+                    { data: "roleName" },
+                    {
+                        data: "scopeType",
+                        render: function(data) {
+                            const scopeLabels = {
+                                'OWN_ONLY': 'Own Record Only',
+                                'OWN_AND_ASSIGNED': 'Own + Assigned (Approver)',
+                                'DEPARTMENT': 'Department',
+                                'BRANCH': 'Specific Branch(es)',
+                                'RANK_FILTER': 'Specific Rank(s)',
+                                'POSITION_FILTER': 'Specific Position(s)',
+                                'EMPLOYMENT_STATUS': 'Employment Status(es)',
+                                'CUSTOM': 'Custom Filters',
+                                'ALL': 'All Employees'
+                            };
+                            return scopeLabels[data] || 'Not Configured';
+                        }
+                    }
+                ],
+                order: [[1, 'asc']],
+                pageLength: 25,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                language: {
+                    processing: "Loading...",
+                    emptyTable: "No roles found",
+                    zeroRecords: "No matching roles found",
+                    paginate: {
+                        next: '<i class="fa fa-angle-double-right" aria-hidden="true"></i>',
+                        previous: '<i class="fa fa-angle-double-left" aria-hidden="true"></i>'
+                    }
+                }
+            });
+
+            $(document).on('click', '.view-role-btn', function() {
+                viewRole($(this).data('role-code'));
+            });
+
+            $(document).on('click', '.edit-role-access-btn', function() {
+                openRoleAccess($(this).data('role-code'));
+            });
+
+            $(document).on('click', '.edit-data-scope-btn', function() {
+                openDataScope($(this).data('role-code'));
+            });
+
+            $(document).on('click', '.hide-employees-btn', function() {
+                openHideEmployees($(this).data('role-code'));
+            });
+
+            $(document).on('click', '.delete-role-btn', function() {
+                deleteRoleAccess($(this).data('role-code'));
+            });
+
+            $('#viewSearchInput').on('keyup', function() {
+                filterViewModules();
+            });
+
+            $('#viewFilterAccess').on('change', function() {
+                filterViewModules();
+            });
+
+            $('#editSearchInput').on('keyup', function() {
+                filterEditModules();
+            });
+
+            $('#editFilterAccess').on('change', function() {
+                filterEditModules();
+            });
+
+            $('#clearSearch').on('click', function() {
+                $('#editSearchInput').val('');
+                $('#editFilterAccess').val('');
+                filterEditModules();
+            });
+
+        });
+
+        function viewRole(roleCode) {
+            $('#viewRoleTitle').text(roleCode + ' - Module Access');
+            $('#viewRoleBody').html('<tr><td colspan="3" class="text-center">Loading...</td></tr>');
+            $('#viewSearchInput').val('');
+            $('#viewFilterAccess').val('');
+
+            $.get('/Role/GetRoleAccess', { roleCode: roleCode }, function (data) {
+                allModulesData = data;
+                renderViewModules(data);
+                $('#viewRoleModal').modal('show');
+            });
+        }
+
+        function renderViewModules(data) {
+            // Original: populate the hidden tbody (keeps data-* attributes intact for filterViewModules)
+            let rows = '';
+            data.forEach(x => {
+                rows += `
+                    <tr class="module-view-row"
+                        data-module-name="${x.moduleName.toLowerCase()}"
+                        data-module-type="${x.moduleType.toLowerCase()}"
+                        data-access-level="${x.accessLevel}"
+                        data-module-code="${x.moduleCode}">
+                        <td>${x.moduleName}</td>
+                        <td>${x.moduleType}</td>
+                        <td>${x.accessLevel}</td>
+                    </tr>
+                `;
+            });
+            $('#viewRoleBody').html(rows);
+
+            // NEW: build the visual tree from the same data
+            buildViewTree(data);
+        }
+
+        function filterViewModules() {
+            const searchTerm = $('#viewSearchInput').val().toLowerCase();
+            const filterAccess = $('#viewFilterAccess').val();
+            let visibleCount = 0;
+
+            // Update hidden rows (original logic — untouched)
+            $('.module-view-row').each(function() {
+                const $row = $(this);
+                const moduleName = $row.data('module-name');
+                const moduleType = $row.data('module-type');
+                const accessLevel = $row.data('access-level');
+
+                const matchesSearch = moduleName.includes(searchTerm) || moduleType.includes(searchTerm);
+                const matchesFilter = !filterAccess || accessLevel === filterAccess;
+
+                if (matchesSearch && matchesFilter) {
+                    $row.show();
+                    visibleCount++;
+                } else {
+                    $row.hide();
+                }
+            });
+
+            // Also filter the visual tree
+            filterTreeVisual('viewRoleTree', searchTerm, filterAccess);
+
+            $('#viewNoResults').toggleClass('d-none', visibleCount > 0);
+        }
+
+        function badge(level) {
+            if (level === 'FULL') return 'bg-primary';
+            if (level === 'READWRITE') return 'bg-success';
+            if (level === 'EDIT') return 'bg-warning text-dark';
+            if (level === 'READ') return 'bg-info';
+            return 'bg-danger';
+        }
+
+        function formatAccessLevel(level) {
+            const labels = {
+                'NO_ACCESS': 'No Access',
+                'READ': 'Read Only',
+                'EDIT': 'Edit Only',
+                'READWRITE': 'Read / Write / Create',
+                'FULL': 'Full Access'
+            };
+            return labels[level] || level;
+        }
+
+        function openRoleAccess(roleCode) {
+            $('#editRoleCode').val(roleCode);
+            $('#editRoleTitle').text(roleCode + ' - Edit Module Access');
+            $('#editRoleBody').html('<tr><td colspan="3" class="text-center">Loading...</td></tr>');
+            $('#editSearchInput').val('');
+            $('#editFilterAccess').val('');
+
+            $.get('/Role/GetRoleAccess', { roleCode }, function (data) {
+                allModulesData = data;
+                renderEditModules(data);
+                $('#editRoleModal').modal('show');
+            });
+        }
+
+        function renderEditModules(data) {
+            // Original: populate the hidden tbody with .accessLevel selects
+            // saveRoleAccess() reads from these — this MUST stay identical to original
+            let rows = '';
+            data.forEach(x => {
+                rows += `
+                    <tr class="module-row"
+                        data-module-name="${x.moduleName.toLowerCase()}"
+                        data-module-type="${x.moduleType.toLowerCase()}"
+                        data-access-level="${x.accessLevel}">
+                        <td>${x.moduleName}</td>
+                        <td><span class="badge bg-primary">${x.moduleType}</span></td>
+                        <td>
+                            <select class="form-control form-control-sm accessLevel"
+                                    data-module="${x.moduleCode}">
+                                <option value="NO_ACCESS" ${x.accessLevel === 'NO_ACCESS' ? 'selected' : ''}>No Access</option>
+                                <option value="READ" ${x.accessLevel === 'READ' ? 'selected' : ''}>Read Only</option>
+                                <option value="EDIT" ${x.accessLevel === 'EDIT' ? 'selected' : ''}>Edit Only</option>
+                                <option value="READWRITE" ${x.accessLevel === 'READWRITE' ? 'selected' : ''}>Read / Write / Create</option>
+                                <option value="FULL" ${x.accessLevel === 'FULL' ? 'selected' : ''}>Full Access</option>
+                            </select>
+                        </td>
+                    </tr>
+                `;
+            });
+            $('#editRoleBody').html(rows);
+
+            // NEW: build the visual tree from the same data
+            buildEditTree(data);
+        }
+
+        function filterEditModules() {
+            const searchTerm = $('#editSearchInput').val().toLowerCase();
+            const filterAccess = $('#editFilterAccess').val();
+            let visibleCount = 0;
+
+            // Original logic — reads from hidden tbody rows (untouched)
+            $('.module-row').each(function() {
+                const $row = $(this);
+                const moduleName = $row.data('module-name');
+                const moduleType = $row.data('module-type');
+                const accessLevel = $row.find('.accessLevel').val();
+
+                const matchesSearch = moduleName.includes(searchTerm) || moduleType.includes(searchTerm);
+                const matchesFilter = !filterAccess || accessLevel === filterAccess;
+
+                if (matchesSearch && matchesFilter) {
+                    $row.removeClass('filtered-out').show();
+                    visibleCount++;
+                } else {
+                    $row.addClass('filtered-out').hide();
+                }
+            });
+
+            // Also filter the visual tree
+            filterTreeVisual('editRoleTree', searchTerm, filterAccess);
+
+            $('#editNoResults').toggleClass('d-none', visibleCount > 0);
+        }
+
+        // saveRoleAccess reads from hidden tbody .accessLevel selects — completely unchanged
+        function saveRoleAccess() {
+            const roleCode = $('#editRoleCode').val();
+            const items = [];
+
+            $('.accessLevel').each(function () {
+                items.push({
+                    moduleCode: $(this).data('module'),
+                    accessLevel: $(this).val()
+                });
+            });
+
+            $.ajax({
+                url: '/Role/SaveRoleAccess',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    roleCode: roleCode,
+                    items: items
+                }),
+                success: function (response) {
+                    if (response.success) {
+                        showNotification(response.message, "success");
+                        $('#editRoleModal').modal('hide');
+                    } else {
+                        showNotification(response.message, "error");
+                    }
+                },
+                error: function() {
+                    showNotification("Failed to save module access", "error");
+                }
+            });
+        }
+
+        function openDataScope(roleCode) {
+            $('#dataScopeRoleCode').val(roleCode);
+            $('#editDataScopeTitle').text(roleCode + ' - Data Access Configuration');
+
+            $.get('/Role/GetRoleDataScope', { roleCode }, function (data) {
+                $('#scopeType').val(data.scopeType || 'OWN_ONLY');
+
+                initializeDataScopeSelects();
+
+                toggleDataScopeSections(data.scopeType || 'OWN_ONLY');
+
+                if (data.allowedRanks) {
+                    const ranks = data.allowedRanks.split(',');
+                    $('#allowedRanks').val(ranks).trigger('change');
+                }
+                if (data.allowedBranches) {
+                    const branches = data.allowedBranches.split(',');
+                    $('#allowedBranches').val(branches).trigger('change');
+                }
+                if (data.allowedDepartments) {
+                    const departments = data.allowedDepartments.split(',');
+                    $('#allowedDepartments').val(departments).trigger('change');
+                }
+                if (data.allowedPositions) {
+                    const positions = data.allowedPositions.split(',');
+                    $('#allowedPositions').val(positions).trigger('change');
+                }
+                if (data.allowedEmploymentStatuses) {
+                    const statuses = data.allowedEmploymentStatuses.split(',');
+                    $('#allowedEmploymentStatuses').val(statuses).trigger('change');
+                }
+
+                $('#editDataScopeModal').modal('show');
+            });
+        }
+
+        function initializeDataScopeSelects() {
+            $('#allowedRanks').select2({
+                dropdownParent: $('#editDataScopeModal'),
+                placeholder: "Select ranks",
+                allowClear: true,
+                ajax: {
+                    url: '/Setup/GetEmployeeRank',
+                    dataType: 'json',
+                    processResults: data => ({
+                        results: data.map(item => ({ id: item.rankCode, text: item.rankName }))
+                    })
+                }
+            });
+            $('#allowedBranches').select2({
+                dropdownParent: $('#editDataScopeModal'),
+                placeholder: "Select branches",
+                allowClear: true,
+                ajax: {
+                    url: '/Setup/GetEmployeeBranch',
+                    dataType: 'json',
+                    processResults: data => ({
+                        results: data.map(item => ({ id: item.branchCode, text: item.branchName }))
+                    })
+                }
+            });
+            $('#allowedDepartments').select2({
+                dropdownParent: $('#editDataScopeModal'),
+                placeholder: "Select departments",
+                allowClear: true,
+                ajax: {
+                    url: '/Setup/GetEmployeeDepartment',
+                    dataType: 'json',
+                    processResults: data => ({
+                        results: data.map(item => ({ id: item.departmentCode, text: item.departmentName }))
+                    })
+                }
+            });
+            $('#allowedPositions').select2({
+                dropdownParent: $('#editDataScopeModal'),
+                placeholder: "Select positions",
+                allowClear: true,
+                ajax: {
+                    url: '/Setup/GetEmployeePositions',
+                    dataType: 'json',
+                    processResults: data => ({
+                        results: data.map(item => ({ id: item.positionCode, text: item.positionName }))
+                    })
+                }
+            });
+            $('#allowedEmploymentStatuses').select2({
+                dropdownParent: $('#editDataScopeModal'),
+                placeholder: "Select employment statuses",
+                allowClear: true,
+                ajax: {
+                    url: '/Setup/GetEmploymentStatuses',
+                    dataType: 'json',
+                    processResults: data => ({
+                        results: data.map(item => ({ id: item.employmentStatusCode, text: item.employmentStatusName }))
+                    })
+                }
+            });
+        }
+
+        $('#scopeType').on('change', function () {
+            toggleDataScopeSections($(this).val());
+        });
+
+        function toggleDataScopeSections(scopeType) {
+            $('#rankFilterSection, #branchFilterSection, #departmentFilterSection, #positionFilterSection, #employmentStatusFilterSection').hide();
+            $('#assignedEmployeeInfo').hide();
+
+            switch (scopeType) {
+                case 'OWN_AND_ASSIGNED': $('#assignedEmployeeInfo').show(); break;
+                case 'RANK_FILTER':      $('#rankFilterSection').show(); break;
+                case 'BRANCH':           $('#branchFilterSection').show(); break;
+                case 'DEPARTMENT':       $('#departmentFilterSection').show(); break;
+                case 'POSITION_FILTER':  $('#positionFilterSection').show(); break;
+                case 'EMPLOYMENT_STATUS':$('#employmentStatusFilterSection').show(); break;
+                case 'CUSTOM':
+                    $('#rankFilterSection, #branchFilterSection, #departmentFilterSection, #positionFilterSection, #employmentStatusFilterSection').show();
+                    break;
+            }
+        }
+
+        function saveDataScope() {
+            const roleCode = $('#dataScopeRoleCode').val();
+            const scopeType = $('#scopeType').val();
+
+            const allowedRanks = $('#allowedRanks').val() || [];
+            const allowedBranches = $('#allowedBranches').val() || [];
+            const allowedDepartments = $('#allowedDepartments').val() || [];
+            const allowedPositions = $('#allowedPositions').val() || [];
+            const allowedEmploymentStatuses = $('#allowedEmploymentStatuses').val() || [];
+
+            $.ajax({
+                url: '/Role/SaveRoleDataScope',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    roleCode, scopeType,
+                    allowedRanks, allowedBranches, allowedDepartments,
+                    allowedPositions, allowedEmploymentStatuses
+                }),
+                success: function (response) {
+                    if (response.success) {
+                        showNotification(response.message, "success");
+                        $('#editDataScopeModal').modal('hide');
+                        $('#roleTable').DataTable().ajax.reload(null, false);
+                    } else {
+                        showNotification(response.message, "error");
+                    }
+                },
+                error: function () { showNotification("Failed to save data access", "error"); }
+            });
+        }
+
+        function openHideEmployees(roleCode) {
+            $('#hideEmployeesRoleCode').val(roleCode);
+            $('#hideEmployeesTitle').text(roleCode + ' - Hide Employees');
+
+            $('#hiddenEmployees').select2({
+                dropdownParent: $('#hideEmployeesModal'),
+                placeholder: "Select employees to hide",
+                allowClear: true,
+                ajax: {
+                    url: '/Role/GetEmployeesForHiding',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function(params) {
+                        return { search: params.term || '', roleCode: roleCode };
+                    },
+                    processResults: data => data
+                }
+            });
+
+            $.get('/Role/GetRoleHiddenEmployees', { roleCode }, function (response) {
+                if (response.success && response.hiddenEmployees) {
+                    const hiddenList = response.hiddenEmployees.split(',').filter(x => x.trim());
+                    $('#hiddenEmployees').val(hiddenList).trigger('change');
+                }
+                $('#hideEmployeesModal').modal('show');
+            });
+        }
+
+        function saveHiddenEmployees() {
+            const roleCode = $('#hideEmployeesRoleCode').val();
+            const hiddenEmployees = $('#hiddenEmployees').val() || [];
+
+            $.ajax({
+                url: '/Role/SaveRoleHiddenEmployees',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ roleCode, hiddenEmployees }),
+                success: function (response) {
+                    if (response.success) {
+                        showNotification(response.message, "success");
+                        $('#hideEmployeesModal').modal('hide');
+                    } else {
+                        showNotification(response.message, "error");
+                    }
+                },
+                error: function () { showNotification("Failed to save hidden employees", "error"); }
+            });
+        }
+
+        function openAddRole() {
+            $('#roleCode').val('');
+            $('#roleName').val('');
+            clearValidation('#addRoleForm');
+            $('#addRoleModal').modal('show');
+        }
+
+        $('#btnAddRole').click(openAddRole);
+
+        function saveRole() {
+            const roleCode = $('#roleCode').val().trim();
+            const roleName = $('#roleName').val().trim();
+
+            if (!validateForm('#addRoleForm', ['roleCode', 'roleName'])) {
+                return;
+            }
+
+            const $btn = $('.btn-success[onclick="saveRole()"]');
+            toggleButtonLoading($btn, true, 'Saving...');
+
+            $.ajax({
+                url: '/Role/InsertRole',
+                type: 'POST',
+                data: { roleCode, roleName },
+                success: function (response) {
+                    if (response.success) {
+                        showNotification(response.message, "success");
+                        $('#addRoleModal').modal('hide');
+                        $('#roleTable').DataTable().ajax.reload();
+                    } else {
+                        showNotification(response.message, "error");
+                    }
+                },
+                error: function() { showNotification("Failed to create role", "error"); },
+                complete: function() { toggleButtonLoading($btn, false); }
+            });
+        }
+
+        function deleteRoleAccess(roleCode) {
+            Swal.fire({
+                title: 'Delete Role?',
+                text: `This will permanently delete the role and all its permissions.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, delete',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                reverseButtons: false
+            }).then((result) => {
+                if (!result.isConfirmed) return;
+
+                $.ajax({
+                    url: '/Role/DeleteRole',
+                    type: 'POST',
+                    data: { roleCode },
+                    success: function (res) {
+                        if (res.success) {
+                            showNotification(res.message, "success");
+                            $('#roleTable').DataTable().ajax.reload();
+                        } else {
+                            showNotification(res.message, "error");
+                        }
+                    },
+                    error: function () { showNotification("Server error while deleting role", "error"); }
+                });
+            });
+        }
+
+        function validateForm(formSelector, fields) {
+            clearValidation(formSelector);
+            let isValid = true;
+            fields.forEach(field => {
+                if (!$(`#${field}`).val()) {
+                    $(`#${field}`).addClass('is-invalid');
+                    isValid = false;
+                }
+            });
+            return isValid;
+        }
+
+        function clearValidation(formSelector) {
+            $(`${formSelector} .form-control, ${formSelector} .form-select`).removeClass('is-invalid');
+        }
+
+        function toggleButtonLoading($btn, loading, text = '') {
+            if (loading) {
+                if (!$btn.data('original-html')) $btn.data('original-html', $btn.html());
+                const icon = text ? '<i class="fas fa-spinner fa-spin"></i> ' : '<i class="fas fa-spinner fa-spin"></i>';
+                $btn.prop('disabled', true).html(icon + text);
+            } else {
+                const originalHtml = $btn.data('original-html') || 'Save';
+                $btn.prop('disabled', false).html(originalHtml).removeData('original-html');
+            }
+        }
+
+        function showNotification(message, type) {
+            const types = { success: 'Success', error: 'Error', warning: 'Warning', info: 'Information' };
+            toastr[type](message, types[type] || 'Notification');
+        }
+
+        $('#addRoleModal').on('hidden.bs.modal', function() {
+            $('#addRoleForm')[0].reset();
+            clearValidation('#addRoleForm');
+        });
+
+        $('#editRoleModal').on('hidden.bs.modal', function() {
+            $('#editSearchInput').val('');
+            $('#editFilterAccess').val('');
+        });
+
+        $('#viewRoleModal').on('hidden.bs.modal', function() {
+            $('#viewSearchInput').val('');
+            $('#viewFilterAccess').val('');
+        });
+
+        $('#editDataScopeModal').on('hidden.bs.modal', function() {
+            $('#assignedEmployeeInfo').hide();
+            $('#rankFilterSection, #branchFilterSection, #departmentFilterSection, #positionFilterSection, #employmentStatusFilterSection').hide();
+        });
+
+        $('#roleCode, #roleName').on('input change', function() {
+            $(this).removeClass('is-invalid');
+        });
+
+        // ================================================================
+        //  NEW ADDITIVE CODE — VISUAL TREE LAYER
+        //  Nothing here touches saving, loading, or filtering logic.
+        //  It only builds/updates the visual tree div alongside the
+        //  hidden tbody that the original code still owns.
+        // ================================================================
+
+        // Module hierarchy definition
+        const MODULE_HIERARCHY = [
+            {
+                label: 'Personnel Record', moduleCode: 'fileM', icon: 'fa-user',
+                children: [
+                    { label: 'Biometrics',                moduleCode: 'TbiometricsM' },
+                    {
+                        label: 'Employee List', moduleCode: 'FemployeeM',
+                        children: [
+                            { label: 'Basic Information',           moduleCode: 'FBasicM' },
+                            { label: 'Personal Info',               moduleCode: 'FSPersonalInfoM' },
+                            { label: 'Educational Background',      moduleCode: 'FSEducationalBackgroundM' },
+                            { label: 'Payroll Details',             moduleCode: 'FSPayrollDetailsM' },
+                            { label: 'Allowances',                  moduleCode: 'FSAllowancesM' },
+                            { label: 'Loans',                       moduleCode: 'FSLoansM' },
+                            { label: 'Leave Ledger',                moduleCode: 'FSleaveLedgerM' },
+                            { label: 'Leave Setup',                 moduleCode: 'FSLeaveSetupM' },
+                            { label: 'Disciplinary Action (Tab)',   moduleCode: 'FDisciplinaryAction' },
+                            { label: 'Commendation (Tab)',          moduleCode: 'FCommendation' },
+                            { label: 'Medical Availment',           moduleCode: 'FSMedicalAvailmentM' },
+                            { label: 'Employment History',          moduleCode: 'FSEmploymentHistoryM' },
+                            { label: 'Licenses & Certification',    moduleCode: 'FSLicencesAndCertificationM' },
+                            { label: 'Trainings',                   moduleCode: 'FSTrainingsM' },
+                            { label: 'DTR',                         moduleCode: 'FSdtrM' },
+                            { label: 'Attachments',                 moduleCode: 'FSAttachmentsM' },
+                        ]
+                    },
+                    { label: 'Employee Schedule',          moduleCode: 'FscheduleM' },
+                    { label: 'Employee Approver',          moduleCode: 'approverM' },
+                    { label: 'Employee Benefits Settings', moduleCode: 'FemployeeBenefitsSettingM' },
+                ]
+            },
+            {
+                label: 'Time Keeping', moduleCode: 'timekeepingM', icon: 'fa-clock',
+                children: [
+                    { label: 'Review Daily Time Record',   moduleCode: 'TreviewDTRM' },
+                    { label: 'Change Schedule Request',    moduleCode: 'RchangeschedM' },
+                    { label: 'Leave Request',              moduleCode: 'RleaveM' },
+                    { label: 'Official Business Request',  moduleCode: 'RofficialbusinessM' },
+                    { label: 'Overtime Request',           moduleCode: 'RovertimeM' },
+                    { label: 'Undertime Request',          moduleCode: 'RundertimeM' },
+                    { label: 'Offset Credit Request',      moduleCode: 'RoffsetCreditM' },
+                    { label: 'Offset Application Request', moduleCode: 'RoffsetApplicationM' },
+                    { label: 'Work From Home Request',     moduleCode: 'RworkOnOffM' },
+                ]
+            },
+            // ── LE Relation ──────────────────────────────────────────────
+            {
+                label: 'LE Relation', moduleCode: 'LERelation', icon: 'fa-gavel',
+                children: [
+                    { label: 'Commendation List',   moduleCode: 'FCommendation' },
+                    { label: 'Disciplinary Action', moduleCode: 'FDisciplinaryAction' },
+                ]
+            },
+            // ── Memo ─────────────────────────────────────────────────────
+            {
+                label: 'Memo', moduleCode: 'MMemo', icon: 'fa-file-alt',
+                children: [
+                    { label: 'Memo', moduleCode: 'MMemo' },
+                ]
+            },
+            {
+                label: 'Payroll', moduleCode: 'payrollM', icon: 'fa-dollar-sign',
+                children: [
+                    { label: 'Adjustment',              moduleCode: 'RadjustmentM' },
+                    { label: 'Process Payroll',         moduleCode: 'TpayrollProcessM' },
+                    { label: 'Payroll Register',        moduleCode: 'TopenPayrollRegisterM' },
+                    { label: 'Posted Payroll Register', moduleCode: 'TpostedPayrollRegisterM' },
+                    { label: 'Process Last Pay', moduleCode: 'TprocessLastPayM' },
+                    { label: 'Process 13 Month', moduleCode: 'Tprocess13thMonthM' },
+                ]
+            },
+            {
+                label: 'Payslip', moduleCode: 'MPayslip', icon: 'fa-money-check-alt',
+                children: [
+                    { label: 'Payslip', moduleCode: 'FPayslip' },
+                ]
+            },
+            {
+                label: 'Report', moduleCode: 'reportM', icon: 'fa-chart-bar',
+                children: [
+                    { label: 'Leave Request Summary',        moduleCode: 'RPTleaveRequestSummaryM' },
+                    { label: 'Overtime Request Summary',     moduleCode: 'RPTOvertimeRequestSummaryM' },
+                    { label: 'Leave Balance',                moduleCode: 'RPTleaveBalanceM' },
+                    { label: 'Leave Monetization',           moduleCode: 'RPTleaveMonetizationM' },
+                    { label: 'Birthday',                     moduleCode: 'RPTbirthdayM' },
+                    { label: 'Due for Probationary',         moduleCode: 'RPTprobationarySchedM' },
+                    { label: 'Due for Regularization',       moduleCode: 'RPTregularizationSchedM' },
+                    { label: 'Employee Master List',         moduleCode: 'RPTemployeeMasterListM' },
+                    { label: 'License Expiration',           moduleCode: 'RPTlicenseM' },
+                    { label: 'Loan Report',                  moduleCode: 'RPTloanM' },
+                    { label: 'Alphalist',                    moduleCode: 'RPTalphalistM' },
+                    { label: '13th Month Pay',               moduleCode: 'RPTthe13thMonthM' },
+                    { label: 'Government Contribution',      moduleCode: 'RPTgovernmentContributionM' },
+                    { label: 'Employee Contract Expiration', moduleCode: 'RPTemployeeContractExpirationM' },
+                    { label: 'Government Loans',             moduleCode: 'RPTgovernmentLoansM' },
+                    { label: 'Attendance Report',            moduleCode: 'RPTAttendanceReportM' },
+                ]
+            },
+            {
+                label: 'Setup', moduleCode: 'setupM', icon: 'fa-cog',
+                children: [
+                    { label: 'Adjustment List',            moduleCode: 'SadjustmentM' },
+                    { label: 'Allowance List',             moduleCode: 'SallowanceM' },
+                    { label: 'Attachment Type List',       moduleCode: 'SattachmenttypeM' },
+                    { label: 'Bank List',                  moduleCode: 'SbankM' },
+                    { label: 'Branch List',                moduleCode: 'SbranchM' },
+                    { label: 'COE Purpose List',           moduleCode: 'SCOEPurposeListM' },
+                    { label: 'Commendation',               moduleCode: 'ScommendationM' },
+                    { label: 'Department List',            moduleCode: 'SdepartmentM' },
+                    { label: 'Employment Status List',     moduleCode: 'SemploymentstatusM' },
+                    { label: 'Holiday List',               moduleCode: 'SholidayM' },
+                    { label: 'Location List',              moduleCode: 'SlocationListM' },
+                    { label: 'Leave List',                 moduleCode: 'SleaveM' },
+                    { label: 'Loan List',                  moduleCode: 'SloanM' },
+                    { label: 'Other Deduction List',       moduleCode: 'SotherdeductionM' },
+                    { label: 'Position List',              moduleCode: 'SpositionM' },
+                    { label: 'Project List',               moduleCode: 'SprojectM' },
+                    { label: 'Rank List',                  moduleCode: 'SrankM' },
+                    { label: 'Reason for Separation List', moduleCode: 'Sreason4terminationM' },
+                    { label: 'Schedule Type List',         moduleCode: 'SscheduletyeplistM' },
+                    { label: 'Unit List',                  moduleCode: 'SunitListM' },
+                    { label: 'User List',                  moduleCode: 'SuserM' },
+                    { label: 'User Role',                  moduleCode: 'SroleM' },
+                ]
+            },
+            {
+                label: 'Announcement', moduleCode: 'AAnnouncementM', icon: 'fa-bullhorn',
+                children: [{ label: 'Announcement', moduleCode: 'AAnnouncementM' }]
+            },
+            {
+                label: 'Uploader', moduleCode: 'UUploaderM', icon: 'fa-upload',
+                children: [
+                    { label: 'Adjustment',        moduleCode: 'UadjustmentUploader' },
+                    { label: 'Employee Schedule', moduleCode: 'UScheduleUploader' },
+                    { label: 'Leave',             moduleCode: 'UleaveUploader' },
+                    { label: 'Loans',             moduleCode: 'FSLoansM' },
+                ]
+            },
+            {
+                label: 'Audit Trail', moduleCode: 'Aaudittrail', icon: 'fa-history',
+                children: [{ label: 'Audit Trail', moduleCode: 'Aaudittrail' }]
+            },
+        ];
+
+        // Build access map from API data
+        function buildAccessMap(data) {
+            const map = {};
+            data.forEach(x => { map[x.moduleCode] = x.accessLevel || 'NO_ACCESS'; });
+            return map;
+        }
+
+        // Access badge for view tree
+        const BADGE_MAP = {
+            FULL:      ['tg-badge-full',      'Full Access'],
+            READWRITE: ['tg-badge-readwrite', 'Read / Write / Create'],
+            EDIT:      ['tg-badge-edit',      'Edit Only'],
+            READ:      ['tg-badge-read',      'Read Only'],
+            NO_ACCESS: ['tg-badge-noaccess',  'No Access'],
+        };
+        function tgBadge(level) {
+            const [cls, lbl] = BADGE_MAP[level] || BADGE_MAP.NO_ACCESS;
+            return `<span class="tg-badge ${cls}" data-access="${level}">${lbl}</span>`;
+        }
+
+        // Access select for edit tree — visual only, syncs with hidden select on change
+        function tgSelect(moduleCode, currentLevel) {
+            let opts = '';
+            Object.entries(BADGE_MAP).forEach(([val, [, lbl]]) => {
+                opts += `<option value="${val}"${currentLevel === val ? ' selected' : ''}>${lbl}</option>`;
+            });
+            // data-for links this visual select back to the hidden .accessLevel select
+            return `<select class="tg-access-select" data-for="${moduleCode}">${opts}</select>`;
+        }
+
+        // Toggle button HTML
+        function tgToggleBtn(targetId, isGroup) {
+            const cls = isGroup ? 'tg-toggle' : 'tg-parent-toggle';
+            return `<button type="button" class="${cls} is-collapsed" data-target="${targetId}" aria-label="Toggle">
+                        <i class="fa fa-chevron-down"></i>
+                    </button>`;
+        }
+
+        // Build the visual tree HTML from flat API data
+        function buildVisualTree(data, isEdit) {
+            const accessMap = buildAccessMap(data);
+            const parts = [];
+
+            MODULE_HIERARCHY.forEach((group, gi) => {
+                const groupAccess  = accessMap[group.moduleCode] || 'NO_ACCESS';
+                const groupControl = isEdit ? tgSelect(group.moduleCode, groupAccess) : tgBadge(groupAccess);
+                const bodyId       = `tg-grp-${gi}`;
+
+                let bodyHtml = '';
+                (group.children || []).forEach((child, ci) => {
+                    if (child.children && child.children.length) {
+                        const parentAccess  = accessMap[child.moduleCode] || 'NO_ACCESS';
+                        const parentControl = isEdit ? tgSelect(child.moduleCode, parentAccess) : tgBadge(parentAccess);
+                        const parentBodyId  = `tg-par-${gi}-${ci}`;
+
+                        let subHtml = '';
+                        child.children.forEach(sub => {
+                            const subAccess  = accessMap[sub.moduleCode] || 'NO_ACCESS';
+                            const subControl = isEdit ? tgSelect(sub.moduleCode, subAccess) : tgBadge(subAccess);
+                            subHtml += `
+                                <div class="tg-sub-row tg-leaf"
+                                     data-label="${sub.label.toLowerCase()}"
+                                     data-code="${sub.moduleCode.toLowerCase()}"
+                                     data-access="${subAccess}">
+                                    <span class="tg-row-label">${sub.label}</span>
+                                    <span class="tg-row-code">${sub.moduleCode}</span>
+                                    <div style="margin-left:auto;">${subControl}</div>
+                                </div>`;
+                        });
+
+                        bodyHtml += `
+                            <div class="tg-parent-row tg-leaf"
+                                 data-label="${child.label.toLowerCase()}"
+                                 data-code="${child.moduleCode.toLowerCase()}"
+                                 data-access="${parentAccess}">
+                                ${tgToggleBtn(parentBodyId, false)}
+                                <span class="tg-parent-label">${child.label}</span>
+                                <span class="tg-parent-code">${child.moduleCode}</span>
+                                <div style="margin-left:auto;">${parentControl}</div>
+                            </div>
+                            <div class="tg-body" id="${parentBodyId}" style="display:none;">${subHtml}</div>`;
+                    } else {
+                        const childAccess  = accessMap[child.moduleCode] || 'NO_ACCESS';
+                        const childControl = isEdit ? tgSelect(child.moduleCode, childAccess) : tgBadge(childAccess);
+                        bodyHtml += `
+                            <div class="tg-child-row tg-leaf"
+                                 data-label="${child.label.toLowerCase()}"
+                                 data-code="${child.moduleCode.toLowerCase()}"
+                                 data-access="${childAccess}">
+                                <span class="tg-row-label">${child.label}</span>
+                                <span class="tg-row-code">${child.moduleCode}</span>
+                                <div style="margin-left:auto;">${childControl}</div>
+                            </div>`;
+                    }
+                });
+
+                parts.push(`
+                    <div class="tg-group" data-group="${gi}">
+                        <div class="tg-group-header">
+                            ${tgToggleBtn(bodyId, true)}
+                            <i class="fa ${group.icon || 'fa-folder'} tg-group-icon"></i>
+                            <span class="tg-group-label">${group.label}</span>
+                            <span class="tg-group-code">${group.moduleCode}</span>
+                            <div style="margin-left:auto;">${groupControl}</div>
+                        </div>
+                        <div class="tg-body" id="${bodyId}" style="display:none;">${bodyHtml}</div>
+                    </div>`);
+            });
+
+            return parts.join('');
+        }
+
+        function buildViewTree(data) {
+            $('#viewRoleTree').html(buildVisualTree(data, false));
+        }
+
+        function buildEditTree(data) {
+            $('#editRoleTree').html(buildVisualTree(data, true));
+        }
+
+        // Toggle handler — dedicated buttons only, uses data-target
+        $(document).on('click', '.tg-toggle, .tg-parent-toggle', function (e) {
+            e.stopPropagation();
+            const $btn   = $(this);
+            const $body  = $('#' + $btn.data('target'));
+
+            if ($body.is(':visible')) {
+                $body.slideUp(180);
+                $btn.addClass('is-collapsed');
+            } else {
+                $body.slideDown(180);
+                $btn.removeClass('is-collapsed');
+            }
+        });
+
+        // When a visual select changes → sync to the corresponding hidden .accessLevel select
+        // This keeps saveRoleAccess() reading the correct value
+        $(document).on('change', '.tg-access-select', function () {
+            const moduleCode = $(this).data('for');
+            const newVal     = $(this).val();
+
+            // Sync to hidden tbody select
+            $('#editRoleBody').find(`.accessLevel[data-module="${moduleCode}"]`).val(newVal);
+
+            // Update data-access on the row for filter compatibility
+            $(this).closest('.tg-leaf').attr('data-access', newVal);
+        });
+
+        // Filter the visual tree (called from filterViewModules / filterEditModules)
+        function filterTreeVisual(treeId, searchTerm, filterAccess) {
+            const $tree = $('#' + treeId);
+
+            $tree.find('.tg-group').each(function () {
+                let groupVisible = false;
+
+                $(this).find('.tg-leaf').each(function () {
+                    const label  = $(this).data('label') || '';
+                    const code   = $(this).data('code')  || '';
+                    const access = $(this).data('access') || '';
+
+                    const matchSearch = !searchTerm || label.includes(searchTerm) || code.includes(searchTerm);
+                    const matchFilter = !filterAccess || access === filterAccess;
+
+                    if (matchSearch && matchFilter) {
+                        $(this).removeClass('tg-row-hidden');
+                        groupVisible = true;
+                    } else {
+                        $(this).addClass('tg-row-hidden');
+                    }
+                });
+
+                if (groupVisible) {
+                    $(this).show();
+                    if (searchTerm || filterAccess) {
+                        // Auto-expand so results are visible
+                        $(this).find('.tg-body').show();
+                        $(this).find('.tg-toggle, .tg-parent-toggle').removeClass('is-collapsed');
+                    }
+                } else {
+                    $(this).hide();
+                }
+            });
+        }
+
+        // Expand / Collapse All buttons (edit modal only)
+        $('#expandAllBtn').on('click', function () {
+            $('#editRoleTree').find('.tg-body').slideDown(150);
+            $('#editRoleTree').find('.tg-toggle, .tg-parent-toggle').removeClass('is-collapsed');
+        });
+
+        $('#collapseAllBtn').on('click', function () {
+            $('#editRoleTree').find('.tg-body').slideUp(150);
+            $('#editRoleTree').find('.tg-toggle, .tg-parent-toggle').addClass('is-collapsed');
+        });
+
+    </script>
+}
+    

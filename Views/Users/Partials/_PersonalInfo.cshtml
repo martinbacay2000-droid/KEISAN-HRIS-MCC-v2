@@ -1,0 +1,814 @@
+﻿@model KEISAN_HRIS_v2.Models.Users.userPersonalInfo
+
+<form id="personalInfoForm">
+    <input type="hidden" id="employeeNo" value="@Model.employeeNo" />
+
+    <div class="row">
+        <div class="col-md-3">
+            <label>Gender <span class="text-danger">*</span></label>
+            <select id="gender" name="gender" class="form-control required-field select2" style="width:100%">
+                <option value="" selected disabled>Select Gender</option>
+                <option value="MALE">MALE</option>
+                <option value="FEMALE">FEMALE</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label>Date of Birth <span class="text-danger">*</span></label>
+            <div class="input-hasicon">
+                <input name="dateOfBirth" id="dateOfBirth" class="form-control required-field bt-datepicker" readonly>
+                <div class="icon"><i class="far fa-calendar"></i></div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <label>Weight (kg)</label>
+            <input type="number" name="weight" id="weight" maxlength="255" class="form-control" placeholder="Weight" />
+        </div>
+        <div class="col-md-3">
+            <label>Height (cm)</label>
+            <input type="number" name="height" id="height" maxlength="255" class="form-control" placeholder="Height" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3">
+            <label>Birth Place <span class="text-danger">*</span></label>
+            <input type="text" name="birthPlace" id="birthPlace" maxlength="255" class="form-control required-field" placeholder="Birth Place" />
+        </div>
+        <div class="col-md-3">
+            <label>Age</label>
+            <input type="text" name="age" id="age" class="form-control" placeholder="Age" readonly style="background-color: #e9ecef;" />
+        </div>
+        <div class="col-md-3">
+            <label>Home Phone No</label>
+            <input type="text" name="homePhoneNo" id="homePhoneNo" class="form-control" placeholder="Home Phone No" inputmode="numeric" pattern="[0-9]*" maxlength="10" />
+        </div>
+        <div class="col-md-3">
+            <label>Mobile No <span class="text-danger">*</span></label>
+            <input type="text" name="mobileNo" id="mobileNo" class="form-control required-field" placeholder="Mobile No" inputmode="numeric" pattern="[0-9]*" maxlength="13" />
+        </div>
+    </div>
+
+    <br>
+    <div class="row">
+        <div class="col-md-3">
+            <label>Email Address <span class="text-danger">*</span></label>
+            <input type="email" name="emailAddress" id="emailAddress" maxlength="255" class="form-control required-field" placeholder="Email Address" />
+        </div>
+        <div class="col-md-3">
+            <label>Civil Status <span class="text-danger">*</span></label>
+            <select id="civilStatus" name="civilStatus" class="form-control required-field select2" style="width:100%">
+                <option value="" selected disabled>Select Civil Status</option>
+                <option value="Single">Single</option>
+                <option value="Married">Married</option>
+                <option value="Widow">Widow</option>
+                <option value="Widower">Widower</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label>Citizenship <span class="text-danger">*</span></label>
+            <select id="citizenship" name="citizenshipCode" class="form-control required-field select2" style="width:100%">
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label>Religion <span class="text-danger">*</span></label>
+            <input type="text" name="religion" id="religion" maxlength="255" class="form-control required-field" placeholder="Religion" />
+        </div>
+    </div>
+
+    <br>
+    <div class="row">
+        <div class="col-md-3">
+        </div>
+        <div class="col-md-3">
+            <label>Zipcode <span class="text-danger">*</span></label>
+            <input type="text" name="zipCode" id="zipcode" maxlength="4" class="form-control required-field" placeholder="Zipcode" />
+        </div>
+    </div>
+    <br>
+
+    <div class="row">
+        <div class="col-xs-12 col-sm-12 col-md-5 col-lg-5">
+            <div class="form-group">
+                <label for="presentAddress" class="control-label">Present Address <span class="text-danger">*</span></label>
+                <textarea rows="3" name="presentAddress" id="presentAddress" maxlength="255" class="form-control required-field" placeholder="Present Address"></textarea>
+            </div>
+        </div>
+        <div class="col-xs-12 col-sm-12 col-md-1 col-lg-1">
+            <br />
+            <center>
+                <button type="button" class="btn btn-primary" title="Copy to Permanent" id="btnCopyAddress">
+                    <span class="fa fa-chevron-circle-right"></span>
+                </button>
+            </center>
+            <br />
+            <center>
+                <button type="button" class="btn btn-primary" title="Copy to Present" id="btnCopyAddress2">
+                    <span class="fa fa-chevron-circle-left"></span>
+                </button>
+            </center>
+        </div>
+        <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
+            <div class="form-group">
+                <label for="permanentAddress" class="control-label">Permanent Address <span class="text-danger">*</span></label>
+                <textarea rows="3" name="permanentAddress" id="permanentAddress" maxlength="255" class="form-control required-field" placeholder="Permanent Address"></textarea>
+            </div>
+        </div>
+    </div>
+    <br>
+
+    <div class="row">
+        <div class="col-md-6">
+            <label>Father's Name</label>
+            <input type="text" name="fatherName" id="fatherName" maxlength="255" class="form-control" placeholder="Father's Name" />
+        </div>
+        <div class="col-md-6">
+            <label>Mother's Maiden Name</label>
+            <input type="text" name="motherMaidenName" id="motherMaidenName" maxlength="255" class="form-control" placeholder="Mother's Maiden Name" />
+        </div>
+    </div>
+
+    <br>
+    <div class="row">
+        <div class="col-md-6">
+            <label>Emergency Contact Person</label>
+            <input type="text" name="personToNotify" id="personToNotify" maxlength="255" class="form-control" placeholder="Emergency Contact Person" />
+        </div>
+        <div class="col-md-3">
+            <label>Relationship</label>
+            <input type="text" name="relationship" id="relationship" maxlength="255" class="form-control" placeholder="Relationship" />
+        </div>
+        <div class="col-md-3">
+            <label>Contact No</label>
+            <input type="text" name="contactNo" id="emergencyContactNo" maxlength="255" class="form-control" placeholder="Contact No" />
+        </div>
+    </div>
+    <br>
+
+    <div class="row">
+        <div class="col-md-6">
+            <label>Name of Spouse</label>
+            <input type="text" name="nameOfSpouse" id="spouseName" maxlength="255" class="form-control" placeholder="Name of Spouse" />
+        </div>
+        <div class="col-md-3">
+            <label>Spouse's Date of Birth</label>
+            <div class="input-hasicon">
+                <input name="spouseDateOfBirth" id="spouseDateOfBirth" class="form-control bt-datepicker">
+                <div class="icon"><i class="far fa-calendar"></i></div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <label>Occupation</label>
+            <input type="text" name="occupation" id="occupation" maxlength="255" class="form-control" placeholder="Occupation" />
+        </div>
+    </div>
+    <br>
+
+    <div class="row" id="personalInfoActions">
+        <div class="col-md-12">
+            <button type="button" id="btnEditPersonalInfo" class="btn btn-primary" style="float:right;">Edit</button>
+        </div>
+    </div>
+
+    <hr>
+    <div class="row">
+        <div class="col-md-10">
+            <label class="h5"><b>EMPLOYEE RELATIVES</b></label>
+        </div>
+        <div class="col-md-2">
+            <button type="button" id="btnAddSibling" class="btn btn-primary d-none">
+                <i class="fa fa-plus"></i> Add New
+            </button>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <div class="table-responsive">
+            <table id="siblingsTable" class="display" style="min-width: 845px">
+                <thead>
+                    <tr>
+                        <th>Action</th>
+                        <th>Name of Relative</th>
+                        <th>Date of Birth</th>
+                        <th>Age</th>
+                        <th>Gender</th>
+                        <th>Relationship</th>
+                        <th>Dependent</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+    <hr />
+</form>
+
+<!-- Modal for Add/Edit Sibling -->
+<div class="modal fade" id="siblingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="siblingModalTitle">Add Relative</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="siblingForm">
+                    <input type="hidden" id="siblingId" name="id">
+                    <input type="hidden" id="siblingEmployeeNo" name="employeeNo">
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="siblingName" class="form-label">Name of Relative <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="siblingName" name="nameOfSibling" maxlength="255" required>
+                            <div class="invalid-feedback">Please provide a name.</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="siblingDob" class="form-label">Date of Birth <span class="text-danger">*</span></label>
+                            <div class="input-hasicon">
+                                <input name="dateOfBirth" id="siblingDob" class="form-control bt-datepicker" required>
+                                <div class="icon"><i class="far fa-calendar"></i></div>
+                            </div>
+                            <div class="invalid-feedback">Please select a date of birth.</div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="siblingGender" class="form-label">Gender <span class="text-danger">*</span></label>
+                            <select id="siblingGender" name="gender" class="form-control select2" required>
+                                <option value="">Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                            <div class="invalid-feedback">Please select a gender.</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="siblingRelationship" class="form-label">Relationship <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="siblingRelationship" name="relationship" maxlength="100" required>
+                            <div class="invalid-feedback">Please provide a relationship.</div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="siblingDependent" class="form-label">Dependent <span class="text-danger">*</span></label>
+                            <select id="siblingDependent" name="dependent" class="form-control select2" required>
+                                <option value="">Select</option>
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                            </select>
+                            <div class="invalid-feedback">Please select dependent status.</div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="btnSaveSibling">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Readonly input styling */
+    input[readonly]:not(.bt-datepicker),
+    textarea[readonly],
+    select:disabled {
+        background-color: #f8f9fa !important;
+        border-color: #dee2e6 !important;
+        cursor: not-allowed;
+        opacity: 0.8;
+    }
+
+    /* Keep datepicker readonly inputs normal looking */
+    .bt-datepicker[readonly] {
+        background-color: #ffffff !important;
+        cursor: pointer !important;
+    }
+
+    /* Invalid feedback styling */
+    .form-control.is-invalid,
+    .form-select.is-invalid {
+        border-color: #dc3545;
+    }
+
+    .invalid-feedback {
+        display: none;
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    .form-control.is-invalid ~ .invalid-feedback,
+    .form-select.is-invalid ~ .invalid-feedback {
+        display: block;
+    }
+
+    /* Select2 disabled styling */
+    .select2-container--disabled .select2-selection {
+        background-color: #f8f9fa !important;
+        border-color: #dee2e6 !important;
+        cursor: not-allowed !important;
+    }
+</style>
+
+<script>
+    $(document).ready(function () {
+        // MODULE ACCESS CHECK
+        MODULE = 'FSPersonalInfoM';
+        access = ROLE_ACCESS?.[MODULE];
+
+        if (access != 'READWRITE' && access != 'FULL') {
+            $('#personalInfoActions').hide();
+        }
+
+        // CONFIGURATION
+        const config = {
+            toastr: {
+                positionClass: "toast-top-right",
+                timeOut: 5000,
+                closeButton: true,
+                progressBar: true,
+                preventDuplicates: true
+            },
+            endpoints: {
+                updatePersonalInfo: "/PersonalInfo/UpdatePersonalInfo",
+                siblingsList: "/PersonalInfo/GetSiblingsList",
+                getSibling: "/PersonalInfo/GetSibling",
+                addSibling: "/PersonalInfo/AddSibling",
+                updateSibling: "/PersonalInfo/UpdateSibling",
+                deleteSibling: "/PersonalInfo/DeleteSibling",
+                citizenships: "/Setup/GetEmployeeCitizenship"
+            }
+        };
+
+        toastr.options = config.toastr;
+        let isEditMode = false;
+        let currentSiblingId = null;
+
+        // INITIALIZATION
+        initializeDatePickers();
+        initializeSelect2();
+        loadFormData();
+        disableFormInputs(); 
+
+        // SIBLINGS DATATABLE
+        const siblingsTable = $('#siblingsTable').DataTable({
+            responsive: true,
+            searching: true,
+            ajax: {
+                url: config.endpoints.siblingsList,
+                type: "GET",
+                data: { employeeNo: "@Model.employeeNo" },
+                dataSrc: "data",
+                error: () => showNotification('Error loading relatives data.', 'error')
+            },
+            columns: [
+                {
+                    data: "id",
+                    width: "10%",
+                    orderable: false,
+                    render: data => {
+                        let viewBtn = `<button class="btn btn-sm btn-primary shadow-sm viewSibling" data-id="${data}" title="View">
+                            <i class="fas fa-eye"></i>
+                        </button>`;
+
+                        let deleteBtn = '';
+                        if (access === 'FULL') {
+                            deleteBtn = `<button class="btn btn-sm btn-danger shadow-sm deleteSibling" data-id="${data}" title="Delete">
+                                <i class="fa fa-trash"></i>
+                            </button>`;
+                        }
+
+                        return `<div class="d-flex gap-1">${viewBtn}${deleteBtn}</div>`;
+                    }
+                },
+                { data: 'nameOfSibling', width: "25%" },
+                { data: 'dateOfBirth', width: "15%" },
+                {
+                    data: null,
+                    width: "10%",
+                    render: data => calculateAge(data.dateOfBirth)
+                },
+                { data: 'gender', width: "10%" },
+                { data: 'relationship', width: "15%" },
+                { data: 'dependent', width: "15%" }
+            ],
+            columnDefs: [
+                { targets: 0, visible: false } // Hide action column initially
+            ],
+            order: [[2, 'desc']],
+            pageLength: 10,
+            language: {
+                emptyTable: "No relatives found",
+                zeroRecords: "No matching relatives found",
+                paginate: {
+                    next: '<i class="fa fa-angle-double-right"></i>',
+                    previous: '<i class="fa fa-angle-double-left"></i>'
+                }
+            }
+        });
+
+        // EVENT HANDLERS - PERSONAL INFO
+        $('#btnEditPersonalInfo').on('click', function() {
+            if (!isEditMode) {
+                enterEditMode();
+            } else {
+                savePersonalInfo();
+            }
+        });
+
+        $('#btnCancelPersonalInfo').on('click', function() {
+            exitEditMode();
+            loadFormData();
+        });
+
+        // EVENT HANDLERS - SIBLINGS
+        $('#btnAddSibling').on('click', function() {
+            openSiblingModal('add');
+        });
+
+        $(document).on('click', '.viewSibling', function(e) {
+            e.preventDefault();
+            const id = $(this).data('id');
+            const $btn = $(this);
+
+            toggleButtonLoading($btn, true);
+
+            $.get(config.endpoints.getSibling, { id })
+                .done(data => {
+                    if (data) {
+                        openSiblingModal('edit', data);
+                    } else {
+                        showNotification('Unable to load relative data', 'error');
+                    }
+                })
+                .fail(() => showNotification('Unable to load relative data', 'error'))
+                .always(() => toggleButtonLoading($btn, false));
+        });
+
+        $(document).on('click', '.deleteSibling', function(e) {
+            e.preventDefault();
+            deleteWithReason({
+                title: 'Delete Relative Record',
+                text: 'Are you sure you want to delete this relative record?',
+                url: config.endpoints.deleteSibling,
+                id: $(this).data('id'),
+                button: $(this),
+                table: siblingsTable
+            });
+        });
+
+        $('#btnSaveSibling').on('click', function() {
+            saveSiblingInfo();
+        });
+
+        // EVENT HANDLERS - ADDRESS COPY
+        $('#btnCopyAddress').on('click', function() {
+            if (!$(this).prop('disabled')) {
+                $('#permanentAddress').val($('#presentAddress').val());
+            }
+        });
+
+        $('#btnCopyAddress2').on('click', function() {
+            if (!$(this).prop('disabled')) {
+                $('#presentAddress').val($('#permanentAddress').val());
+            }
+        });
+
+        // EVENT HANDLERS - NUMERIC INPUTS - FIXED: Use correct ID for emergency contact
+        $('#mobileNo, #homePhoneNo, #zipcode, #emergencyContactNo').on('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+
+        // EVENT HANDLERS - DATE OF BIRTH - AUTO CALCULATE AGE
+        $('#dateOfBirth').on('change', function() {
+            const dob = $(this).val();
+            if (dob) {
+                const age = calculateAge(dob);
+                $('#age').val(age);
+            }
+        });
+
+        // HELPER FUNCTIONS
+        function initializeDatePickers() {
+            $('.bt-datepicker').datepicker({
+                format: 'yyyy/mm/dd',
+                autoclose: true
+            });
+        }
+
+        function initializeSelect2() {
+            // Simple select2 for gender, civil status, and sibling fields
+            $('#gender, #civilStatus, #siblingGender, #siblingDependent').select2({
+                selectOnClose: true,
+                minimumResultsForSearch: Infinity,
+                width: '100%'
+            });
+
+            // Citizenship select2 - PRE-LOADED (like Biometrics employee dropdown)
+            $('#citizenship').select2({
+                placeholder: "Select Citizenship",
+                allowClear: true,
+                width: '100%'
+            });
+
+            // Load citizenship options
+            loadCitizenshipOptions();
+        }
+
+        function loadCitizenshipOptions() {
+            $.get(config.endpoints.citizenships, { search: '' })
+                .done(data => {
+                    const $select = $('#citizenship');
+                    $select.empty().append('<option value="">Select Citizenship</option>');
+                    data.forEach(item => {
+                        $select.append(`<option value="${item.citizenshipCode}">${item.citizenshipName}</option>`);
+                    });
+
+                    // Re-select the current value if it exists
+                    if ("@Model.citizenshipCode") {
+                        $('#citizenship').val("@Model.citizenshipCode").trigger('change');
+                    }
+                })
+                .fail(() => {
+                    showNotification('Error loading citizenship options', 'error');
+                });
+        }
+
+        function loadFormData() {
+            // Load select2 values
+            if ("@Model.gender") {
+                $('#gender').val("@Model.gender").trigger('change');
+            }
+
+            if ("@Model.civilStatus") {
+                $('#civilStatus').val("@Model.civilStatus").trigger('change');
+            }
+
+            // Load date fields
+            if ("@Model.dateOfBirth") {
+                const dob = formatDate("@Model.dateOfBirth");
+                $('#dateOfBirth').datepicker('setDate', dob);
+                $('#age').val(calculateAge(dob));
+            }
+
+            if ("@Model.spouseDateOfBirth") {
+                $('#spouseDateOfBirth').datepicker('setDate', formatDate("@Model.spouseDateOfBirth"));
+            }
+
+            // Load text fields
+            if ("@Model.birthPlace") $('#birthPlace').val("@Model.birthPlace");
+            if ("@Model.homePhoneNo") $('#homePhoneNo').val("@Model.homePhoneNo");
+            if ("@Model.mobileNo") $('#mobileNo').val("@Model.mobileNo");
+            if ("@Model.weight") $('#weight').val("@Model.weight");
+            if ("@Model.height") $('#height').val("@Model.height");
+            if ("@Model.emailAddress") $('#emailAddress').val("@Model.emailAddress");
+            if ("@Model.religion") $('#religion').val("@Model.religion");
+            if ("@Model.zipCode") $('#zipcode').val("@Model.zipCode");
+            if ("@Model.presentAddress") $('#presentAddress').val("@Model.presentAddress");
+            if ("@Model.permanentAddress") $('#permanentAddress').val("@Model.permanentAddress");
+            if ("@Model.fatherName") $('#fatherName').val("@Model.fatherName");
+            if ("@Model.motherMaidenName") $('#motherMaidenName').val("@Model.motherMaidenName");
+            if ("@Model.personToNotify") $('#personToNotify').val("@Model.personToNotify");
+            if ("@Model.relationship") $('#relationship').val("@Model.relationship");
+            if ("@Model.contactNo") $('#emergencyContactNo').val("@Model.contactNo");
+            if ("@Model.nameOfSpouse") $('#spouseName').val("@Model.nameOfSpouse");
+            if ("@Model.occupation") $('#occupation').val("@Model.occupation");
+        }
+
+        function enterEditMode() {
+            isEditMode = true;
+            enableFormInputs();
+            $('#btnEditPersonalInfo').text('Save').removeClass('btn-primary').addClass('btn-success');
+            $('#btnCancelPersonalInfo').removeClass('d-none');
+            $('#btnAddSibling').removeClass('d-none');
+            siblingsTable.column(0).visible(true);
+        }
+
+        function exitEditMode() {
+            isEditMode = false;
+            disableFormInputs();
+            $('#btnEditPersonalInfo').text('Edit').removeClass('btn-success').addClass('btn-primary');
+            $('#btnCancelPersonalInfo').addClass('d-none');
+            $('#btnAddSibling').addClass('d-none');
+            siblingsTable.column(0).visible(false);
+            clearValidation('#personalInfoForm');
+        }
+
+        function enableFormInputs() {
+            // Enable text inputs
+            $('#personalInfoForm input[type="text"], #personalInfoForm input[type="email"], #personalInfoForm input[type="number"], #personalInfoForm textarea').prop('readonly', false);
+
+            // Enable select2 dropdowns
+            $('#gender, #civilStatus, #citizenship').prop('disabled', false).trigger('change.select2');
+
+            // Enable datepickers
+            $('#dateOfBirth, #spouseDateOfBirth').datepicker('enable');
+
+            // Keep age readonly (calculated field)
+            $('#age').prop('readonly', true);
+
+            // Enable copy buttons
+            $('#btnCopyAddress, #btnCopyAddress2').prop('disabled', false);
+        }
+
+        function disableFormInputs() {
+            // Use readonly for text inputs so they remain visible and copyable
+            $('#personalInfoForm input[type="text"], #personalInfoForm input[type="email"], #personalInfoForm input[type="number"], #personalInfoForm textarea').prop('readonly', true);
+
+            // Disable select2 dropdowns
+            $('#gender, #civilStatus, #citizenship').prop('disabled', true).trigger('change.select2');
+
+            // Disable datepickers
+            $('#dateOfBirth, #spouseDateOfBirth').datepicker('disable');
+
+            // Disable copy buttons
+            $('#btnCopyAddress, #btnCopyAddress2').prop('disabled', true);
+        }
+
+        function savePersonalInfo() {
+            if (!validateForm('#personalInfoForm')) {
+                return;
+            }
+
+            const formData = {
+                employeeNo: "@Model.employeeNo",
+                gender: $('#gender').val(),
+                weight: $('#weight').val() || null,
+                height: $('#height').val() || null,
+                civilStatus: $('#civilStatus').val(),
+                citizenshipCode: $('#citizenship').val(),
+                dateOfBirth: $('#dateOfBirth').val(),
+                birthPlace: $('#birthPlace').val()?.trim(),
+                homePhoneNo: $('#homePhoneNo').val()?.trim(),
+                mobileNo: $('#mobileNo').val()?.trim(),
+                emailAddress: $('#emailAddress').val()?.trim(),
+                religion: $('#religion').val()?.trim(),
+                zipCode: $('#zipcode').val()?.trim(),
+                presentAddress: $('#presentAddress').val()?.trim(),
+                permanentAddress: $('#permanentAddress').val()?.trim(),
+                fatherName: $('#fatherName').val()?.trim(),
+                motherMaidenName: $('#motherMaidenName').val()?.trim(),
+                personToNotify: $('#personToNotify').val()?.trim(),
+                relationship: $('#relationship').val()?.trim(),
+                contactNo: $('#emergencyContactNo').val()?.trim(),
+                nameOfSpouse: $('#spouseName').val()?.trim(),
+                spouseDateOfBirth: $('#spouseDateOfBirth').val(),
+                occupation: $('#occupation').val()?.trim()
+            };
+
+            const $btn = $('#btnEditPersonalInfo');
+            toggleButtonLoading($btn, true, 'Saving...');
+
+            $.ajax({
+                url: config.endpoints.updatePersonalInfo,
+                type: 'POST',
+                data: formData,
+                dataType: 'json',
+                success: response => {
+                    if (response.success) {
+                        showNotification(response.message, 'success');
+                        exitEditMode();
+                        // Reload parent table if it exists
+                        if (typeof userTable !== 'undefined') {
+                            userTable.ajax.reload(null, false);
+                        }
+                    } else {
+                        showNotification(response.message, 'error');
+                    }
+                },
+                error: () => showNotification('Unable to save personal info. Please try again.', 'error'),
+                complete: () => toggleButtonLoading($btn, false)
+            });
+        }
+
+        function openSiblingModal(mode, data = null) {
+            currentSiblingId = data?.id || null;
+
+            $('#siblingForm')[0].reset();
+            $('#siblingId').val('');
+            $('#siblingEmployeeNo').val("@Model.employeeNo");
+            clearValidation('#siblingForm');
+
+            if (mode === 'add') {
+                $('#siblingModalTitle').text('Add Relative');
+                $('#siblingName').prop('readonly', false);
+                $('#siblingDob, #siblingGender, #siblingRelationship, #siblingDependent').prop('disabled', false);
+                $('#btnSaveSibling').text('Save').removeClass('btn-success').addClass('btn-primary');
+            } else if (mode === 'edit' && data) {
+                $('#siblingModalTitle').text('Edit Relative');
+                $('#siblingId').val(data.id);
+                $('#siblingName').val(data.nameOfSibling).prop('readonly', true);
+                $('#siblingDob').datepicker('setDate', data.dateOfBirth);
+                $('#siblingGender').val(data.gender).trigger('change');
+                $('#siblingRelationship').val(data.relationship);
+                $('#siblingDependent').val(data.dependent).trigger('change');
+                $('#btnSaveSibling').text('Update').removeClass('btn-primary').addClass('btn-success');
+            }
+
+            $('#siblingModal').modal('show');
+        }
+
+        function saveSiblingInfo() {
+            if (!validateForm('#siblingForm')) {
+                return;
+            }
+
+            const formData = {
+                id: $('#siblingId').val() || 0,
+                employeeNo: "@Model.employeeNo",
+                nameOfSibling: $('#siblingName').val()?.trim(),
+                dateOfBirth: $('#siblingDob').val(),
+                gender: $('#siblingGender').val(),
+                relationship: $('#siblingRelationship').val()?.trim(),
+                dependent: $('#siblingDependent').val()
+            };
+
+            const isUpdate = formData.id > 0;
+            const url = isUpdate ? config.endpoints.updateSibling : config.endpoints.addSibling;
+            const $btn = $('#btnSaveSibling');
+
+            toggleButtonLoading($btn, true, 'Saving...');
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: formData,
+                dataType: 'json',
+                success: response => {
+                    if (response.success) {
+                        showNotification(response.message, 'success');
+                        $('#siblingModal').modal('hide');
+                        siblingsTable.ajax.reload(null, false);
+                    } else {
+                        showNotification(response.message, 'error');
+                    }
+                },
+                error: () => showNotification('Unable to save relative info.', 'error'),
+                complete: () => toggleButtonLoading($btn, false)
+            });
+        }
+
+        function validateForm(formSelector) {
+            clearValidation(formSelector);
+            let isValid = true;
+
+            $(formSelector + ' .required-field').each(function() {
+                if (!$(this).val() || $(this).val() === '' || $(this).val() === '-1') {
+                    $(this).addClass('is-invalid');
+                    isValid = false;
+                }
+            });
+
+            if (!isValid) {
+                showNotification('Please fill in all required fields.', 'warning');
+            }
+
+            return isValid;
+        }
+
+        function clearValidation(formSelector) {
+            $(formSelector + ' .form-control, ' + formSelector + ' .form-select').removeClass('is-invalid');
+        }
+
+        function calculateAge(dateString) {
+            if (!dateString) return '';
+
+            const birthDate = new Date(dateString);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+
+            return age;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}/${month}/${day}`;
+        }
+
+        function toggleButtonLoading($btn, loading, text = '') {
+            if (loading) {
+                if (!$btn.data('original-html')) $btn.data('original-html', $btn.html());
+                const icon = text ? '<i class="fas fa-spinner fa-spin"></i> ' : '<i class="fas fa-spinner fa-spin"></i>';
+                $btn.prop('disabled', true).html(icon + text);
+            } else {
+                $btn.prop('disabled', false).html($btn.data('original-html') || $btn.html());
+                $btn.removeData('original-html');
+            }
+        }
+
+        function showNotification(message, type) {
+            const types = { success: 'Success', error: 'Error', warning: 'Warning', info: 'Information' };
+            toastr[type](message, types[type] || 'Notification');
+        }
+    });
+</script>

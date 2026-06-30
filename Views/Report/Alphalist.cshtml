@@ -1,0 +1,508 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutFillow.cshtml";
+    ViewData["Title"] = "Alphalist";
+}
+
+<div class="col-12">
+    <div class="card">
+        <div class="card-header">
+
+            <div class="row" style="width:100%;">
+                <h4 class="card-title">Alphalist</h4>
+                <br> <br> <br>
+
+                <div class="row" style="margin-left:0px;width:100%;">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Year</h5>
+                            <div class="input-hasicon">
+                                <input type="text" name="dateYear" id="dateYear" class="form-control yearpicker"
+                                       value="@DateTime.Now.Year" readonly placeholder="Select Year">
+                                <div class="icon"><i class="far fa-calendar"></i></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-5">
+                        <div class="form-group">
+                            <h5>Company</h5>
+                            <select name="branch" id="filterBranch" class="form-control"></select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2 d-flex justify-content-end">
+                        <div class="form-group">
+                            <h5>&nbsp;</h5>
+                            <input type="button" class="btn btn-warning" id="btnTransmittal" value="BIR Transmittal">
+                        </div>
+                    </div>
+                    <div class="col-md-2 d-flex justify-content-end">
+                        <div class="form-group me-2">
+                            <h5>&nbsp;</h5>
+                            <button type="button" class="btn btn-warning" id="btnExportToExcel">
+                                <i class="fas fa-file-excel"></i> Export to Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="table-responsive">
+                    <table id="requestTable" class="display" style="min-width: 845px">
+                        <thead>
+                            <tr>
+                                <th>2316</th>
+                                <th>Employee Number</th>
+                                <th>NAME OF EMPLOYEE</th>
+
+                                <th class="th-right">BASIC SALARY<br>FROM PRESENT EMPLOYER</th>
+                                <th class="th-right">TOTAL NON-TAXABLE 13TH MONTH<br>& BONUSES</th>
+                                <th class="th-right">DE MINIMIS BENEFITS</th>
+                                <th class="th-right">SSS</th>
+                                <th class="th-right">PHIC</th>
+                                <th class="th-right">HDMF</th>
+                                <th class="th-right">TOTAL SSS, PHIC & PAGIBIG</th>
+
+                                <th class="th-right">Salaries & Other Forms of Compensation</th>
+                                <th class="th-right">Total Non-Taxable Compensation Income</th>
+                                <th class="th-right">TOTAL GROSS COMPENSATION INCOME</th>
+                                <th class="th-right">TAXABLE BASIC SALARY</th>
+                                <th class="th-right">TOTAL TAXABLE 13TH MONTH & BONUSES</th>
+                                <th class="th-right">NET TAXABLE BASIC SALARY</th>
+
+                                <th class="th-right">BASIC SALARY (MWE)</th>
+                                <th class="th-right">13TH MONTH PREVIOUS EMPLOYER</th>
+                                <th class="th-right">DE MINIMIS PREVIOUS EMPLOYER</th>
+                                <th class="th-right">SSS, PHIC, HDMF PREVIOUS EMPLOYER</th>
+                                <th class="th-right">OTHER NON-TAXABLE PREVIOUS EMPLOYER</th>
+                                <th class="th-right">TAXABLE BASIC PREVIOUS EMPLOYER</th>
+                                <th class="th-right">TAX WITHHELD PREVIOUS EMPLOYER</th>
+
+                                <th class="th-right">NON-TAXABLE 13TH MONTH PREVIOUS</th>
+                                <th class="th-right">TAXABLE 13TH MONTH PREVIOUS</th>
+                                <th class="th-right">NET TAXABLE BASIC PREVIOUS</th>
+                                <th class="th-right">TOTAL NON-TAXABLE 13TH MONTH (ALL)</th>
+                                <th class="th-right">NET TAXABLE COMPENSATION (ALL)</th>
+                                <th class="th-right">TAX DUE</th>
+                                <th class="th-right">TOTAL WITHHOLDING TAX</th>
+                                <th class="th-right">TAX DUE (REFUND)</th>
+                                <th class="th-right">ISSUED TAX DUE (REFUND)</th>
+                                <th class="th-right">TOTAL TAX WITHHELD AS ADJUSTED</th>
+                            </tr>
+                        </thead>
+                        <tfoot>
+                            <tr>
+                                <th></th>
+                                <th colspan="2" class="text-right">TOTAL</th>
+
+                                <!-- create empty <th> for each numeric column -->
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+@section Fillow_style
+{
+    <style>
+        /* Numeric columns right aligned */
+        .dt-right {
+            text-align: right !important;
+            white-space: nowrap;
+        }
+
+        .yearpicker {
+            cursor: pointer;
+        }
+
+        .ui-datepicker-calendar {
+            display: none;
+        }
+    </style>
+
+}
+
+@section Fillow_script
+{
+    <script>
+        $(document).ready(function () {
+            // Datepicker initialization
+            $('.bt-datepicker').datepicker({
+                format: 'yyyy/mm/dd',
+                autoclose: true,
+                todayHighlight: true
+            });
+
+            $('#dateYear').datepicker({
+                format: 'yyyy',
+                viewMode: 'years',
+                minViewMode: 'years',
+                autoclose: true,
+                orientation: 'bottom'
+            });
+
+            initializeFilterSelect2();
+
+            const moneyFmt = $.fn.dataTable.render.number(',', '.', 2);
+
+            const requestTable = $('#requestTable').DataTable({
+                ajax: {
+                    url: "/Alphalist/GetReportList",
+                    type: "GET",
+                    dataType: "json",
+                    data: function (d) {
+                        d.branch = $('#filterBranch').val();
+                        d.dateYear = $('#dateYear').val();
+                        d.employeeNo = "";
+                    }
+                },
+                columnDefs: [
+                    {
+                        targets: [
+                            3,4,5,6,7,8,9,10,11,12,13,14,15,
+                            16,17,18,19,20,21,22,23,24,25,
+                            26,27,28,29,30,31
+                        ],
+                        render: moneyFmt,
+                        className: 'dt-right'
+                    }
+                ],
+
+                footerCallback: function (row, data, start, end, display) {
+                const api = this.api();
+
+                // function to parse formatted numbers
+                const parseNumber = val =>
+                    typeof val === 'string'
+                        ? val.replace(/[,₱]/g, '') * 1
+                        : typeof val === 'number'
+                        ? val
+                        : 0;
+
+                // numeric columns only
+                const numericCols = [
+                    3,4,5,6,7,8,9,10,11,12,13,14,15,
+                    16,17,18,19,20,21,22,23,24,25,
+                    26,27,28,29,30,31
+                ];
+
+                numericCols.forEach(colIdx => {
+                    const total = api
+                        .column(colIdx, { page: 'current' }) // page = current page
+                        .data()
+                        .reduce((a, b) => parseNumber(a) + parseNumber(b), 0);
+
+                    $(api.column(colIdx).footer())
+                        .html(moneyFmt.display(total))
+                        .addClass('dt-right');
+                });
+            },
+
+                columns: [
+                    // Control column - Print PDF button
+                    {
+                        data: null,
+                        width: "5%",
+                        orderable: false,
+                        render: function(data, type, row) {
+                            return `<button class="btn btn-sm btn-warning shadow-sm print2316"
+                                            data-employeeno="${row.employeeNo}"
+                                            data-dateyear="${$('#dateYear').val()}"
+                                            data-branchCode="${$('#filterBranch').val()}"
+                                            title="Print 2316">
+                                        <i class="fas fa-print"></i>
+                                    </button>`;
+                        }
+                    },
+                    { data: "employeeNo" },
+                    { data: "employeeName" },
+
+                    { data: "totalBasicSalary" },
+                    { data: "b13thMonthPay" },
+                    { data: "totalDeminimis" },
+                    { data: "totalSSS" },
+                    { data: "totalPHI" },
+                    { data: "totalHDMF" },
+                    { data: "totalMandatory" },
+                    { data: "salaryAndOtherCompensation" },
+                    { data: "totalNonTaxableCompensationIncome" },
+                    { data: "totalGrossCompensationIncome" },
+                    { data: "taxableBasic" },
+                    { data: "totalTaxable13monthbonus" },
+                    { data: "netTaxableBasicSalary" },
+
+                    { data: "prevEmployerBasicsalary" },
+                    { data: "prevEmployerBenefitsand13thmonth" },
+                    { data: "prevEmployerDeminimis" },
+                    { data: "prevEmployerTotalMandatory" },
+                    { data: "prevEmployerOtherNonTax" },
+                    { data: "prevEmployerTaxableBasic" },
+                    { data: "prevEmployerTaxWithHeld" },
+                    { data: "prevEmployerNonTaxable13monthAdjustment" },
+                    { data: "prevEmployerTaxable13monthAdjustment" },
+                    { data: "prevEmployerNetTaxableBasic" },
+
+                    { data: "totalNontaxable13monthBenefitsPrevPresentEmployer" },
+                    { data: "netTaxableCompensationPrevPresentEmployer" },
+
+                    { data: "taxDue" },
+                    { data: "taxDueRefund" },
+                    { data: "issuedTaxDueRefund" },
+                    { data: "totalTaxWithHeldAdjusted" }
+                ],
+                language: {
+                    paginate: {
+                        next: '<i class="fa fa-angle-double-right" aria-hidden="true"></i>',
+                        previous: '<i class="fa fa-angle-double-left" aria-hidden="true"></i>'
+                    }
+                }
+            });
+
+            // Apply filter when user changes parameters
+            $('#filterBranch, #dateYear').on('change', function () {
+                requestTable.ajax.reload(null, false);
+            });
+
+            // BIR Transmittal button
+            $('#btnTransmittal').on('click', function() {
+                const dateYear = $('#dateYear').val();
+                const branch = $('#filterBranch').val();
+                const employeeNo = "";
+
+                // Validate inputs
+                if (!dateYear) {
+                    alert('Please select a year');
+                    return;
+                }
+
+                var parameter = employeeNo + "_" + dateYear + "_" + branch;
+                var url = "http://15.235.183.108:90//home/BRITransmittal?BRITransmittal=" + encodeURIComponent(parameter);
+                window.open(url, '_blank');
+            });
+
+            // EVENT HANDLER - EXPORT TO EXCEL (CURRENT PAGE ONLY)
+            $('#btnExportToExcel').on('click', function() {
+                const $btn = $(this);
+
+                // Validate data availability
+                if (requestTable.rows({ search: 'applied' }).count() === 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'No Data',
+                        text: 'No data available to export',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+
+                const currentPageData = requestTable.rows({ page: 'current' }).data().toArray();
+                if (currentPageData.length === 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'No Data',
+                        text: 'No data on current page to export',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+
+                // Validate year is selected
+                const dateYear = $('#dateYear').val();
+                if (!dateYear) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Year Required',
+                        text: 'Please select a year before exporting',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+
+                // Get pagination and filter info
+                const pageInfo = requestTable.page.info();
+
+                // Column mapping for sort - map DataTable column index to data field names
+                const sortMap = [
+                    '', // 0 - Print button column
+                    'employeeNo', // 1
+                    'employeeName', // 2
+                    'totalBasicSalary', // 3
+                    'b13thMonthPay', // 4
+                    'totalDeminimis', // 5
+                    'totalSSS', // 6
+                    'totalPHI', // 7
+                    'totalHDMF', // 8
+                    'totalMandatory', // 9
+                    'salaryAndOtherCompensation', // 10
+                    'totalNonTaxableCompensationIncome', // 11
+                    'totalGrossCompensationIncome', // 12
+                    'taxableBasic', // 13
+                    'totalTaxable13monthbonus', // 14
+                    'netTaxableBasicSalary', // 15
+                    'prevEmployerBasicsalary', // 16
+                    'prevEmployerBenefitsand13thmonth', // 17
+                    'prevEmployerDeminimis', // 18
+                    'prevEmployerTotalMandatory', // 19
+                    'prevEmployerOtherNonTax', // 20
+                    'prevEmployerTaxableBasic', // 21
+                    'prevEmployerTaxWithHeld', // 22
+                    'prevEmployerNonTaxable13monthAdjustment', // 23
+                    'prevEmployerTaxable13monthAdjustment', // 24
+                    'prevEmployerNetTaxableBasic', // 25
+                    'totalNontaxable13monthBenefitsPrevPresentEmployer', // 26
+                    'netTaxableCompensationPrevPresentEmployer', // 27
+                    'taxDue', // 28
+                    'taxDueRefund', // 29
+                    'issuedTaxDueRefund', // 30
+                    'totalTaxWithHeldAdjusted' // 31
+                ];
+
+                // Get current sort order from DataTable
+                const [sortIndex, sortDir] = requestTable.order()[0] || [1, 'asc'];
+
+                const params = new URLSearchParams({
+                    branch: $('#filterBranch').val() || '',
+                    dateYear: dateYear,
+                    offset: pageInfo.start,
+                    limit: pageInfo.length,
+                    sortColumn: sortMap[sortIndex] || '',
+                    sortDirection: sortDir
+                });
+
+                // Show loading state
+                const originalHtml = $btn.html();
+                $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Exporting...');
+
+                const url = `/AlphaListExport/ExportToExcel?${params.toString()}`;
+
+                fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => {
+                            throw new Error(`Server error (${response.status}): ${text}`);
+                        });
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `Alphalist_${dateYear}_${new Date().getTime()}.xlsx`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+
+                    $btn.prop('disabled', false).html(originalHtml);
+
+                    // Show success notification
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Export Successful',
+                        text: `Exported ${pageInfo.length} rows from page ${pageInfo.page + 1}`,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                })
+                .catch(error => {
+                    $btn.prop('disabled', false).html(originalHtml);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Export Failed',
+                        text: 'An error occurred during export. Please try again.',
+                        confirmButtonText: 'OK'
+                    });
+                });
+            });
+
+            // Print 2316 button handler
+            $(document).on('click', '.print2316', function(e) {
+                e.preventDefault();
+
+                const employeeNo = $(this).data('employeeno');
+                const dateYear = $(this).data('dateyear');
+                const branchCode = $(this).data('branchcode');
+
+                var parameter = employeeNo + "_" + dateYear + "_" + branchCode;
+                var url = "http://15.235.183.108:90//home/CRITR2316?CRITR2316=" + encodeURIComponent(parameter);
+                window.open(url, '_blank');
+            });
+        });
+
+        function initializeFilterSelect2() {
+            // Branch filter
+            $('#filterBranch').select2({
+                placeholder: "Select Branch",
+                allowClear: true,
+                ajax: {
+                    url: '/Setup/GetEmployeeBranch',
+                    dataType: 'json',
+                    delay: 250,
+                    processResults: function (data) {
+                        // Add "All" option manually
+                        var allOption = {
+                            id: 'ALL',
+                            text: 'All Branches'
+                        };
+
+                        var results = $.map(data, function (item) {
+                            return {
+                                id: item.branchCode,
+                                text: item.branchName
+                            };
+                        });
+
+                        // Put "All" on top
+                        results.unshift(allOption);
+
+                        return {
+                            results: results
+                        };
+                    }
+                }
+            });
+        }
+    </script>
+}

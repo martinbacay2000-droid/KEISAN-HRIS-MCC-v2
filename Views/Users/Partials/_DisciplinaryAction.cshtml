@@ -1,0 +1,136 @@
+﻿@model KEISAN_HRIS_v2.Models.LERelation.DisciplinaryActionModel
+
+<div class="table-responsive">
+    <table id="empDisciplinaryTable" class="display" style="width:100%">
+        <thead>
+            <tr>
+                <th>Offense</th>
+                <th>Complainant</th>
+                <th>Section</th>
+                <th>Penalty</th>
+                <th>Date Issued</th>
+                <th>Disciplinary Reason</th>
+                <th>Action Taken</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+
+<script>
+    $(document).ready(function () {
+
+        // Destroy existing instance if tab is reloaded
+        if ($.fn.DataTable.isDataTable('#empDisciplinaryTable')) {
+            $('#empDisciplinaryTable').DataTable().destroy();
+        }
+
+        $('#empDisciplinaryTable').DataTable({
+            responsive: true,
+            processing: true,
+            serverSide: false,
+            ajax: {
+                url: '/DisciplinaryAction/GetDisciplinaryActionByEmployee',
+                type: 'GET',
+                data: { employeeNo: '@Model.employeeNo' },
+                dataSrc: function (json) {
+                    return json.data || [];
+                },
+                error: function () {
+                    console.error('Error loading disciplinary action data.');
+                }
+            },
+            columns: [
+                {
+                    data: 'offense',
+                    width: '13%',
+                    render: function (data) {
+                        return data
+                            ? `<span title="${escHtmlDA(data)}">${escHtmlDA(data)}</span>`
+                            : '<span class="text-muted">—</span>';
+                    }
+                },
+                {
+                    data: 'complainant',
+                    width: '13%',
+                    render: function (data) {
+                        return data
+                            ? `<span title="${escHtmlDA(data)}">${escHtmlDA(data)}</span>`
+                            : '<span class="text-muted">—</span>';
+                    }
+                },
+                {
+                    data: 'section',
+                    width: '10%',
+                    render: function (data) {
+                        return data
+                            ? `<span title="${escHtmlDA(data)}">${escHtmlDA(data)}</span>`
+                            : '<span class="text-muted">—</span>';
+                    }
+                },
+                {
+                    data: 'penalty',
+                    width: '10%',
+                    render: function (data) {
+                        return data
+                            ? `<span title="${escHtmlDA(data)}">${escHtmlDA(data)}</span>`
+                            : '<span class="text-muted">—</span>';
+                    }
+                },
+                {
+                    data: 'dateIssued',
+                    width: '11%',
+                    render: function (data) {
+                        if (!data) return '<span class="text-muted">—</span>';
+                        // Handle both raw datetime (2026-04-29T00:00:00) and pre-formatted (04/29/2026)
+                        const d = new Date(data);
+                        if (isNaN(d.getTime())) return data;
+                        const m   = String(d.getMonth() + 1).padStart(2, '0');
+                        const day = String(d.getDate()).padStart(2, '0');
+                        const y   = d.getFullYear();
+                        return `${m}/${day}/${y}`;
+                    }
+                },
+                {
+                    data: 'disciplinaryReason',
+                    width: '21%',
+                    render: function (data) {
+                        if (!data) return '<span class="text-muted">—</span>';
+                        const truncated = data.length > 60 ? data.substring(0, 60) + '...' : data;
+                        return `<span title="${escHtmlDA(data)}">${escHtmlDA(truncated)}</span>`;
+                    }
+                },
+                {
+                    data: 'disciplinaryAction',
+                    width: '22%',
+                    render: function (data) {
+                        if (!data) return '<span class="text-muted">—</span>';
+                        const truncated = data.length > 60 ? data.substring(0, 60) + '...' : data;
+                        return `<span title="${escHtmlDA(data)}">${escHtmlDA(truncated)}</span>`;
+                    }
+                }
+            ],
+            order: [[4, 'desc']],
+            pageLength: 10,
+            lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'All']],
+            language: {
+                processing: 'Loading...',
+                emptyTable: 'No disciplinary actions found for this employee.',
+                zeroRecords: 'No matching records found.',
+                paginate: {
+                    next: '<i class="fa fa-angle-double-right"></i>',
+                    previous: '<i class="fa fa-angle-double-left"></i>'
+                }
+            }
+        });
+
+        // Scoped escHtml to avoid collision with parent page's escHtml
+        function escHtmlDA(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+    });
+</script>

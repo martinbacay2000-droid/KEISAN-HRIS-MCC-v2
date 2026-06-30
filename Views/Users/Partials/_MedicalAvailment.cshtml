@@ -1,0 +1,729 @@
+﻿@model List<KEISAN_HRIS_v2.Models.Users.MedicalAvailmentModel>
+
+<div class="card-header">
+    <div class="row" style="width:100%;">
+        <div class="row" style="margin-left:0px;width:100%;">
+            <div class="col-md-3">
+                <div class="form-group">
+                    <h5>Record Status</h5>
+                    <select name="filterRecordStatus" id="filterRecordStatus" class="form-control">
+                        <option value="active" selected>ACTIVE</option>
+                        <option value="inactive">INACTIVE</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-6"></div>
+            <div class="col-md-3 d-flex justify-content-end align-items-end">
+                <div class="form-group">
+                    <button type="button" class="btn btn-primary" id="btnAddAvailee">
+                        <i class="fa fa-plus"></i> New Availee
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card-body">
+    <div class="table-responsive">
+        <table id="medicalAvailmentTable" class="display" style="min-width: 1000px">
+            <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>Name</th>
+                    <th>Availee Type</th>
+                    <th>Relation</th>
+                    <th>In Patient</th>
+                    <th>Outpatient</th>
+                    <th>Dental</th>
+                    <th>Available Insurance</th>
+                    <th>Balance</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<!-- Add Modal -->
+<div class="modal fade" id="addAvaileeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Availee</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addAvaileeForm">
+                    <input type="hidden" id="addEmployeeNoHidden" name="EmployeeNo" value="@ViewBag.EmployeeNo" />
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Availee Name <span class="text-danger">*</span></label>
+                            <input type="text" id="addAvaileeNameField" name="Name" class="form-control" value="@ViewBag.EmployeeName" required />
+                            <div class="invalid-feedback">Please enter availee name.</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Availee Type <span class="text-danger">*</span></label>
+                            <select id="addAvaileeType" name="AvaileeType" class="form-select" required>
+                                <option value="">Select Availee Type</option>
+                                <option value="Principal">Principal</option>
+                                <option value="Dependent">Dependent</option>
+                            </select>
+                            <div class="invalid-feedback">Please select availee type.</div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Relation <span class="text-danger">*</span></label>
+                            <input type="text" id="addRelation" name="Relationship" class="form-control" required />
+                            <div class="invalid-feedback">Please enter relation.</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Available Insurance <span class="text-danger">*</span></label>
+                            <input type="number" id="addAvailableInsurance" name="AvailableInsurance" class="form-control" step="0.01" min="0" required />
+                            <div class="invalid-feedback">Please enter available insurance.</div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btnSaveNewAvailee" class="btn btn-primary">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View/Edit Modal -->
+<div class="modal fade" id="viewAvaileeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewModalTitle">View Availee</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="viewAvaileeForm">
+                    <input type="hidden" id="viewAvaileeId" name="Id" />
+                    <input type="hidden" id="viewEmployeeNoHidden" name="EmployeeNo" value="@ViewBag.EmployeeNo" />
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Availee Name <span class="text-danger edit-required d-none">*</span></label>
+                            <input type="text" id="viewAvaileeNameField" name="Name" class="form-control" readonly />
+                            <div class="invalid-feedback">Please enter availee name.</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Availee Type <span class="text-danger edit-required d-none">*</span></label>
+                            <select id="viewAvaileeType" name="AvaileeType" class="form-select" disabled>
+                                <option value="">Select Availee Type</option>
+                                <option value="Principal">Principal</option>
+                                <option value="Dependent">Dependent</option>
+                            </select>
+                            <div class="invalid-feedback">Please select availee type.</div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Relation <span class="text-danger edit-required d-none">*</span></label>
+                            <input type="text" id="viewRelation" name="Relationship" class="form-control" readonly />
+                            <div class="invalid-feedback">Please enter relation.</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Available Insurance <span class="text-danger edit-required d-none">*</span></label>
+                            <input type="number" id="viewAvailableInsurance" name="AvailableInsurance" class="form-control" step="0.01" min="0" readonly />
+                            <div class="invalid-feedback">Please enter available insurance.</div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="btnEditAvailee">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+                <button type="button" class="btn btn-success d-none" id="btnSaveAvailee">Save</button>
+                <button type="button" class="btn btn-danger d-none" id="btnCancelEdit">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .table-responsive {
+        border-radius: 0.375rem;
+    }
+
+    #medicalAvailmentTable_wrapper .dataTables_length,
+    #medicalAvailmentTable_wrapper .dataTables_filter {
+        margin-bottom: 1rem;
+    }
+
+    #medicalAvailmentTable_wrapper .dataTables_info,
+    #medicalAvailmentTable_wrapper .dataTables_paginate {
+        margin-top: 1rem;
+    }
+
+    #medicalAvailmentTable .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .modal-content {
+        border-radius: 0.5rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+
+    .invalid-feedback {
+        display: none;
+    }
+
+    .form-control.is-invalid, .form-select.is-invalid {
+        border-color: #dc3545;
+    }
+
+        .form-control.is-invalid ~ .invalid-feedback, .form-select.is-invalid ~ .invalid-feedback {
+            display: block;
+        }
+
+    .text-danger {
+        color: #dc3545 !important;
+    }
+
+    .form-control[readonly], .form-select[disabled] {
+        background-color: #f8f9fa;
+        border-color: #dee2e6;
+    }
+
+    .edit-mode .form-control[readonly], .edit-mode .form-select[disabled] {
+        background-color: #ffffff;
+        border-color: #ced4da;
+    }
+
+    .card-header {
+        border-bottom: none !important;
+    }
+
+    .swal2-popup {
+        border-radius: 15px !important;
+        padding: 2rem !important;
+    }
+
+    .swal2-icon.swal2-error {
+        border-color: #f27474 !important;
+        color: #f27474 !important;
+    }
+
+        .swal2-icon.swal2-error .swal2-x-mark {
+            display: none !important;
+        }
+
+        .swal2-icon.swal2-error::before {
+            content: "\f2ed" !important;
+            font-family: "Font Awesome 5 Free" !important;
+            font-weight: 900 !important;
+            font-size: 2.5rem !important;
+            color: #f27474 !important;
+            display: block !important;
+        }
+
+    .swal2-title {
+        font-size: 1.875rem !important;
+        font-weight: 600 !important;
+        color: #545454 !important;
+        margin: 1rem 0 0.5rem 0 !important;
+    }
+
+    .swal2-html-container {
+        font-size: 1rem !important;
+        color: #737373 !important;
+        margin: 0 0 2rem 0 !important;
+    }
+
+    .swal2-actions {
+        gap: 0.5rem !important;
+    }
+
+    .swal2-confirm {
+        background-color: #7c3aed !important;
+        border-color: #7c3aed !important;
+        color: white !important;
+        font-weight: 500 !important;
+        padding: 0.75rem 2rem !important;
+        border-radius: 8px !important;
+        font-size: 0.875rem !important;
+    }
+
+    .swal2-cancel {
+        background-color: #6b7280 !important;
+        border-color: #6b7280 !important;
+        color: white !important;
+        font-weight: 500 !important;
+        padding: 0.75rem 2rem !important;
+        border-radius: 8px !important;
+        font-size: 0.875rem !important;
+    }
+
+    .swal2-confirm:hover {
+        background-color: #6d28d9 !important;
+        border-color: #6d28d9 !important;
+    }
+
+    .swal2-cancel:hover {
+        background-color: #4b5563 !important;
+        border-color: #4b5563 !important;
+    }
+
+    .btn-success.shadow-sm:hover {
+        background-color: #1e7e34;
+        border-color: #1c7430;
+    }
+
+    #medicalAvailmentTable thead th:nth-child(5),
+    #medicalAvailmentTable thead th:nth-child(6),
+    #medicalAvailmentTable thead th:nth-child(7),
+    #medicalAvailmentTable thead th:nth-child(8),
+    #medicalAvailmentTable thead th:nth-child(9) {
+        text-align: right;
+    }
+</style>
+
+<script>
+    $(document).ready(function () {
+
+        MODULE = 'FSMedicalAvailmentM';
+            access = ROLE_ACCESS?.[MODULE];
+
+        if (access != 'READWRITE' && access != 'FULL') {
+              $('#btnAddAvailee').hide();
+        }
+
+        // CONFIGURATION
+        const config = {
+            toastr: {
+                positionClass: "toast-top-right",
+                timeOut: 5000,
+                closeButton: true,
+                progressBar: true,
+                preventDuplicates: true
+            },
+            endpoints: {
+                list: "/MedicalAvailment/GetMedicalAvailmentData",
+                get: "/MedicalAvailment/GetMedicalAvailmentById",
+                save: "/MedicalAvailment/SaveMedicalAvailment",
+                delete: "/MedicalAvailment/SoftDeleteMedicalAvailment",
+                restore: "/MedicalAvailment/RestoreMedicalAvailment"
+            },
+            employeeNo: '@ViewBag.EmployeeNo',
+            employeeName: '@ViewBag.EmployeeName'
+        };
+
+        toastr.options = config.toastr;
+        let isViewingDeleted = false;
+
+        // DATATABLE INITIALIZATION
+        const table = $('#medicalAvailmentTable').DataTable({
+            destroy: true,
+            processing: true,
+            serverSide: false,
+            ajax: {
+                url: config.endpoints.list,
+                type: "GET",
+                data: { employeeNo: config.employeeNo, status: 'active' },
+                dataSrc: "data",
+                error: () => showNotification('Error loading data. Please refresh the page.', 'error')
+            },
+            columns: [
+                {
+                    data: "id",
+                    width: "10%",
+                    orderable: false,
+                    render: (data, type, row) => {
+
+                        let viewbtn ='';
+                        let restorebtn ='';
+                        let deletebtn ='';
+
+                        if(isViewingDeleted){
+
+                            if (access === 'FULL'){
+                                restorebtn = `
+                                <button class="btn btn-sm btn-success shadow-sm restoreAvailee" data-id="${data}" title="Restore">
+                                   <i class="fas fa-undo"></i>
+                                 </button>`;
+                            }
+
+                        }else{
+                            viewbtn = ` 
+                            <button class="btn btn-sm btn-primary shadow-sm viewAvailee" data-id="${data}" title="View">
+                               <i class="fas fa-eye"></i>
+                             </button>` ;
+
+                             if (access === 'FULL'){
+                                 deletebtn = `
+                                 <button class="btn btn-sm btn-danger shadow-sm deleteAvailee" data-id="${data}" title="Delete">
+                                   <i class="fa fa-trash"></i>
+                                 </button>`;
+                             }
+                        }
+
+                        return x = `
+                        <div class="d-flex gap-1">
+                            ${viewbtn}
+                            ${restorebtn}
+                            ${deletebtn}
+                         </div>`;
+
+                    }
+                },
+                { data: "Name", width: "15%" },
+                { data: "AvaileeType", width: "10%" },
+                { data: "Relationship", width: "10%" },
+                { data: "InPatient", width: "10%", render: data => parseFloat(data || 0).toFixed(2), className: "text-end" },
+                { data: "OutPatient", width: "10%", render: data => parseFloat(data || 0).toFixed(2), className: "text-end" },
+                { data: "Dental", width: "10%", render: data => parseFloat(data || 0).toFixed(2), className: "text-end" },
+                { data: "AvailableInsurance", width: "15%", render: data => parseFloat(data || 0).toFixed(2), className: "text-end" },
+                { data: "Balance", width: "10%", render: data => parseFloat(data || 0).toFixed(2), className: "text-end" }
+            ],
+            order: [[0, 'asc']],
+            pageLength: 25,
+            lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+            language: {
+                processing: "Loading...",
+                emptyTable: "No medical availment records found",
+                zeroRecords: "No matching medical availment records found",
+                paginate: {
+                    next: '<i class="fa fa-angle-double-right"></i>',
+                    previous: '<i class="fa fa-angle-double-left"></i>'
+                }
+            }
+        });
+
+        // Initialize Select2 for filter
+        $('#filterRecordStatus').select2({ selectOnClose: true, minimumResultsForSearch: Infinity });
+
+        // EVENT HANDLERS - FILTERS
+        $('#filterRecordStatus').on('change', function () {
+            isViewingDeleted = $(this).val() === 'inactive';
+            updateTableView();
+        });
+
+        // EVENT HANDLERS - ADD MODAL
+        $('#btnAddAvailee').click(() => {
+            resetAddForm();
+            $('#addAvaileeModal').modal('show');
+        });
+
+        $('#btnSaveNewAvailee').click(() => {
+            if (!validateForm('add')) return;
+            const formData = getFormData('add');
+            saveAvailee(formData, true);
+        });
+
+        // EVENT HANDLERS - VIEW/EDIT MODAL
+        $(document).on('click', '.viewAvailee', function(e) {
+            e.preventDefault();
+            const id = $(this).data('id');
+            const $btn = $(this);
+            toggleButtonLoading($btn, true);
+
+            $.get(config.endpoints.get, { id })
+                .done(response => {
+                    if (response.success) {
+                        resetViewForm();
+                        setViewMode();
+                        populateViewForm(response.data);
+                        $('#viewAvaileeModal').modal('show');
+                    } else {
+                        showNotification(response.message, 'error');
+                    }
+                })
+                .fail(() => showNotification('Unable to load availee data', 'error'))
+                .always(() => toggleButtonLoading($btn, false));
+        });
+
+        $('#btnEditAvailee').click(() => {
+            setEditMode();
+            $('#viewAvaileeNameField').focus();
+        });
+
+        $('#btnCancelEdit').click(() => {
+            const id = $('#viewAvaileeId').val();
+            $.get(config.endpoints.get, { id }).done(response => {
+                if (response.success) {
+                    populateViewForm(response.data);
+                    setViewMode();
+                    clearValidation('view');
+                }
+            });
+        });
+
+        $('#btnSaveAvailee').click(() => {
+            if (!validateForm('view')) return;
+            const formData = getFormData('view');
+            saveAvailee(formData, false);
+        });
+
+        // EVENT HANDLERS - DELETE/RESTORE
+        $(document).on('click', '.deleteAvailee', function(e) {
+            e.preventDefault();
+            deleteWithReason({
+                title: 'Inactive Availee',
+                text: 'Are you sure you want to inactive this availee?',
+                url: config.endpoints.delete,
+                id: $(this).data('id'),
+                button: $(this),
+                table: table,
+                toggleLoading: toggleButtonLoading,  // Use your existing function
+                onSuccess: response => showNotification(response.message, 'success'),
+                onError: response => showNotification(response.message || 'Unable to delete. Please try again.', 'error')
+            });
+        });
+
+        $(document).on('click', '.restoreAvailee', function(e) {
+            e.preventDefault();
+            const id = $(this).data('id');
+            const $btn = $(this);
+
+            Swal.fire({
+                title: 'Restore Record',
+                text: 'Are you sure you want to restore this availee?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Restore',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#28a745'
+            }).then(result => {
+                if (result.isConfirmed) {
+                    toggleButtonLoading($btn, true);
+                    $.post(config.endpoints.restore, { id })
+                        .done(response => {
+                            if (response.success) {
+                                table.ajax.reload(null, false);
+                                showNotification(response.message, 'success');
+                            } else {
+                                showNotification(response.message, 'error');
+                            }
+                        })
+                        .fail(() => showNotification('Unable to restore. Please try again.', 'error'))
+                        .always(() => toggleButtonLoading($btn, false));
+                }
+            });
+        });
+
+        $(document).on('click', '.restoreAvailee', function(e) {
+            e.preventDefault();
+            const id = $(this).data('id');
+            const $btn = $(this);
+
+            Swal.fire({
+                title: 'Restore Record',
+                text: 'Are you sure you want to restore this availee?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Restore',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#28a745'
+            }).then(result => {
+                if (result.isConfirmed) {
+                    toggleButtonLoading($btn, true);
+                    $.post(config.endpoints.restore, { id })
+                        .done(response => {
+                            if (response.success) {
+                                table.ajax.reload(null, false);
+                                showNotification(response.message, 'success');
+                            } else {
+                                showNotification(response.message, 'error');
+                            }
+                        })
+                        .fail(() => showNotification('Unable to restore. Please try again.', 'error'))
+                        .always(() => toggleButtonLoading($btn, false));
+                }
+            });
+        });
+
+        // EVENT HANDLERS - MODAL LIFECYCLE
+        $('#addAvaileeModal').on('hidden.bs.modal', resetAddForm);
+        $('#viewAvaileeModal').on('hidden.bs.modal', () => {
+            resetViewForm();
+            setViewMode();
+        });
+
+        // EVENT HANDLERS - KEYBOARD
+        $('#addAvaileeForm').on('keypress', e => {
+            if (e.which === 13) {
+                e.preventDefault();
+                $('#btnSaveNewAvailee').click();
+            }
+        });
+
+        $('#viewAvaileeForm').on('keypress', e => {
+            if (e.which === 13 && $('#viewAvaileeModal .modal-body').hasClass('edit-mode')) {
+                e.preventDefault();
+                $('#btnSaveAvailee').click();
+            }
+        });
+
+        // EVENT HANDLERS - VALIDATION & AVAILEE TYPE
+        $('#addAvaileeNameField, #addRelation, #addAvailableInsurance, #addAvaileeType, #viewAvaileeNameField, #viewRelation, #viewAvailableInsurance, #viewAvaileeType')
+            .on('input change', function() { $(this).removeClass('is-invalid'); });
+
+        $('#addAvaileeType, #viewAvaileeType').on('change', function() {
+            const availeeType = $(this).val();
+            const isAdd = $(this).attr('id') === 'addAvaileeType';
+            const relationField = isAdd ? '#addRelation' : '#viewRelation';
+
+            if (availeeType === 'Principal') {
+                $(relationField).val('Principal').prop('readonly', true);
+            } else {
+                if ($(relationField).val() === 'Principal') $(relationField).val('');
+                const isEditMode = !isAdd && $('#viewAvaileeModal .modal-body').hasClass('edit-mode');
+                $(relationField).prop('readonly', !isAdd && !isEditMode ? true : false);
+            }
+            $(this).removeClass('is-invalid');
+        });
+
+        // HELPER FUNCTIONS
+        function updateTableView() {
+            const status = isViewingDeleted ? 'inactive' : 'active';
+            table.ajax.url(`${config.endpoints.list}?employeeNo=${config.employeeNo}&status=${status}`).load();
+            $('#btnAddAvailee').toggle(!isViewingDeleted);
+        }
+
+        function populateViewForm(data) {
+            $('#viewAvaileeId').val(data.id);
+            $('#viewAvaileeNameField').val(data.name);
+            $('#viewAvaileeType').val(data.availeeType);
+            $('#viewRelation').val(data.relationship);
+            $('#viewAvailableInsurance').val(data.availableInsurance);
+        }
+
+        function getFormData(prefix) {
+            const availeeType = $(`#${prefix}AvaileeType`).val();
+            const relationship = availeeType === 'Principal' ? 'Principal' : $(`#${prefix}Relation`).val();
+
+            return {
+                ...(prefix === 'view' && { Id: parseInt($('#viewAvaileeId').val()) }),
+                EmployeeNo: $(`#${prefix}EmployeeNoHidden`).val(),
+                Name: $(`#${prefix}AvaileeNameField`).val(),
+                AvaileeType: availeeType,
+                Relationship: relationship,
+                AvailableInsurance: parseFloat($(`#${prefix}AvailableInsurance`).val()) || 0,
+                IsActive: true
+            };
+        }
+
+        function saveAvailee(formData, closeModal) {
+            const $btn = closeModal ? $('#btnSaveNewAvailee') : $('#btnSaveAvailee');
+            toggleButtonLoading($btn, true, 'Saving...');
+
+            $.ajax({
+                url: config.endpoints.save,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(formData),
+                success: response => {
+                    if (response.success) {
+                        if (closeModal) $('#addAvaileeModal').modal('hide');
+                        else setViewMode();
+                        table.ajax.reload(null, false);
+                        showNotification(response.message, 'success');
+                    } else {
+                        showNotification(response.message, 'error');
+                    }
+                },
+                error: () => showNotification('Unable to save. Please try again.', 'error'),
+                complete: () => toggleButtonLoading($btn, false)
+            });
+        }
+
+        function resetAddForm() {
+            $('#addAvaileeForm')[0].reset();
+            $('#addAvaileeType').val('');
+            $('#addAvaileeNameField').val(config.employeeName);
+            $('#addRelation').prop('readonly', false).val('');
+            clearValidation('add');
+            $('#btnSaveNewAvailee').prop('disabled', false).html('Save');
+        }
+
+        function resetViewForm() {
+            $('#viewAvaileeForm')[0].reset();
+            $('#viewAvaileeType').val('');
+            $('#viewRelation').prop('readonly', true);
+            clearValidation('view');
+            $('#btnSaveAvailee').prop('disabled', false).html('Save');
+        }
+
+        function setViewMode() {
+            $('#viewModalTitle').text('View Availee');
+            $('#viewAvaileeModal .modal-body').removeClass('edit-mode');
+            $('#viewAvaileeType').prop('disabled', true);
+            $('#viewAvaileeNameField, #viewRelation, #viewAvailableInsurance').prop('readonly', true);
+            $('.edit-required').addClass('d-none');
+            $('#btnEditAvailee').removeClass('d-none');
+            $('#btnSaveAvailee, #btnCancelEdit').addClass('d-none');
+            clearValidation('view');
+        }
+
+        function setEditMode() {
+            $('#viewModalTitle').text('Edit Availee');
+            $('#viewAvaileeModal .modal-body').addClass('edit-mode');
+            $('#viewAvaileeType').prop('disabled', false);
+            $('#viewAvaileeNameField, #viewAvailableInsurance').prop('readonly', false);
+            if ($('#viewAvaileeType').val() !== 'Principal') $('#viewRelation').prop('readonly', false);
+            $('.edit-required').removeClass('d-none');
+            $('#btnEditAvailee').addClass('d-none');
+            $('#btnSaveAvailee, #btnCancelEdit').removeClass('d-none');
+        }
+
+        function clearValidation(prefix) {
+            $(`#${prefix}AvaileeForm .form-control, #${prefix}AvaileeForm .form-select`).removeClass('is-invalid');
+        }
+
+        function validateForm(prefix) {
+            clearValidation(prefix);
+            let isValid = true;
+            const fields = ['AvaileeNameField', 'AvaileeType', 'Relation', 'AvailableInsurance'];
+
+            fields.forEach(field => {
+                const $field = $(`#${prefix}${field}`);
+                if (!$field.val() || (field === 'AvailableInsurance' && (isNaN(parseFloat($field.val())) || parseFloat($field.val()) < 0))) {
+                    $field.addClass('is-invalid');
+                    isValid = false;
+                }
+            });
+
+            return isValid;
+        }
+
+        function toggleButtonLoading($btn, loading, text = '') {
+            if (loading) {
+                if (!$btn.data('original-html')) $btn.data('original-html', $btn.html());
+                const icon = text ? '<i class="fas fa-spinner fa-spin"></i> ' : '<i class="fas fa-spinner fa-spin"></i>';
+                $btn.prop('disabled', true).html(icon + text);
+            } else {
+                const originalHtml = $btn.data('original-html') || 'Save';
+                $btn.prop('disabled', false).html(originalHtml);
+                $btn.removeData('original-html');
+            }
+        }
+
+        function showNotification(message, type) {
+            const types = { success: 'Success', error: 'Error', warning: 'Warning', info: 'Information' };
+            toastr[type](message, types[type] || 'Notification');
+        }
+
+        // Prevent 'e' and other non-numeric characters in number inputs
+        $('#addAvailableInsurance, #viewAvailableInsurance').on('keydown', function(e) {
+            // Prevent: e, E, +, -
+            if (e.key === 'e' || e.key === 'E' || e.key === '+' || e.key === '-') {
+                e.preventDefault();
+            }
+        });
+    });
+</script>

@@ -1,0 +1,233 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayoutFillow.cshtml";
+    ViewData["Title"] = "Due For Regularization";
+}
+
+<div class="col-12">
+    <div class="card">
+        <div class="card-header">
+            <div class="row" style="width:100%;">
+                <h4 class="card-title">Due For Regularization</h4>
+                <br> <br> <br>
+                <div class="row" style="margin-left:0px;width:100%;">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <h5>Department</h5>
+                            <select name="filterDepartment" id="filterDepartment" class="form-control"></select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-9 d-flex justify-content-end align-items-end">
+                        <div class="form-group">
+                            <button type="button" class="btn btn-warning" id="btnExportToExcel">
+                                <i class="fas fa-file-excel"></i> Export to Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="EmployeeTable" class="display" style="min-width: 845px">
+                    <thead>
+                        <tr>
+                            <th>Employee Name</th>
+                            <th>Date of Regularization</th>
+                            <th>Department</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Fillow_style
+{
+    <style>
+        .badge {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-info {
+            background-color: #e91e63;
+            color: white;
+        }
+    </style>
+}
+
+@section Fillow_script
+{
+    <script>
+        $(document).ready(function () {
+
+            let EmployeeTable;
+
+            const sortMap = [
+                'Employee Name',          // 0
+                'Date of Regularization', // 1
+                'Department',             // 2
+                'Status'                  // 3
+            ];
+
+            initializeFilterSelect2();
+
+            function initDataTable() {
+                if ($.fn.DataTable.isDataTable('#EmployeeTable')) {
+                    EmployeeTable.clear().destroy();
+                }
+
+                EmployeeTable = $('#EmployeeTable').DataTable({
+                    responsive: true,
+                    pageLength: 10,
+                    lengthMenu: [
+                        [10, 25, 50, -1],
+                        [10, 25, 50, "All"]
+                    ],
+                    ajax: {
+                        url: '/DueForRegularization/GetReportList',
+                        type: 'GET',
+                        dataType: 'json',
+                        data: function (d) {
+                            d.departmentName = $('#filterDepartment').val() || "ALL";
+                        },
+                        error: function (xhr, error, thrown) {
+                            console.error("AJAX Error:", xhr.responseText);
+                        }
+                    },
+                    columns: [
+                        { data: "employeeName",         width: "30%" },
+                        { data: "dateOfRegularization", width: "20%" },
+                        { data: "departmentName",       width: "25%" },
+                        {
+                            data: "status",
+                            width: "25%",
+                            render: function (data, type, row) {
+                                if (!data) return '';
+                                return `<span class="badge badge-info">${data}</span>`;
+                            }
+                        }
+                    ],
+                    order: [[1, 'asc']],
+                    language: {
+                        paginate: {
+                            next:     '<i class="fa fa-angle-double-right" aria-hidden="true"></i>',
+                            previous: '<i class="fa fa-angle-double-left"  aria-hidden="true"></i>'
+                        }
+                    },
+                    dom: 'Blfrtip'
+                });
+            }
+
+            initDataTable();
+
+            // Filter change
+            $('#filterDepartment').on('change', function () {
+                EmployeeTable.ajax.reload(null, true);
+            });
+
+            // Export to Excel
+            $('#btnExportToExcel').on('click', function () {
+                const $btn = $(this);
+
+                if (EmployeeTable.rows({ search: 'applied' }).count() === 0) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'No Data',
+                        text: 'No data available to export.',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+
+                const pageInfo             = EmployeeTable.page.info();
+                const [sortIndex, sortDir] = EmployeeTable.order()[0] || [1, 'asc'];
+
+                const params = new URLSearchParams({
+                    departmentName: $('#filterDepartment').val() || 'ALL',
+                    offset:         pageInfo.start,
+                    limit:          pageInfo.length,
+                    sortColumn:     sortMap[sortIndex] || '',
+                    sortDirection:  sortDir
+                });
+
+                const originalHtml = $btn.html();
+                $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Exporting...');
+
+                fetch(`/DueForRegularizationExport/ExportToExcel?${params.toString()}`, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => {
+                            throw new Error(`Server error (${response.status}): ${text}`);
+                        });
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    const url  = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href  = url;
+                    link.download = `DueForRegularization_${new Date().getTime()}.xlsx`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+
+                    $btn.prop('disabled', false).html(originalHtml);
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Export Successful',
+                        text: `Exported ${pageInfo.length} rows from page ${pageInfo.page + 1}`,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                })
+                .catch(() => {
+                    $btn.prop('disabled', false).html(originalHtml);
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Export Failed',
+                        text: 'An error occurred during export. Please try again.',
+                        confirmButtonText: 'OK'
+                    });
+                });
+            });
+
+        }); // end $(document).ready
+
+        function initializeFilterSelect2() {
+            $('#filterDepartment').select2({
+                placeholder: "Select Employee Department",
+                allowClear: true,
+                ajax: {
+                    url: '/Setup/GetEmployeeDepartment',
+                    dataType: 'json',
+                    delay: 250,
+                    processResults: function (data) {
+                        var results = $.map(data, function (item) {
+                            return {
+                                id:   item.departmentCode,
+                                text: item.departmentName
+                            };
+                        });
+
+                        results.unshift({ id: 'ALL', text: 'All Departments' });
+
+                        return { results: results };
+                    }
+                }
+            });
+        }
+    </script>
+}

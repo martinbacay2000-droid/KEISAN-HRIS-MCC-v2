@@ -1,0 +1,205 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>KEISAN_HRIS_v2</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Controllers\Payroll\PayrollRegisterPostedExportController.cs" />
+    <Compile Remove="Controllers\Payroll\ProcessPayrollController.cs" />
+    <Compile Remove="Models\Payroll\ProcessPayrollModel.cs" />
+    <Compile Remove="Models\Report\ReportModel.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="Views\Auth\Page403.cshtml" />
+    <Content Remove="Views\Fillow\addblog.cshtml" />
+    <Content Remove="Views\Fillow\addemail.cshtml" />
+    <Content Remove="Views\Fillow\appprofile.cshtml" />
+    <Content Remove="Views\Fillow\blog.cshtml" />
+    <Content Remove="Views\Fillow\blogcategory.cshtml" />
+    <Content Remove="Views\Fillow\CalendarPage2.cshtml" />
+    <Content Remove="Views\Fillow\chartchartist.cshtml" />
+    <Content Remove="Views\Fillow\chartchartjs.cshtml" />
+    <Content Remove="Views\Fillow\chartflot.cshtml" />
+    <Content Remove="Views\Fillow\chartmorris.cshtml" />
+    <Content Remove="Views\Fillow\chartpeity.cshtml" />
+    <Content Remove="Views\Fillow\chartsparkline.cshtml" />
+    <Content Remove="Views\Fillow\contacts.cshtml" />
+    <Content Remove="Views\Fillow\content.cshtml" />
+    <Content Remove="Views\Fillow\contentadd.cshtml" />
+    <Content Remove="Views\Fillow\ecomcheckout.cshtml" />
+    <Content Remove="Views\Fillow\ecomcustomers.cshtml" />
+    <Content Remove="Views\Fillow\ecominvoice.cshtml" />
+    <Content Remove="Views\Fillow\ecomproduct-detail.cshtml" />
+    <Content Remove="Views\Fillow\ecomproduct-grid.cshtml" />
+    <Content Remove="Views\Fillow\ecomproduct-list.cshtml" />
+    <Content Remove="Views\Fillow\ecomproduct-order.cshtml" />
+    <Content Remove="Views\Fillow\editprofile.cshtml" />
+    <Content Remove="Views\Fillow\emailcompose.cshtml" />
+    <Content Remove="Views\Fillow\emailinbox.cshtml" />
+    <Content Remove="Views\Fillow\emailread.cshtml" />
+    <Content Remove="Views\Fillow\emailtemplate.cshtml" />
+    <Content Remove="Views\Fillow\emptypage.cshtml" />
+    <Content Remove="Views\Fillow\formckeditor.cshtml" />
+    <Content Remove="Views\Fillow\formelement.cshtml" />
+    <Content Remove="Views\Fillow\formpickers.cshtml" />
+    <Content Remove="Views\Fillow\formvalidation.cshtml" />
+    <Content Remove="Views\Fillow\formwizard.cshtml" />
+    <Content Remove="Views\Fillow\index-2.cshtml" />
+    <Content Remove="Views\Fillow\index-3.cshtml" />
+    <Content Remove="Views\Fillow\index.cshtml" />
+    <Content Remove="Views\Fillow\kanban.cshtml" />
+    <Content Remove="Views\Fillow\mapjqvmap.cshtml" />
+    <Content Remove="Views\Fillow\menu1.cshtml" />
+    <Content Remove="Views\Fillow\message.cshtml" />
+    <Content Remove="Views\Fillow\pageerror400.cshtml" />
+    <Content Remove="Views\Fillow\pageerror403.cshtml" />
+    <Content Remove="Views\Fillow\pageerror404.cshtml" />
+    <Content Remove="Views\Fillow\pageerror500.cshtml" />
+    <Content Remove="Views\Fillow\pageerror503.cshtml" />
+    <Content Remove="Views\Fillow\pageforgotpassword.cshtml" />
+    <Content Remove="Views\Fillow\pagelockscreen.cshtml" />
+    <Content Remove="Views\Fillow\pagelogin.cshtml" />
+    <Content Remove="Views\Fillow\pageregister.cshtml" />
+    <Content Remove="Views\Fillow\postdetails.cshtml" />
+    <Content Remove="Views\Fillow\projectpage.cshtml" />
+    <Content Remove="Views\Fillow\tablebootstrapbasic.cshtml" />
+    <Content Remove="Views\Fillow\tabledatatablebasic.cshtml" />
+    <Content Remove="Views\Fillow\uclightgallery.cshtml" />
+    <Content Remove="Views\Fillow\ucnestable.cshtml" />
+    <Content Remove="Views\Fillow\ucnoui-slider.cshtml" />
+    <Content Remove="Views\Fillow\ucselect2.cshtml" />
+    <Content Remove="Views\Fillow\ucsweetalert.cshtml" />
+    <Content Remove="Views\Fillow\uctoastr.cshtml" />
+    <Content Remove="Views\Fillow\uiaccordion.cshtml" />
+    <Content Remove="Views\Fillow\uialert.cshtml" />
+    <Content Remove="Views\Fillow\uibadge.cshtml" />
+    <Content Remove="Views\Fillow\uibutton-group.cshtml" />
+    <Content Remove="Views\Fillow\uibutton.cshtml" />
+    <Content Remove="Views\Fillow\uicard.cshtml" />
+    <Content Remove="Views\Fillow\uicarousel.cshtml" />
+    <Content Remove="Views\Fillow\uidropdown.cshtml" />
+    <Content Remove="Views\Fillow\uigrid.cshtml" />
+    <Content Remove="Views\Fillow\uilist-group.cshtml" />
+    <Content Remove="Views\Fillow\uimodal.cshtml" />
+    <Content Remove="Views\Fillow\uipagination.cshtml" />
+    <Content Remove="Views\Fillow\uipopover.cshtml" />
+    <Content Remove="Views\Fillow\uiprogressbar.cshtml" />
+    <Content Remove="Views\Fillow\uitab.cshtml" />
+    <Content Remove="Views\Fillow\uitypography.cshtml" />
+    <Content Remove="Views\Fillow\widget-basic.cshtml" />
+    <Content Remove="Views\Payroll\ProcessPayroll.cshtml" />
+    <Content Remove="Views\Report\13thMonthReport.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Views\Timekeeping\OvertimeRequest.7z" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Views\Auth\Page403.cshtml" />
+    <None Include="Views\Fillow\addblog.cshtml" />
+    <None Include="Views\Fillow\addemail.cshtml" />
+    <None Include="Views\Fillow\appprofile.cshtml" />
+    <None Include="Views\Fillow\blogcategory.cshtml" />
+    <None Include="Views\Fillow\blog.cshtml" />
+    <None Include="Views\Fillow\CalendarPage2.cshtml" />
+    <None Include="Views\Fillow\chartchartist.cshtml" />
+    <None Include="Views\Fillow\chartchartjs.cshtml" />
+    <None Include="Views\Fillow\chartflot.cshtml" />
+    <None Include="Views\Fillow\chartmorris.cshtml" />
+    <None Include="Views\Fillow\chartpeity.cshtml" />
+    <None Include="Views\Fillow\chartsparkline.cshtml" />
+    <None Include="Views\Fillow\contacts.cshtml" />
+    <None Include="Views\Fillow\contentadd.cshtml" />
+    <None Include="Views\Fillow\content.cshtml" />
+    <None Include="Views\Fillow\ecomcheckout.cshtml" />
+    <None Include="Views\Fillow\ecomcustomers.cshtml" />
+    <None Include="Views\Fillow\ecominvoice.cshtml" />
+    <None Include="Views\Fillow\ecomproduct-detail.cshtml" />
+    <None Include="Views\Fillow\ecomproduct-grid.cshtml" />
+    <None Include="Views\Fillow\ecomproduct-list.cshtml" />
+    <None Include="Views\Fillow\ecomproduct-order.cshtml" />
+    <None Include="Views\Fillow\editprofile.cshtml" />
+    <None Include="Views\Fillow\emailcompose.cshtml" />
+    <None Include="Views\Fillow\emailinbox.cshtml" />
+    <None Include="Views\Fillow\emailread.cshtml" />
+    <None Include="Views\Fillow\emailtemplate.cshtml" />
+    <None Include="Views\Fillow\emptypage.cshtml" />
+    <None Include="Views\Fillow\formckeditor.cshtml" />
+    <None Include="Views\Fillow\formelement.cshtml" />
+    <None Include="Views\Fillow\formpickers.cshtml" />
+    <None Include="Views\Fillow\formvalidation.cshtml" />
+    <None Include="Views\Fillow\formwizard.cshtml" />
+    <None Include="Views\Fillow\index-2.cshtml" />
+    <None Include="Views\Fillow\index-3.cshtml" />
+    <None Include="Views\Fillow\index.cshtml" />
+    <None Include="Views\Fillow\kanban.cshtml" />
+    <None Include="Views\Fillow\mapjqvmap.cshtml" />
+    <None Include="Views\Fillow\menu1.cshtml" />
+    <None Include="Views\Fillow\message.cshtml" />
+    <None Include="Views\Fillow\pageerror400.cshtml" />
+    <None Include="Views\Fillow\pageerror403.cshtml" />
+    <None Include="Views\Fillow\pageerror404.cshtml" />
+    <None Include="Views\Fillow\pageerror500.cshtml" />
+    <None Include="Views\Fillow\pageerror503.cshtml" />
+    <None Include="Views\Fillow\pageforgotpassword.cshtml" />
+    <None Include="Views\Fillow\pagelockscreen.cshtml" />
+    <None Include="Views\Fillow\pagelogin.cshtml" />
+    <None Include="Views\Fillow\pageregister.cshtml" />
+    <None Include="Views\Fillow\postdetails.cshtml" />
+    <None Include="Views\Fillow\projectpage.cshtml" />
+    <None Include="Views\Fillow\tablebootstrapbasic.cshtml" />
+    <None Include="Views\Fillow\tabledatatablebasic.cshtml" />
+    <None Include="Views\Fillow\uclightgallery.cshtml" />
+    <None Include="Views\Fillow\ucnestable.cshtml" />
+    <None Include="Views\Fillow\ucnoui-slider.cshtml" />
+    <None Include="Views\Fillow\ucselect2.cshtml" />
+    <None Include="Views\Fillow\ucsweetalert.cshtml" />
+    <None Include="Views\Fillow\uctoastr.cshtml" />
+    <None Include="Views\Fillow\uiaccordion.cshtml" />
+    <None Include="Views\Fillow\uialert.cshtml" />
+    <None Include="Views\Fillow\uibadge.cshtml" />
+    <None Include="Views\Fillow\uibutton-group.cshtml" />
+    <None Include="Views\Fillow\uibutton.cshtml" />
+    <None Include="Views\Fillow\uicard.cshtml" />
+    <None Include="Views\Fillow\uicarousel.cshtml" />
+    <None Include="Views\Fillow\uidropdown.cshtml" />
+    <None Include="Views\Fillow\uigrid.cshtml" />
+    <None Include="Views\Fillow\uilist-group.cshtml" />
+    <None Include="Views\Fillow\uimodal.cshtml" />
+    <None Include="Views\Fillow\uipagination.cshtml" />
+    <None Include="Views\Fillow\uipopover.cshtml" />
+    <None Include="Views\Fillow\uiprogressbar.cshtml" />
+    <None Include="Views\Fillow\uitab.cshtml" />
+    <None Include="Views\Fillow\uitypography.cshtml" />
+    <None Include="Views\Fillow\widget-basic.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.1.66" />
+    <PackageReference Include="EPPlus" Version="6.2.10" />
+    <PackageReference Include="jQuery" Version="3.7.1" />
+    <PackageReference Include="MySql.Data" Version="9.1.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="QuestPDF" Version="2025.12.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\uploads\" />
+    <Folder Include="wwwroot\uploads\attachments\" />
+    <Folder Include="wwwroot\uploads\commendations\" />
+    <Folder Include="wwwroot\uploads\cto\" />
+    <Folder Include="wwwroot\uploads\disciplinaryaction\" />
+    <Folder Include="wwwroot\uploads\leave\" />
+    <Folder Include="wwwroot\uploads\memo\" />
+    <Folder Include="wwwroot\uploads\officialbusiness\" />
+    <Folder Include="wwwroot\uploads\overtime\" />
+    <Folder Include="wwwroot\uploads\profile-pictures\" />
+  </ItemGroup>
+
+</Project>
