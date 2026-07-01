@@ -58,7 +58,7 @@ namespace KEISAN_HRIS_v2.Services.Payroll
                             row.AutoItem()
                                .Height(22)
                                .Width(80)
-                               .Image("wwwroot/Fillow/images/luxent_logo.png");
+                               .Image("wwwroot/Fillow/images/your_logo_1.png");
 
                             row.RelativeItem().AlignRight().Column(headerCol =>
                             {

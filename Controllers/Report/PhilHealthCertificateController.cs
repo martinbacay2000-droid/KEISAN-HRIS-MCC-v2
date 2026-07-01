@@ -163,7 +163,7 @@ namespace KEISAN_HRIS_v2.Controllers.Users
             //    }
             //}
 
-            string signatoryName = "EDITHA M. CARREON";
+            string signatoryName = "Vince S. Carlos";
             string signatoryTitle = "DIRECTOR OF HUMAN RESOURCES";
 
             // ── 7. Fetch contribution amounts — grouped by year then month ─────
@@ -257,7 +257,7 @@ namespace KEISAN_HRIS_v2.Controllers.Users
                 Purpose = string.IsNullOrWhiteSpace(purpose) ? "" : purpose.Trim(),
                 IssuedDate = issuedDate,
                 IssuedCity = "Quezon City",
-                CompanyName = "Luxent Hotel",
+                CompanyName = "Company Name",
                 SignatoryName = signatoryName,
                 SignatoryTitle = signatoryTitle,
                 Rows = rows

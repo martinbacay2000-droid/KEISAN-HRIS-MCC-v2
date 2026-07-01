@@ -595,7 +595,7 @@ namespace KEISAN_HRIS_v2.Controllers.Payroll
 	                        IFNULL(p.deductionSSSemployer,0) AS lastSSSER,
 
 	                        IFNULL(p.deductionWISPemployee,0) AS lastWISPEE,
-	                        IFNULL(p.deductionWISPemployee,0) AS lastWISPEE,
+	                        IFNULL(p.deductionWISPemployer,0) AS lastWISPER,
 
 	                        IFNULL(p.deductionSSSec,0) AS lastSSSECER,
 	                        IFNULL(p.deductionPHIemployee,0) AS lastPHIEE,

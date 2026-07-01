@@ -179,7 +179,9 @@ namespace KEISAN_HRIS_v2.Controllers.Timekeeping.OffsetCreditRequest
                         rq.id,
                         rq.employeeNo,
                         DATE_FORMAT(rq.overTimeDateIN,  '%m/%d/%Y') AS displayDateIn,
+                        TIME_FORMAT(rq.overTimeIN,       '%H:%i')   AS displayTimeIn,
                         DATE_FORMAT(rq.overTimeDateOUT, '%m/%d/%Y') AS displayDateOut,
+                        TIME_FORMAT(rq.overTimeOUT,      '%H:%i')   AS displayTimeOut,
                         rq.approvedRenderOT,
                         rq.overTimeReason,
                         rq.statusLevel1,
@@ -269,7 +271,9 @@ namespace KEISAN_HRIS_v2.Controllers.Timekeeping.OffsetCreditRequest
                     employeeName = (string)request.employeeName,
                     requestedByUser = (string)request.requestedByUser,
                     displayDateIn = (string)request.displayDateIn,
+                    displayTimeIn = (string)request.displayTimeIn,
                     displayDateOut = (string)request.displayDateOut,
+                    displayTimeOut = (string)request.displayTimeOut,
                     approvedRenderOT = (object)request.approvedRenderOT,
                     overTimeReason = (string)request.overTimeReason,
                     remarks = (string)request.remarks,
@@ -332,17 +336,27 @@ namespace KEISAN_HRIS_v2.Controllers.Timekeeping.OffsetCreditRequest
             }
         }
 
-        // ── HELPER: Compute offset days from date range ───────────────────────────
-        // Formula: days = (dateOut - dateIn).Days + 1
-        // approvedRenderOT = days * 9  (so existing formula: 9hrs - 1 lunch = 8hrs / 8 = 1 day)
+        // ── HELPER: Compute offset days from date range + actual time in/out ──────
+        // hoursPerDay = timeOut - timeIn (minus 1hr lunch if span crosses 12:00 PM)
+        // approvedRenderOT = effective hours per day * number of days
+        // offsetDays = approvedRenderOT / 8
         private static (double approvedRenderOT, double offsetDays) ComputeOffsetFromDates(
-            DateTime dateIn, DateTime dateOut)
+            DateTime dateIn, TimeSpan timeIn, DateTime dateOut, TimeSpan timeOut)
         {
             int days = (dateOut.Date - dateIn.Date).Days + 1;
             if (days < 1) days = 1;
-            double approvedRenderOT = days * 9.0;           // 9 hrs per day stored
-            double effectiveHours = approvedRenderOT - days; // subtract 1 lunch per day
-            double offsetDays = effectiveHours / 8.0;   // = days exactly
+
+            double hoursPerDay = (timeOut - timeIn).TotalHours;
+            if (hoursPerDay < 0) hoursPerDay = 0;
+
+            // Deduct 1hr lunch if the time span crosses 12:00 PM
+            bool crossesNoon = timeIn < new TimeSpan(12, 0, 0) && timeOut > new TimeSpan(12, 0, 0);
+            if (crossesNoon) hoursPerDay -= 1.0;
+            if (hoursPerDay < 0) hoursPerDay = 0;
+
+            double approvedRenderOT = hoursPerDay * days;
+            double offsetDays = approvedRenderOT / 8.0;
+
             return (approvedRenderOT, offsetDays);
         }
 
@@ -361,8 +375,14 @@ namespace KEISAN_HRIS_v2.Controllers.Timekeeping.OffsetCreditRequest
                 if (model.overTimeDateIN == null || model.overTimeDateOUT == null)
                     return Json(new { success = false, message = "Offset Date In and Date Out are required!" });
 
+                if (model.overTimeIN == null || model.overTimeOUT == null)
+                    return Json(new { success = false, message = "Time In and Time Out are required!" });
+
                 if (model.overTimeDateOUT < model.overTimeDateIN)
                     return Json(new { success = false, message = "Offset Date Out cannot be earlier than Offset Date In!" });
+
+                if (model.overTimeOUT <= model.overTimeIN)
+                    return Json(new { success = false, message = "Time Out must be later than Time In!" });
 
                 // Duplicate filing check — block overlapping Offset Credit requests
                 var duplicate = _db.QueryFirstOrDefault<int>(@"
@@ -377,9 +397,10 @@ namespace KEISAN_HRIS_v2.Controllers.Timekeeping.OffsetCreditRequest
                 if (duplicate > 0)
                     return Json(new { success = false, message = "An offset credit request already exists for the selected date range." });
 
-                // ── Compute hours/days from dates only ───────────────────────────
+                // ── Compute hours/days from dates + actual time in/out ───────────
                 var (approvedRenderOT, offsetDays) = ComputeOffsetFromDates(
-                    model.overTimeDateIN.Value, model.overTimeDateOUT.Value);
+                    model.overTimeDateIN.Value, model.overTimeIN.Value,
+                    model.overTimeDateOUT.Value, model.overTimeOUT.Value);
 
                 model.approvedRenderOT = approvedRenderOT;
 
@@ -393,7 +414,6 @@ namespace KEISAN_HRIS_v2.Controllers.Timekeeping.OffsetCreditRequest
                     new { model.employeeNo }) > 0;
 
                 // ── Insert new Offset Credit Request ─────────────────────────────
-                // Store default 08:00 / 17:00 in the time columns (kept for DB compatibility)
                 var sql = @"
                     INSERT INTO rq_cto 
                     (employeeNo, overTimeDateIN, overTimeIN, overTimeDateOUT, overTimeOUT, 
@@ -403,7 +423,7 @@ namespace KEISAN_HRIS_v2.Controllers.Timekeeping.OffsetCreditRequest
                      dtStatusLevel2, statusByLevel2, 
                      dtStatusLevel3, statusByLevel3, dtStatusLevel4, statusByLevel4) 
                     VALUES 
-                    (@employeeNo, @overTimeDateIN, '08:00:00', @overTimeDateOUT, '17:00:00', 
+                    (@employeeNo, @overTimeDateIN, @overTimeIN, @overTimeDateOUT, @overTimeOUT, 
                      @approvedRenderOT, @overTimeReason, 'Pending', 'Pending', 'Pending', 'Pending', 'Pending',
                      @remarks, 1, NOW(), @addedByUser, @requestedByUser, 
                      NOW(), @addedByUser, NOW(), @addedByUser,
@@ -415,7 +435,9 @@ namespace KEISAN_HRIS_v2.Controllers.Timekeeping.OffsetCreditRequest
                 {
                     model.employeeNo,
                     model.overTimeDateIN,
+                    model.overTimeIN,
                     model.overTimeDateOUT,
+                    model.overTimeOUT,
                     model.approvedRenderOT,
                     overTimeReason = model.overTimeReason ?? "",
                     remarks = model.remarks ?? "",
@@ -523,18 +545,25 @@ namespace KEISAN_HRIS_v2.Controllers.Timekeeping.OffsetCreditRequest
                 if (model.overTimeDateIN == null || model.overTimeDateOUT == null)
                     return Json(new { success = false, message = "Offset Date In and Date Out are required!" });
 
+                if (model.overTimeIN == null || model.overTimeOUT == null)
+                    return Json(new { success = false, message = "Time In and Time Out are required!" });
+
                 if (model.overTimeDateOUT < model.overTimeDateIN)
                     return Json(new { success = false, message = "Offset Date Out cannot be earlier than Offset Date In!" });
 
-                // ── Compute from dates only ──────────────────────────────────────
+                if (model.overTimeOUT <= model.overTimeIN)
+                    return Json(new { success = false, message = "Time Out must be later than Time In!" });
+
+                // ── Compute from dates + actual time in/out ──────────────────────
                 var (newApprovedRenderOT, newOffsetDays) = ComputeOffsetFromDates(
-                    model.overTimeDateIN.Value, model.overTimeDateOUT.Value);
+                    model.overTimeDateIN.Value, model.overTimeIN.Value,
+                    model.overTimeDateOUT.Value, model.overTimeOUT.Value);
 
                 model.approvedRenderOT = newApprovedRenderOT;
 
-                // Old offset days (re-derive from stored approvedRenderOT using same formula)
-                // approvedRenderOT was stored as days*9, so days = approvedRenderOT/9
-                double oldDays = oldApprovedRenderOT / 9.0;
+                // Old offset days (re-derive from stored approvedRenderOT)
+                // approvedRenderOT is stored as effective hours, so days = approvedRenderOT/8
+                double oldDays = oldApprovedRenderOT / 8.0;
 
                 var newStatus = currentStatus == "Declined" ? "Pending" : currentStatus;
 
@@ -542,9 +571,9 @@ namespace KEISAN_HRIS_v2.Controllers.Timekeeping.OffsetCreditRequest
                     UPDATE rq_cto 
                     SET employeeNo        = @employeeNo,
                         overTimeDateIN    = @overTimeDateIN,
-                        overTimeIN        = '08:00:00',
+                        overTimeIN        = @overTimeIN,
                         overTimeDateOUT   = @overTimeDateOUT,
-                        overTimeOUT       = '17:00:00',
+                        overTimeOUT       = @overTimeOUT,
                         approvedRenderOT  = @approvedRenderOT,
                         overTimeReason    = @overTimeReason,
                         remarks           = @remarks,
@@ -572,7 +601,9 @@ namespace KEISAN_HRIS_v2.Controllers.Timekeeping.OffsetCreditRequest
                     model.id,
                     model.employeeNo,
                     model.overTimeDateIN,
+                    model.overTimeIN,
                     model.overTimeDateOUT,
+                    model.overTimeOUT,
                     model.approvedRenderOT,
                     overTimeReason = model.overTimeReason ?? "",
                     remarks = model.remarks ?? "",
@@ -828,7 +859,7 @@ namespace KEISAN_HRIS_v2.Controllers.Timekeeping.OffsetCreditRequest
                 }
 
                 double approvedHours = Convert.ToDouble(request.approvedRenderOT);
-                double ctoDays = approvedHours / 9.0; // days = approvedRenderOT / 9
+                double ctoDays = approvedHours / 8.0; // days = approvedRenderOT / 8
 
                 var auditMsg = isFullyApproved
                     ? $"Offset Credit request fully approved at Level {actingLevel} by {actingUser} for {ctoDays:F2} days. Note: CTO credits were already recorded when request was created."
@@ -1016,7 +1047,7 @@ namespace KEISAN_HRIS_v2.Controllers.Timekeeping.OffsetCreditRequest
 
                 // Reverse CTO ledger
                 double rawHours = Convert.ToDouble(request.approvedRenderOT);
-                double offsetDays = rawHours / 9.0; // days = approvedRenderOT / 9
+                double offsetDays = rawHours / 8.0; // days = approvedRenderOT / 8
 
                 RecordToLeaveLedger(employeeNo, id, -offsetDays, "OFFSET CREDIT REVERSED - DECLINED");
                 NotifyRequestAction("offsetCredit", id, employeeNo, "declined");
@@ -1058,7 +1089,7 @@ namespace KEISAN_HRIS_v2.Controllers.Timekeeping.OffsetCreditRequest
                     return Json(new { success = false, message = "Request is already cancelled!" });
 
                 double rawHours = Convert.ToDouble(request.approvedRenderOT);
-                double offsetDays = rawHours / 9.0; // days = approvedRenderOT / 9
+                double offsetDays = rawHours / 8.0; // days = approvedRenderOT / 8
 
                 var sql = @"
                     UPDATE rq_cto 

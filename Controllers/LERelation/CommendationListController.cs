@@ -49,7 +49,7 @@ namespace KEISAN_HRIS_v2.Controllers.LERelation
         // ─────────────────────────────────────────────────────────────────────
 
         [HttpGet]
-        public JsonResult GetCommendationList(string status = "active")
+        public JsonResult GetCommendationList(string status = "active", string employeeNo = "", string department = "")
         {
             try
             {
@@ -73,6 +73,19 @@ namespace KEISAN_HRIS_v2.Controllers.LERelation
 
                 ApplyDataScopeFilter(query, parameters);
                 ApplyHiddenEmployeesFilter(query, parameters);
+
+                if (!string.IsNullOrWhiteSpace(employeeNo))
+                {
+                    query.Append(" AND c.employeeNo = @empFilter");
+                    parameters.Add("@empFilter", employeeNo);
+                }
+
+                if (!string.IsNullOrWhiteSpace(department) &&
+                    !department.Equals("ALL", StringComparison.OrdinalIgnoreCase))
+                {
+                    query.Append(" AND e.departmentCode = @department");
+                    parameters.Add("@department", department);
+                }
 
                 query.Append(" ORDER BY c.dtAdded DESC");
 
@@ -367,6 +380,61 @@ namespace KEISAN_HRIS_v2.Controllers.LERelation
             {
                 Console.WriteLine($"Error in GetCommendationAttachments: {ex.Message}");
                 return Json(new List<object>());
+            }
+        }
+
+        [HttpGet]
+        [Route("CommendationTab/GetCommendationTab")]
+        public IActionResult GetCommendationTab(string employeeNo, string mode = "EDIT")
+        {
+            // Row-level security
+            if (!string.IsNullOrWhiteSpace(employeeNo) && !CanViewEmployee(employeeNo))
+                return Content("<div class='alert alert-danger'>Access denied. You do not have permission to view this employee's commendations.</div>");
+
+            var model = new CommendationListModel
+            {
+                employeeNo = employeeNo ?? string.Empty
+            };
+
+            return PartialView("~/Views/Users/Partials/_Commendation.cshtml", model);
+        }
+
+        [HttpGet]
+        public JsonResult GetCommendationByEmployee(string employeeNo)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(employeeNo))
+                    return Json(new { data = new List<CommendationListModel>() });
+
+                // Row-level security
+                if (!CanViewEmployee(employeeNo))
+                    return Json(new { data = new List<CommendationListModel>(), error = "Access denied." });
+
+                var sql = @"
+                    SELECT
+                        c.id,
+                        c.employeeNo,
+                        c.commendationCode,
+                        c.activity,
+                        DATE_FORMAT(c.dateissued, '%Y/%m/%d') AS dateissued,
+                        c.addedby                             AS issuedBy,
+                        c.remarks,
+                        c.dtAdded,
+                        IFNULL(s.commendationName, '')        AS commendationType
+                    FROM e_commendation c
+                    LEFT JOIN s_commendation s ON c.commendationCode = s.commendationCode
+                    WHERE c.employeeNo = @employeeNo
+                      AND c.isActive   = 1
+                    ORDER BY c.dateissued DESC, c.dtAdded DESC";
+
+                var records = _db.Query<CommendationListModel>(sql, new { employeeNo }).AsList();
+                return Json(new { data = records });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetCommendationByEmployee: {ex.Message}");
+                return Json(new { data = new List<CommendationListModel>(), error = ex.Message });
             }
         }
 

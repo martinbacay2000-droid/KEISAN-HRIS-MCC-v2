@@ -37,7 +37,7 @@ namespace KEISAN_HRIS_v2.Services.EmployeeProfile
     {
         // ── Shared constants ─────────────────────────────────────────────────────
         private const string FontName = "Arial";
-        private const string CompanyFull = "BGISIS Development Corporation (Luxent Hotel)";
+        private const string CompanyFull = "COMPANY/CORPORATION NAME";
 
         public byte[] GenerateCoe(CoeData data)
         {
@@ -60,7 +60,7 @@ namespace KEISAN_HRIS_v2.Services.EmployeeProfile
                               .BorderColor(Colors.Grey.Medium)
                               .PaddingTop(6)
                               .AlignCenter()
-                              .Text("51 Timog Avenue, South Triangle, Quezon City 1103 Philippines     Tel: (63)(2) 8863-7777     www.luxenthotel.com")
+                              .Text("51 Timog Avenue, South Triangle, Quezon City 1103 Philippines     Tel: (63)(2) 8000-7000     www.companyname.com")
                               .FontFamily(FontName)
                               .FontSize(8)
                               .FontColor(Colors.Grey.Darken2);
@@ -70,7 +70,7 @@ namespace KEISAN_HRIS_v2.Services.EmployeeProfile
                     {
                         // ── Logo — left-aligned, fixed width ─────────────────
                         col.Item().Width(100)
-                            .Image("wwwroot/Fillow/images/luxent_logo.png");
+                            .Image("wwwroot/Fillow/images/your_logo_1.png");
 
                         col.Item().PaddingTop(30).Text("");
 
@@ -95,14 +95,14 @@ namespace KEISAN_HRIS_v2.Services.EmployeeProfile
                         col.Item().PaddingTop(40).Text("");
 
                         // ── Company name ──────────────────────────────────────
-                        col.Item().Text("Luxent Hotel").Bold();
+                        col.Item().Text("Company Name").Bold();
 
                         col.Item().PaddingTop(40).Text("");
 
                         // ── Signatory ─────────────────────────────────────────
                         col.Item().Text(txt =>
                         {
-                            txt.Line(data.SignatoryName ?? "EDITHA M. CARREON").Bold();
+                            txt.Line(data.SignatoryName ?? "Vince S. Carlos").Bold();
                             string signatoryTitle = ToTitleCaseSmart(
                                 (data.SignatoryTitle ?? "DIRECTOR OF HUMAN RESOURCES").ToLower());
                             txt.Line(signatoryTitle).FontSize(12);

@@ -893,12 +893,16 @@
                         width: "13%",
                         render: function (data, type, row) {
                             if (row.isActive == 0) {
-                                // Inactive: show Date Resigned (prefer rehired term date, fallback to initial)
                                 const resigned = row.dateOfEmpTermRehired || row.dateOfEmpTermInitial || '';
+                                if (type === 'sort' || type === 'type') {
+                                    return resigned ? new Date(resigned).getTime() : 0;
+                                }
                                 return `<span class="truncate" title="${resigned}">${resigned ? formatDate(resigned) : 'N/A'}</span>`;
                             } else {
-                                // Active: show Date Hired
                                 const hired = row.dateHired || '';
+                                if (type === 'sort' || type === 'type') {
+                                    return hired ? new Date(hired).getTime() : 0;
+                                }
                                 return `<span class="truncate" title="${hired}">${hired ? formatDate(hired) : 'N/A'}</span>`;
                             }
                         }

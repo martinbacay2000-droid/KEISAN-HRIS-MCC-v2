@@ -21,7 +21,7 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
             _db = db;
         }
 
-        // ================= RAW QUERY (COMPLETE WITH ALL TIMEKEEPING REQUESTS INCLUDING OFFSET) =================
+        // ================= RAW QUERY (COMPLETE WITH ALL TIMEKEEPING REQUESTS =================
         private async Task<List<ReviewDTRModel>> QuerySqlAsync(
             DateTime dateFrom, DateTime dateTo, string branchCode, string employeeNo)
         {
@@ -406,28 +406,7 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
                     CASE
                         WHEN tb.biometricsTimeOut IS NOT NULL THEN 1
                         ELSE 0
-                    END AS isTimeOutManuallyEdited,
-
-                    -- Allowance (sum all active allowances for this employee)
-                    COALESCE(
-                        (SELECT SUM(ea.allowanceAmount)
-                         FROM e_allowance ea
-                         WHERE ea.employeeNo = e.employeeNo
-                           AND ea.isActive = 1
-                           AND (ea.effectivityDate IS NULL OR ea.effectivityDate <= d.date_val)
-                        ), 0
-                    ) AS totalAllowanceAmount,
-
-                    -- Check if allowances are taxable
-                    COALESCE(
-                        (SELECT GROUP_CONCAT(DISTINCT sa.isTaxable SEPARATOR ',')
-                         FROM e_allowance ea
-                         JOIN s_allowance sa ON ea.allowanceCode = sa.allowanceCode
-                         WHERE ea.employeeNo = e.employeeNo
-                           AND ea.isActive = 1
-                           AND (ea.effectivityDate IS NULL OR ea.effectivityDate <= d.date_val)
-                        ), ''
-                    ) AS allowanceTaxableFlags
+                    END AS isTimeOutManuallyEdited
 
                 FROM e_basicinfo e
                 JOIN tmp_dates d
@@ -558,8 +537,14 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
             string branchCode,
             string employeeNo)
         {
-            var raw = await QuerySqlAsync(dateFrom, dateTo, branchCode, employeeNo);
-            var computed = ComputeAll(raw);
+            // Fetch one extra day before the cutoff so the absent-before-holiday
+            // rule can see the prior day even when a holiday lands on day 1
+            // of the cutoff. The extra day is trimmed out before returning.
+            var lookbackDateFrom = dateFrom.AddDays(-1);
+            var raw = await QuerySqlAsync(lookbackDateFrom, dateTo, branchCode, employeeNo);
+            var computed = ComputeAll(raw)
+                .Where(x => x.Raw.workDate.HasValue && x.Raw.workDate.Value.Date >= dateFrom.Date)
+                .ToList();
 
             return computed
                 .GroupBy(x => x.Raw.employeeNo)
@@ -627,8 +612,12 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
         public async Task<List<ReviewDTRViewModel>> GetDailyRowsAsync(
             DateTime dateFrom, DateTime dateTo, string branchCode, string employeeNo)
         {
-            var raw = await QuerySqlAsync(dateFrom, dateTo, branchCode, employeeNo);
-            var computed = ComputeAll(raw);
+            // Same lookback fix as GetSummaryAsync — see comment there.
+            var lookbackDateFrom = dateFrom.AddDays(-1);
+            var raw = await QuerySqlAsync(lookbackDateFrom, dateTo, branchCode, employeeNo);
+            var computed = ComputeAll(raw)
+                .Where(x => x.Raw.workDate.HasValue && x.Raw.workDate.Value.Date >= dateFrom.Date)
+                .ToList();
 
             return computed
                 .OrderBy(x => x.Raw.workDate)
@@ -746,20 +735,9 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
 
             foreach (var r in rows)
             {
-                // Fixed render employees — bypass all normal compute logic
-                if (IsFixedRenderEmployee(r.employeeNo))
-                {
-                    list.Add(ComputeFixedRender(r));
-                    continue;
-                }
 
                 // Determine employee rank type
-                bool isManager = IsManager(r.rankCode);
-                bool isSupervisor = IsSupervisor(r.rankCode);
                 bool isFlexiTime = IsFlexiTime(r.scheduleTypeCode, r.rankCode);
-                bool isNoPremiumPay = IsNoPremiumPay(r.rankCode);
-
-                double rendered = ComputeRendered(r);
 
                 var item = new DTRComputed
                 {
@@ -770,7 +748,7 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
 
                     // Calculate late/undertime normally - scheduleTimeIn/Out now reflects all requests
                     LateMinutes = ComputeLate(r, isFlexiTime),
-                    UnderTimeMinutes = ComputeUnderTime(r, isFlexiTime, isNoPremiumPay),
+                    UnderTimeMinutes = ComputeUnderTime(r, isFlexiTime),
 
                     // Initialize all to 0
                     RenderHours = 0,
@@ -812,10 +790,50 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
                     }
                 }
 
+                // ── ABSENT-BEFORE-HOLIDAY RULE ──────────────────────────────
+                // If the employee was ABSENT / NO TIMEOUT / NO SCHEDULE / on
+                // full-day LWOP / SUSPENDED / MATERNITY / PATERNITY leave on
+                // the day immediately before a holiday, the holiday itself is
+                // not paid — tagged ABSENT instead of processed as a holiday.
+                // Exceptions: REST DAY before holiday, and HALF-DAY LWOP
+                // before holiday, are both still paid normally.
+                if (r.holidayType != null)
+                {
+                    var prev = list.Count > 0 ? list[list.Count - 1] : null;
+
+                    bool isConsecutiveDay = prev != null
+                        && prev.Raw.employeeNo == r.employeeNo
+                        && prev.Raw.workDate.HasValue
+                        && r.workDate.HasValue
+                        && prev.Raw.workDate.Value.Date == r.workDate.Value.Date.AddDays(-1);
+
+                    bool prevIsHalfDayLWOP = prev != null
+                        && prev.Remarks == "NO PAY LEAVE"
+                        && prev.Raw.leaveCountDays == 0.5;
+
+                    bool prevBlocksHolidayPay = prev != null && !prevIsHalfDayLWOP &&
+                        (prev.Remarks == "ABSENT" ||
+                         prev.Remarks == "NO TIMEOUT" ||
+                         prev.Remarks == "NO SCHEDULE" ||
+                         prev.Remarks == "NO PAY LEAVE" ||      // full-day LWOP
+                         prev.Remarks == "SUSPENDED" ||         // SUS
+                         prev.Remarks == "MATERNITY LEAVE" ||   // ML
+                         prev.Remarks == "PATERNITY LEAVE");    // PL
+
+                    if (isConsecutiveDay && prevBlocksHolidayPay)
+                    {
+                        item.Remarks = "ABSENT";
+                        item.IsPresent = false;
+                        item.IsAbsent = true;
+                        list.Add(item);
+                        continue;
+                    }
+                }
+
                 if (r.holidayType == "Special Holiday" && r.isRestDay && !r.biometricsDateIn.HasValue)
                 {
                     // Rest Day on Special Holiday → separate columns
-                    var result = ComputeHolidayHours(r, isManager, isSupervisor);
+                    var result = ComputeHolidayHours(r);
                     item.SPLHolidayRESTHours = result.regularHours;
                     item.SPLHolidayRESTOTHours = result.otHours;
                     item.SPLHolidayRESTNDHours = result.ndHours;
@@ -827,7 +845,7 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
                 else if (r.holidayType == "Special Holiday")
                 {
                     // Regular Special Holiday
-                    var result = ComputeHolidayHours(r, isManager, isSupervisor);
+                    var result = ComputeHolidayHours(r);
                     item.SPLHolidayHours = result.regularHours;
                     item.SPLHolidayOTHours = result.otHours;
                     item.SPLHolidayNDHours = result.ndHours;
@@ -845,7 +863,7 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
                 else if (r.holidayType == "Legal Holiday" && r.isRestDay && !r.biometricsDateIn.HasValue)
                 {
                     // Rest Day on Legal Holiday → separate columns
-                    var result = ComputeHolidayHours(r, isManager, isSupervisor);
+                    var result = ComputeHolidayHours(r);
                     item.REGHolidayRESTHours = result.regularHours;
                     item.REGHolidayRESTOTHours = result.otHours;
                     item.REGHolidayRESTNDHours = result.ndHours;
@@ -857,7 +875,7 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
                 else if (r.holidayType == "Legal Holiday")
                 {
                     // Regular Legal Holiday
-                    var result = ComputeHolidayHours(r, isManager, isSupervisor);
+                    var result = ComputeHolidayHours(r);
                     item.REGHolidayHours = result.regularHours;
                     item.REGHolidayOTHours = result.otHours;
                     item.REGHolidayNDHours = result.ndHours;
@@ -879,7 +897,7 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
                 {
                     // OB/WFH/Change Schedule → ComputeNormalDayHours
                     // Only fires when NOT a rest day and NOT a holiday
-                    var result = ComputeNormalDayHours(r, isManager, isSupervisor);
+                    var result = ComputeNormalDayHours(r);
 
                     double maxRenderHours = GetMaxRenderHours(r);
                     item.RenderHours = Math.Min(result.regularHours + result.ndHours, maxRenderHours);
@@ -898,7 +916,7 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
                 else if (r.isRestDay || item.Remarks == "NO SCHEDULE")
                 {
                     // ComputeApprovedRDOT
-                    var result = ComputeApprovedRDOT(r, isManager, isSupervisor);
+                    var result = ComputeApprovedRDOT(r);
                     item.RDHours = result.regularHours;
                     item.RDOTHours = result.otHours;
                     item.RDNDHours = result.ndHours;
@@ -918,7 +936,7 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
                 else
                 {
                     // NORMAL DAY
-                    var result = ComputeNormalDayHours(r, isManager, isSupervisor);
+                    var result = ComputeNormalDayHours(r);
 
                     double maxRenderHours = GetMaxRenderHours(r);
                     item.RenderHours = Math.Min(result.regularHours + result.ndHours, maxRenderHours);
@@ -933,44 +951,6 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
                     item.OTHours = result.otHours;
                     item.NDHours = result.ndHours;
                     item.OTNDHours = result.otndHours;
-                }
-
-                // ── NO PREMIUM PAY (TOP MANAGEMENT / MANAGER / TEAM LEADER) ──
-                // Redirect holiday/rest day hours to RenderHours, zero out all premiums
-                if (isNoPremiumPay)
-                {
-                    // Redirect holiday and rest day hours to RenderHours
-                    double redirected =
-                        item.SPLHolidayHours + item.REGHolidayHours +
-                        item.SPLHolidayRESTHours + item.REGHolidayRESTHours +
-                        item.RDHours;
-
-                    item.RenderHours += redirected;
-
-                    // Zero out all premium columns
-                    item.OTHours = 0;
-                    item.OTNDHours = 0;
-                    item.NDHours = 0;
-                    item.RDHours = 0;
-                    item.RDOTHours = 0;
-                    item.RDNDHours = 0;
-                    item.RDNDOTHours = 0;
-                    item.SPLHolidayHours = 0;
-                    item.SPLHolidayOTHours = 0;
-                    item.SPLHolidayNDHours = 0;
-                    item.SPLHolidayNDOTHours = 0;
-                    item.REGHolidayHours = 0;
-                    item.REGHolidayOTHours = 0;
-                    item.REGHolidayNDHours = 0;
-                    item.REGHolidayNDOTHours = 0;
-                    item.SPLHolidayRESTHours = 0;
-                    item.SPLHolidayRESTOTHours = 0;
-                    item.SPLHolidayRESTNDHours = 0;
-                    item.SPLHolidayRESTNDOTHours = 0;
-                    item.REGHolidayRESTHours = 0;
-                    item.REGHolidayRESTOTHours = 0;
-                    item.REGHolidayRESTNDHours = 0;
-                    item.REGHolidayRESTNDOTHours = 0;
                 }
 
                 // Update IsPresent status
@@ -1002,38 +982,6 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
 
         // ================= HELPER METHODS =================
 
-        private bool IsFixedRenderEmployee(string employeeNo)
-        {
-            return employeeNo == "R00006" || employeeNo == "R00002";
-        }
-
-        private double GetFixedRenderHours(string employeeNo)
-        {
-            return employeeNo == "R00006" ? 9.6 : 8.0;
-        }
-
-        private bool IsManager(string rankCode)
-        {
-            if (string.IsNullOrEmpty(rankCode)) return false;
-            return rankCode == "MANAGER" ||
-                   rankCode == "TEAM LEADER" ||
-                   rankCode == "TOP MANAGEMENT";
-        }
-
-        private bool IsNoPremiumPay(string rankCode)
-        {
-            if (string.IsNullOrEmpty(rankCode)) return false;
-            return rankCode == "TOP MANAGEMENT" ||
-                   rankCode == "MANAGER" ||
-                   rankCode == "TEAM LEADER";
-        }
-
-        private bool IsSupervisor(string rankCode)
-        {
-            if (string.IsNullOrEmpty(rankCode)) return false;
-            return rankCode == "SUPERVISOR";
-        }
-
         private bool IsFlexiTime(string scheduleTypeCode, string rankCode)
         {
             // Priority 1: scheduleTypeCode
@@ -1044,46 +992,12 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
                     return true;
             }
 
-            // Priority 2: rankCode fallback
-            // FLEXI1 backup → SUPERVISOR
-            // FLEXI2 backup → TEAM LEADER, MANAGER, TOP MANAGEMENT
-
-            //if (!string.IsNullOrEmpty(rankCode))
-            //{
-            //    return // rankCode == "SUPERVISOR" ||   // FLEXI1 backup
-            //           rankCode == "TEAM LEADER" ||   // FLEXI2 backup
-            //           rankCode == "MANAGER" ||   // FLEXI2 backup
-            //           rankCode == "TOP MANAGEMENT";    // FLEXI2 backup
-            //}
-
             return false;
-        }
-
-        private double GetFlexiRequiredMinutes(string scheduleTypeCode, string rankCode)
-        {
-            // FLEXI1 or SUPERVISOR = 8 hrs (480 mins)
-            if (!string.IsNullOrEmpty(scheduleTypeCode) && scheduleTypeCode.ToUpper() == "FLEXI1")
-                return 480.0;
-
-            //if (!string.IsNullOrEmpty(rankCode) && rankCode == "SUPERVISOR")
-            //    return 480.0;
-
-            // FLEXI2 or TEAM LEADER / MANAGER / TOP MANAGEMENT = 9h36m (576 mins)
-            return 576.0;
         }
 
         private double GetMaxRenderHours(ReviewDTRModel r)
         {
-            // Flexi override — ignore e_schedule.totalRenderHour entirely
-            // FLEXI1 / SUPERVISOR     = 8 hrs hard cap
-            // FLEXI2 / TL/MGR/TOP MGT = 9.6 hrs hard cap
-            if (IsFlexiTime(r.scheduleTypeCode, r.rankCode))
-            {
-                double flexiMinutes = GetFlexiRequiredMinutes(r.scheduleTypeCode, r.rankCode);
-                return flexiMinutes / 60.0; // 480/60 = 8.0 or 576/60 = 9.6
-            }
-
-            // Non-flexi: read from e_schedule as before
+            // Flexi employees now use the same schedule-based cap as everyone else
             if (r.totalRenderHour.HasValue && r.totalRenderHour.Value > 0)
             {
                 double breakHours = (r.totalBreaktimeMinute ?? 0) / 60.0;
@@ -1117,14 +1031,6 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
             {
                 return "WORKING SPECIAL HOLIDAY";
             }
-
-            // Working on Rest Day
-            //if (r.isRestDay &&
-            //    (r.biometricsDateIn.HasValue ||
-            //     (r.overTimeDateIN.HasValue && r.overTimeIN.HasValue)))
-            //{
-            //    return "WORKING REST DAY";
-            //}
 
             // Change schedule overrides rest day — check FIRST
             if (r.changeScheduleID.HasValue && !string.IsNullOrEmpty(r.changeScheduleReason))
@@ -1173,11 +1079,11 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
             if (r.leaveCode == "PL") return "PATERNITY LEAVE";
             if (r.leaveCode == "SUS") return "SUSPENDED";
             if (r.leaveType != null) return "ON LEAVE";
-            // OB requires biometrics — no clock-in = absent
+            // OB approved — tagged Official Business and counted present,
+            // even without a biometrics clock-in (e.g. employee was out
+            // on official business for the whole day)
             if (!string.IsNullOrEmpty(r.obReason))
             {
-                if (!r.biometricsDateIn.HasValue)
-                    return "ABSENT";
                 return "OFFICIAL BUSINESS";
             }
 
@@ -1188,15 +1094,6 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
                     return "ABSENT";
                 return "WORK FROM HOME";
             }
-
-            // Change schedule remark
-            //if (r.changeScheduleID.HasValue && !string.IsNullOrEmpty(r.changeScheduleReason))
-            //{
-            //    // REST type change schedule → treat as rest day
-            //    if (r.changeScheduleTypeCode == "REST")
-            //        return "REST DAY";
-            //    return "CHANGE SCHEDULE";
-            //}
 
             // ===============================================
             // PRIORITY 4: Regular day statuses
@@ -1215,12 +1112,6 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
 
         private double ComputeLate(ReviewDTRModel r, bool isFlexiTime)
         {
-            // Fixed render employees are never late
-            if (IsFixedRenderEmployee(r.employeeNo)) return 0;
-
-            // Flexi-time employees are never late regardless of schedule
-            if (isFlexiTime) return 0;
-
             // Don't compute late for rest days WITHOUT a schedule
             if (r.isRestDay && !r.scheduleTimeIn.HasValue)
                 return 0;
@@ -1232,27 +1123,6 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
             if (!r.scheduleTimeIn.HasValue || !r.biometricsDateIn.HasValue)
                 return 0;
 
-            // Check for graveyard shift (earliest 6:30 PM)
-            var schedHour = r.scheduleTimeIn.Value.Hour;
-            //bool isGraveyardShift = schedHour >= 18 || schedHour <= 6;
-            bool isGraveyardShift = schedHour >= 18;
-
-            if (isGraveyardShift)
-            {
-                var graveyardStart = r.scheduleTimeIn.Value.Date.AddHours(18).AddMinutes(30);
-                if (r.biometricsDateIn.Value < graveyardStart)
-                    return 0;
-            }
-
-            //var diff = (r.biometricsDateIn.Value - r.scheduleTimeIn.Value).TotalMinutes;
-
-            //const double GRACE_PERIOD = 15;
-
-            //if (diff <= 0) return 0;
-            //if (diff <= GRACE_PERIOD) return 0;
-
-            //return Math.Round(diff - GRACE_PERIOD, 3, MidpointRounding.AwayFromZero);
-
             var diff = (r.biometricsDateIn.Value - r.scheduleTimeIn.Value).TotalMinutes;
 
             if (diff <= 0) return 0;
@@ -1260,71 +1130,11 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
             return Math.Round(diff, 3, MidpointRounding.AwayFromZero);
         }
 
-        private double ComputeUnderTime(ReviewDTRModel r, bool isFlexiTime, bool isNoPremiumPay = false)
+        private double ComputeUnderTime(ReviewDTRModel r, bool isFlexiTime)
         {
-            // Fixed render employees never have undertime
-            if (IsFixedRenderEmployee(r.employeeNo)) return 0;
-
-            // ── FLEXI TIME UNDERTIME ──────────────────────────────────────────
-            if (isFlexiTime)
-            {
-                // No biometrics = absent logic handles it, not undertime
-                if (!r.biometricsDateIn.HasValue)
-                    return 0;
-
-                // TOP MANAGEMENT / MANAGER / TEAM LEADER working on rest day or holiday
-                // with no schedule → no undertime, no deductions regardless of hours rendered
-                if (isNoPremiumPay && (r.isRestDay || r.holidayType != null) && !r.scheduleTimeIn.HasValue)
-                    return 0;
-
-                // Required minutes based on flexi type:
-                // FLEXI1 / SUPERVISOR     = 480 mins (8 hrs)
-                // FLEXI2 / TL/MGR/TOP MGT = 576 mins (9h36m)
-                double fullDayRequired = GetFlexiRequiredMinutes(r.scheduleTypeCode, r.rankCode);
-                double requiredMinutes = r.leaveCountDays == 0.5 ? fullDayRequired / 2.0 : fullDayRequired;
-
-                // Full day leave = no undertime
-                if (r.leaveCountDays >= 1)
-                    return 0;
-
-                // Determine effective end time
-                DateTime effectiveEnd;
-
-                // Half-day leave takes priority — use biometricsDateOut
-                if (r.leaveCountDays == 0.5)
-                {
-                    if (!r.biometricsDateOut.HasValue)
-                        return 0;
-                    effectiveEnd = r.biometricsDateOut.Value;
-                }
-                // Approved undertime — use undertimeTimeOUT as effective end
-                else if (r.undertimeID.HasValue &&
-                         r.underTimeDateOUT.HasValue &&
-                         r.undertimeTimeOUT.HasValue)
-                {
-                    effectiveEnd = r.underTimeDateOUT.Value.Date.Add(r.undertimeTimeOUT.Value);
-                }
-                // Normal flexi — use biometricsDateOut
-                else
-                {
-                    if (!r.biometricsDateOut.HasValue)
-                        return 0;
-                    effectiveEnd = r.biometricsDateOut.Value;
-                }
-
-                double actualMinutes = (effectiveEnd - r.biometricsDateIn.Value).TotalMinutes;
-                double undertime = requiredMinutes - actualMinutes;
-
-                return undertime > 0
-                    ? Math.Round(undertime, 3, MidpointRounding.AwayFromZero)
-                    : 0;
-            }
-
-            // ── NON-FLEXI UNDERTIME ───────────────────────────────────────────
-
-            // Approved undertime request = no penalty
-            //if (r.undertimeID.HasValue)
-            //    return 0;
+            // Flexi employees now use the same undertime measurement as everyone else
+            // (actual time-out vs. scheduled time-out) — only the "never late" perk
+            // in ComputeLate() remains flexi-specific.
 
             // Full day leave = no undertime
             if (r.leaveCountDays >= 1)
@@ -1354,115 +1164,12 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
                 : 0;
         }
 
-        private double ComputeRendered(ReviewDTRModel r)
-        {
-            if (!r.biometricsDateIn.HasValue || !r.biometricsDateOut.HasValue) return 0;
-            return Math.Round((r.biometricsDateOut.Value - r.biometricsDateIn.Value).TotalHours, 3, MidpointRounding.AwayFromZero);
-        }
-
-        /// <summary>
-        /// Fixed render for specific employees (R00006, R00002)
-        /// Automatic time in/out if they have a schedule
-        /// Rest day = no credit (scheduleTimeIn = NULL)
-        /// No late, no UT, no ND, no OT ever
-        /// Routes to correct day type column
-        /// </summary>
-        private DTRComputed ComputeFixedRender(ReviewDTRModel r)
-        {
-            double fixedHours = GetFixedRenderHours(r.employeeNo);
-
-            var item = new DTRComputed
-            {
-                Raw = r,
-                Remarks = GetRemarks(r),
-                IsPresent = false,
-                IsAbsent = false,
-                LateMinutes = 0,
-                UnderTimeMinutes = 0,
-                RenderHours = 0,
-                NDHours = 0,
-                OTHours = 0,
-                OTNDHours = 0,
-                RDHours = 0,
-                RDOTHours = 0,
-                RDNDHours = 0,
-                RDNDOTHours = 0,
-                SPLHolidayHours = 0,
-                SPLHolidayOTHours = 0,
-                SPLHolidayNDHours = 0,
-                SPLHolidayNDOTHours = 0,
-                REGHolidayHours = 0,
-                REGHolidayOTHours = 0,
-                REGHolidayNDHours = 0,
-                REGHolidayNDOTHours = 0,
-                SPLHolidayRESTHours = 0,
-                SPLHolidayRESTOTHours = 0,
-                SPLHolidayRESTNDHours = 0,
-                SPLHolidayRESTNDOTHours = 0,
-                REGHolidayRESTHours = 0,
-                REGHolidayRESTOTHours = 0,
-                REGHolidayRESTNDHours = 0,
-                REGHolidayRESTNDOTHours = 0
-            };
-
-            // No schedule (including rest days) = no credit
-            if (!r.scheduleTimeIn.HasValue)
-            {
-                item.Remarks = item.Remarks == "REST DAY" ? "REST DAY" : "NO SCHEDULE";
-                item.IsAbsent = false;
-                return item;
-            }
-
-            // ── Holiday = no credit for fixed render employees ──
-            // Fixed render employees do not work on holidays — no hours, no pay
-            if (r.holidayType == "Legal Holiday" || r.holidayType == "Special Holiday")
-            {
-                item.Remarks = r.holidayType == "Legal Holiday" ? "LEGAL HOLIDAY" : "SPECIAL HOLIDAY";
-                item.IsPresent = false;
-                item.IsAbsent = false;
-                return item;
-            }
-            // ───────────────────────────────────────────────────
-
-            // Route fixed hours to correct day type column
-            if (r.holidayType == "Special Holiday" && r.isRestDay)
-            {
-                item.SPLHolidayRESTHours = fixedHours;
-                item.Remarks = "WORKING SPECIAL HOLIDAY";
-            }
-            else if (r.holidayType == "Special Holiday")
-            {
-                item.SPLHolidayHours = fixedHours;
-                item.Remarks = "WORKING SPECIAL HOLIDAY";
-            }
-            else if (r.holidayType == "Legal Holiday" && r.isRestDay)
-            {
-                item.REGHolidayRESTHours = fixedHours;
-                item.Remarks = "WORKING LEGAL HOLIDAY";
-            }
-            else if (r.holidayType == "Legal Holiday")
-            {
-                item.REGHolidayHours = fixedHours;
-                item.Remarks = "WORKING LEGAL HOLIDAY";
-            }
-            else
-            {
-                item.RenderHours = fixedHours;  // Normal day
-            }
-
-            // Always present on scheduled days
-            item.IsPresent = true;
-            item.IsAbsent = false;
-
-            return item;
-        }
-
         /// <summary>
         /// Computes normal day hours with proper separation of Regular, OT, and ND
         /// Returns: (regularHours, otHours, ndHours)
         /// </summary>
         private (double regularHours, double otHours, double ndHours, double otndHours) ComputeNormalDayHours(
-            ReviewDTRModel r, bool isManager, bool isSupervisor)
+            ReviewDTRModel r)
         {
             // Must have biometrics
             if (!r.biometricsDateIn.HasValue || !r.biometricsDateOut.HasValue)
@@ -1498,7 +1205,7 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
 
                 regularHours = (regularEnd - workStart).TotalHours;
 
-                // FIX: Calculate ND over the full schedule window (not just up to regularEnd)
+                // Calculate ND over the full schedule window (not just up to regularEnd)
                 // so overnight shifts hitting 10PM–6AM get the full ND credit.
                 DateTime ndWindowEnd = r.scheduleTimeOut.HasValue && r.scheduleTimeOut.Value < workEnd
                     ? r.scheduleTimeOut.Value
@@ -1510,7 +1217,7 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
 
             // STEP 2: Calculate OT hours (after schedule end)
             // Managers don't get OT
-            if (!isManager && r.overTimeDateIN.HasValue && r.overTimeDateOUT.HasValue)
+            if (r.overTimeDateIN.HasValue && r.overTimeDateOUT.HasValue)
             {
                 var approvedOTStart = r.overTimeDateIN.Value.Add(r.overTimeIN ?? TimeSpan.Zero);
                 var approvedOTEnd = r.overTimeDateOUT.Value.Add(r.overTimeOUT ?? TimeSpan.Zero);
@@ -1529,39 +1236,13 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
                     var (otNonND, otND) = SplitHoursByNDPeriod(otStart, otEnd, ndStart, ndEnd);
 
                     // Total OT hours including ND portion for minimum check
+                    // Total OT hours including ND portion
                     double totalOTHours = otNonND + otND;
 
-                    // Apply minimum OT rules based on total OT hours
-                    if (isSupervisor)
-                    {
-                        // Supervisors: minimum 2 hours
-                        if (totalOTHours >= 2)
-                        {
-                            // otHours = otNonND;
-                            //otNDHours = otND; // stored separately, NOT merged into ndHours
-                            otHours = totalOTHours; // full OT duration (non-ND + ND)
-                            otNDHours = otND;       // ND overlap portion only
-                        }
-                    }
-                    else
-                    {
-                        // Rank and File: minimum 1 hour
-                        if (totalOTHours >= 1)
-                        {
-                            //otHours = otNonND;
-                            //otNDHours = otND; // stored separately, NOT merged into ndHours
-                            otHours = totalOTHours; // full OT duration (non-ND + ND)
-                            otNDHours = otND;       // ND overlap portion only
-                        }
-                    }
+                    // No minimum-hour gate — any OT duration counted in full
+                    otHours = totalOTHours; // full OT duration (non-ND + ND)
+                    otNDHours = otND;       // ND overlap portion only
                 }
-            }
-
-            // Managers are not entitled to night differential
-            if (isManager)
-            {
-                ndHours = 0;
-                otNDHours = 0; // managers don't get OT ND either
             }
 
             return (
@@ -1579,7 +1260,7 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
         /// Returns: (regularHours, otHours, ndHours)
         /// </summary>
         private (double regularHours, double otHours, double ndHours, double ndOTHours) ComputeHolidayHours(
-            ReviewDTRModel r, bool isManager, bool isSupervisor)
+            ReviewDTRModel r)
         {
             DateTime? workStart = null;
             DateTime? workEnd = null;
@@ -1604,16 +1285,6 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
 
             DateTime actualWorkStart = workStart.Value;
             DateTime actualWorkEnd = workEnd.Value;
-
-            //if (r.biometricsDateIn.HasValue && r.biometricsDateOut.HasValue &&
-            //    r.overTimeDateIN.HasValue && r.overTimeDateOUT.HasValue &&
-            //    r.overTimeIN.HasValue && r.overTimeOUT.HasValue)
-            //{
-            //    var approvedStart = r.overTimeDateIN.Value.Add(r.overTimeIN.Value);
-            //    var approvedEnd = r.overTimeDateOUT.Value.Add(r.overTimeOUT.Value);
-            //    actualWorkStart = approvedStart > actualWorkStart ? approvedStart : actualWorkStart;
-            //    actualWorkEnd = approvedEnd < actualWorkEnd ? approvedEnd : actualWorkEnd;
-            //}
 
             if (actualWorkEnd <= actualWorkStart)
                 return (0, 0, 0, 0);
@@ -1638,7 +1309,7 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
 
             regularHours = (regularEnd - actualWorkStart).TotalHours;
 
-            // FIX: Calculate ND over the full schedule window (not just the first 8 regular hours)
+            // Calculate ND over the full schedule window (not just the first 8 regular hours)
             // so overnight shifts hitting 10PM–6AM get the full ND credit.
             DateTime ndWindowEnd = r.scheduleTimeOut.HasValue && r.scheduleTimeOut.Value < actualWorkEnd
                 ? r.scheduleTimeOut.Value
@@ -1649,7 +1320,7 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
 
             // Beyond 8 hours — OT portion
             // Requires approved OT filing, same as normal day
-            if (!isManager && r.overTimeDateIN.HasValue && r.overTimeDateOUT.HasValue
+            if (r.overTimeDateIN.HasValue && r.overTimeDateOUT.HasValue
                 && r.overTimeIN.HasValue && r.overTimeOUT.HasValue)
             {
                 var approvedOTStart = r.overTimeDateIN.Value.Add(r.overTimeIN.Value);
@@ -1668,22 +1339,10 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
                     var (otNonND, otND) = SplitHoursByNDPeriod(otStart, otEnd, ndStart, ndEnd);
                     var totalOTHours = otNonND + otND;
 
-                    bool meetsMinimum = isSupervisor ? totalOTHours >= 2 : totalOTHours >= 1;
-
-                    if (meetsMinimum)
-                    {
-                        //otHours = otNonND + otND;
-                        //ndOTHours = otND;
-                        otHours = totalOTHours; // full OT duration (non-ND + ND)
-                        ndOTHours = otND;       // ND overlap portion only
-                    }
+                    // No minimum-hour gate — any OT duration counted in full
+                    otHours = totalOTHours; // full OT duration (non-ND + ND)
+                    ndOTHours = otND;       // ND overlap portion only
                 }
-            }
-
-            if (isManager)
-            {
-                ndHours = 0;
-                ndOTHours = 0;
             }
 
             return (
@@ -1700,7 +1359,7 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
         /// Returns: (regularHours, otHours, ndHours)
         /// </summary>
         private (double regularHours, double otHours, double ndHours, double ndOTHours) ComputeApprovedRDOT(
-            ReviewDTRModel r, bool isManager, bool isSupervisor)
+            ReviewDTRModel r)
         {
             DateTime? workStart = null;
             DateTime? workEnd = null;
@@ -1726,16 +1385,6 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
             DateTime actualWorkStart = workStart.Value;
             DateTime actualWorkEnd = workEnd.Value;
 
-            //if (r.biometricsDateIn.HasValue && r.biometricsDateOut.HasValue &&
-            //    r.overTimeDateIN.HasValue && r.overTimeDateOUT.HasValue &&
-            //    r.overTimeIN.HasValue && r.overTimeOUT.HasValue)
-            //{
-            //    var approvedStart = r.overTimeDateIN.Value.Add(r.overTimeIN.Value);
-            //    var approvedEnd = r.overTimeDateOUT.Value.Add(r.overTimeOUT.Value);
-            //    actualWorkStart = approvedStart > actualWorkStart ? approvedStart : actualWorkStart;
-            //    actualWorkEnd = approvedEnd < actualWorkEnd ? approvedEnd : actualWorkEnd;
-            //}
-
             if (actualWorkEnd <= actualWorkStart)
                 return (0, 0, 0, 0);
 
@@ -1759,7 +1408,7 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
 
             regularHours = (regularEnd - actualWorkStart).TotalHours;
 
-            // FIX: Calculate ND over the full schedule window (not just the first 8 regular hours)
+            // Calculate ND over the full schedule window (not just the first 8 regular hours)
             // so overnight shifts hitting 10PM–6AM get the full ND credit.
             DateTime ndWindowEnd = r.scheduleTimeOut.HasValue && r.scheduleTimeOut.Value < actualWorkEnd
                 ? r.scheduleTimeOut.Value
@@ -1770,7 +1419,7 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
 
             // Beyond 8 hours — RD OT portion
             // Requires approved OT filing, same as normal day
-            if (!isManager && r.overTimeDateIN.HasValue && r.overTimeDateOUT.HasValue
+            if (r.overTimeDateIN.HasValue && r.overTimeDateOUT.HasValue
                 && r.overTimeIN.HasValue && r.overTimeOUT.HasValue)
             {
                 var approvedOTStart = r.overTimeDateIN.Value.Add(r.overTimeIN.Value);
@@ -1789,22 +1438,10 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
                     var (otNonND, otND) = SplitHoursByNDPeriod(otStart, otEnd, ndStart, ndEnd);
                     var totalOTHours = otNonND + otND;
 
-                    bool meetsMinimum = isSupervisor ? totalOTHours >= 2 : totalOTHours >= 1.0 - 0.001;
-
-                    if (meetsMinimum)
-                    {
-                        //otHours = otNonND + otND;
-                        //ndOTHours = otND;
-                        otHours = totalOTHours; // full OT duration (non-ND + ND)
-                        ndOTHours = otND;       // ND overlap portion only
-                    }
+                    // No minimum-hour gate — any OT duration counted in full
+                    otHours = totalOTHours; // full OT duration (non-ND + ND)
+                    ndOTHours = otND;       // ND overlap portion only
                 }
-            }
-
-            if (isManager)
-            {
-                ndHours = 0;
-                ndOTHours = 0;
             }
 
             return (
@@ -1815,32 +1452,6 @@ namespace KEISAN_HRIS_v2.Services.TimeKeeping
             );
         }
 
-        /// <summary>
-        /// Helper method to split a time period into ND and non-ND hours
-        /// ND period is 10 PM - 6 AM
-        /// Returns: (nonNDHours, ndHours)
-        /// </summary>
-        //private (double nonND, double nd) SplitHoursByNDPeriod(
-        //    DateTime start, DateTime end, DateTime ndStart, DateTime ndEnd)
-        //{
-        //    if (start >= end) return (0, 0);
-
-        //    double totalHours = (end - start).TotalHours;
-        //    double ndHours = 0;
-
-        //    // Calculate overlap with ND period
-        //    var overlapStart = start > ndStart ? start : ndStart;
-        //    var overlapEnd = end < ndEnd ? end : ndEnd;
-
-        //    if (overlapEnd > overlapStart)
-        //    {
-        //        ndHours = (overlapEnd - overlapStart).TotalHours;
-        //    }
-
-        //    double nonNDHours = totalHours - ndHours;
-
-        //    return (nonNDHours, ndHours);
-        //}
         private (double nonND, double nd) SplitHoursByNDPeriod(
             DateTime start, DateTime end, DateTime ndStart, DateTime ndEnd)
         {

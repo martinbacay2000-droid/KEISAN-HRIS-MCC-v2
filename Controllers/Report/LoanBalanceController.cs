@@ -48,7 +48,8 @@ namespace KEISAN_HRIS_v2.Controllers.Report
                                 AND m.isActive = 1
                                 AND m.statusName = 'Added'), 0)
                     , 2) AS DECIMAL(10,2)) AS loanBalance,
-                    el.statusName AS loanStatus
+                    el.statusName AS loanStatus,
+                    el.remarks
                 FROM e_loan el
                 LEFT JOIN s_loan sl ON sl.loanCode = el.loanCode
                 LEFT JOIN e_basicinfo b ON b.employeeNo = el.employeeNo

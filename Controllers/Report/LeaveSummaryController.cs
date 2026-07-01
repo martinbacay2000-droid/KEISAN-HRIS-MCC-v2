@@ -57,8 +57,14 @@ namespace KEISAN_HRIS_v2.Controllers.Report
                 LEFT JOIN s_branch br ON br.branchCode = b.branchCode
                 LEFT JOIN e_basicinfo a ON a.employeeNo = r.requestedByUser
                 WHERE r.isActive = 1
-                    AND r.statusLevel4 IN ('Approved', 'Processed')
-                    AND r.leaveCode != 'CTO'
+                AND (
+                    (b.branchCode = 'REGULAR' AND r.statusLevel4 = 'Processed')
+                    OR
+                    (b.branchCode = 'CASUAL' AND r.statusLevel4 IN ('Approved', 'Processed'))
+                    OR
+                    (b.branchCode NOT IN ('REGULAR', 'CASUAL') AND r.statusLevel4 IN ('Approved', 'Processed'))
+                )
+                AND r.leaveCode != 'CTO'
                     AND (@brcode IS NULL OR @brcode = '' OR @brcode = 'ALL' 
                          OR b.branchCode = @brcode)
                     AND (@department IS NULL OR @department = '' OR @department = 'ALL' 

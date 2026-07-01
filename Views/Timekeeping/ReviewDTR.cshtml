@@ -90,14 +90,14 @@
                 <!-- ACTION BUTTONS -->
                 <div class="col-md-12 d-flex justify-content-end align-items-start" style="margin-top:15px;gap:10px;">
 
-                    <div class="form-group">
+                    @* <div class="form-group">
                         <button type="button" class="btn btn-danger" id="lockDtr" style="display:none;" disabled>
                             <i class="fas fa-lock"></i> Lock DTR
                         </button>
                         <button type="button" class="btn btn-warning" id="unlockDtr" style="display:none;" disabled>
                             <i class="fas fa-lock-open"></i> Unlock DTR
                         </button>
-                    </div>
+                    </div> *@
                     @if ((Context.Session.GetString("roleCode") ?? "").Trim().ToUpper() != "HR CASUAL")
                     {
                         <div class="form-group">

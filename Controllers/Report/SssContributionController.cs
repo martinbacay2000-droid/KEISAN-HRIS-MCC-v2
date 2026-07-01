@@ -107,7 +107,7 @@ namespace KEISAN_HRIS_v2.Controllers.Users
             string sssNo = (string?)payroll?.sssNo ?? "";
 
             // ── 7. Signatory ──────────────────────────────────────────────────
-            string signatoryName = "EDITHA M. CARREON";
+            string signatoryName = "Vince S. Carlos";
             string signatoryTitle = "DIRECTOR OF HUMAN RESOURCES";
 
             // ── 8. Fetch SSS contributions — same dynamic WHERE as PhilHealth ─
@@ -184,7 +184,7 @@ namespace KEISAN_HRIS_v2.Controllers.Users
                 Purpose = string.IsNullOrWhiteSpace(purpose) ? "" : purpose.Trim(),
                 IssuedDate = issued,
                 IssuedCity = "Quezon City",
-                CompanyName = "Luxent Hotel",
+                CompanyName = "Company Name",
                 SignatoryName = signatoryName,
                 SignatoryTitle = signatoryTitle,
                 Rows = rows

@@ -107,7 +107,7 @@ namespace KEISAN_HRIS_v2.Controllers.Users
             string hdmfNo = (string?)payroll?.hdmfNo ?? "";
 
             // ── 7. Signatory ──────────────────────────────────────────────────
-            string signatoryName = "EDITHA M. CARREON";
+            string signatoryName = "Vince S. Carlos";
             string signatoryTitle = "DIRECTOR OF HUMAN RESOURCES";
 
             // ── 8. Fetch Pag-IBIG contributions — dynamic WHERE per year ──────
@@ -180,7 +180,7 @@ namespace KEISAN_HRIS_v2.Controllers.Users
                 Purpose = string.IsNullOrWhiteSpace(purpose) ? "" : purpose.Trim(),
                 IssuedDate = issued,
                 IssuedCity = "Quezon City",
-                CompanyName = "Luxent Hotel",
+                CompanyName = "Company Name",
                 SignatoryName = signatoryName,
                 SignatoryTitle = signatoryTitle,
                 Rows = rows

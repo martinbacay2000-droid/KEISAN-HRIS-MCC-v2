@@ -65,7 +65,7 @@ Sidebar start
 						{
 							<li><a href="@Url.Action("EmployeeBenefitSettings", "Users")">Employee Benefit Settings</a></li>
 						}
-						
+
 						@* <li hidden><a href="@Url.Action("action", "ControllerHere")">Request Document</a></li> *@
 					</ul>
 				</li>
@@ -127,7 +127,7 @@ Sidebar start
 						@if (AccessHelper.CanView(Context, "RworkOnOffM"))
 						{
 							<li><a href="@Url.Action("Index", "WFHRequest")">Work From Home Request</a></li>
-						}													  																											
+						}
 					</ul>
 				</li>
 			}
@@ -200,6 +200,14 @@ Sidebar start
 						@if (AccessHelper.CanView(Context, "TpostedPayrollRegisterM"))
 						{
 							<li><a href="@Url.Action("Index", "PayrollRegisterPosted")">Posted Payroll Register</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "TprocessLastPayM"))
+						{
+							<li><a href="@Url.Action("Index", "ProcessLastPay")">Process Last Pay</a></li>
+						}
+						@if (AccessHelper.CanView(Context, "Tprocess13thMonthM"))
+						{
+							<li><a href="@Url.Action("Index", "Process13thMonth")">Process 13th Month</a></li>
 						}
 						@* @if (AccessHelper.CanView(Context, "FemployeeM"))
 						{
@@ -341,7 +349,7 @@ Sidebar start
 			@if (AccessHelper.CanView(Context, "uploadM"))
 			{
 
-			@* 	<!-- Upload -->
+				@* 	<!-- Upload -->
 				<li>
 					<a class="has-arrow " href="javascript:void(0)" aria-expanded="false">
 					<i class="fas fa-upload"></i>
@@ -477,14 +485,14 @@ Sidebar start
 
 			<!-- Annoncement -->
 			@if (AccessHelper.CanView(Context, "AAnnouncementM"))
-				{
-					<li>
-						<a class="has-arrow " href="javascript:void(0)" aria-expanded="false">
+			{
+				<li>
+					<a class="has-arrow " href="javascript:void(0)" aria-expanded="false">
 						<i class="fas fa-bullhorn"></i>
 						<span class="nav-text">Announcement</span>
 					</a>
 					<ul aria-expanded="false">
-							<li><a href="@Url.Action("Index", "AnnouncementList")">Announcement List</a></li>
+						<li><a href="@Url.Action("Index", "AnnouncementList")">Announcement List</a></li>
 					</ul>
 				</li>
 			}
@@ -492,10 +500,10 @@ Sidebar start
 			{
 				<li>
 					<a class="has-arrow " href="javascript:void(0)" aria-expanded="false">
-					<i class="fas fa-file-upload"></i>
-					<span class="nav-text">Uploader</span>
-				</a>
-				<ul aria-expanded="false">
+						<i class="fas fa-file-upload"></i>
+						<span class="nav-text">Uploader</span>
+					</a>
+					<ul aria-expanded="false">
 						@if (AccessHelper.CanView(Context, "UadjustmentUploader"))
 						{
 							<li><a href="@Url.Action("Index", "AdjustmentRequestListImport")">Adjustment</a></li>
@@ -514,10 +522,10 @@ Sidebar start
 						}
 						@if (AccessHelper.CanView(Context, "UloanUploader"))
 						{
-						<li><a href="@Url.Action("Index", "LoansImport")">Loans</a></li>
+							<li><a href="@Url.Action("Index", "LoansImport")">Loans</a></li>
 						}
-				</ul>
-			</li>
+					</ul>
+				</li>
 			}
 
 			<!-- Audit Trail -->

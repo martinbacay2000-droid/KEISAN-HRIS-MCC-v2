@@ -446,7 +446,12 @@
 						$input.attr('id') !== 'addInterestAmount' &&
 						$input.attr('id') !== 'viewInterestAmount' &&
 						$input.attr('id') !== 'addDeductionPerCutoff' &&
-						$input.attr('id') !== 'viewDeductionPerCutoff') {
+						$input.attr('id') !== 'viewDeductionPerCutoff' &&
+						$input.attr('id') !== 'basicMonthlyPay' &&
+						$input.attr('id') !== 'dailyRate' &&
+						$input.attr('id') !== 'hourlyRate' &&
+						$input.attr('id') !== 'meritServicePay' &&
+						$input.attr('id') !== 'basicSalary') {
 						const numberRegex = /[^0-9]/g;
 						if (numberRegex.test(value)) {
 							$input.val(value.replace(numberRegex, ''));

@@ -128,6 +128,19 @@
                             </div>
 
                             <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="addTimeIn" class="form-label">Time In <span class="text-danger">*</span></label>
+                                    <input type="time" class="form-control" id="addTimeIn" name="overTimeIN" required>
+                                    <div class="invalid-feedback">Please select time in.</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="addTimeOut" class="form-label">Time Out <span class="text-danger">*</span></label>
+                                    <input type="time" class="form-control" id="addTimeOut" name="overTimeOUT" required>
+                                    <div class="invalid-feedback">Please select time out.</div>
+                                </div>
+                            </div>
+
+                            <div class="row">
                                 <div class="col-md-12 mb-3">
                                     <label for="addReason" class="form-label">Reason <span class="text-danger">*</span></label>
                                     <textarea class="form-control" id="addReason" name="offsetReason" rows="3" required maxlength="500" placeholder="Enter reason for offset credit..."></textarea>
@@ -166,6 +179,7 @@
                         <form id="viewOffsetRequestForm">
                             <input type="hidden" id="viewOffsetRequestId" name="id">
                             <input type="hidden" id="viewOffsetRequestStatus" name="statusName">
+                            <input type="hidden" id="viewOriginalOffsetDays" value="0">
 
                             <div class="row">
                                 <div class="col-md-12 mb-3">
@@ -193,6 +207,19 @@
                                         <div class="icon"><i class="far fa-calendar"></i></div>
                                     </div>
                                     <div class="invalid-feedback">Please select offset date out.</div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="viewTimeIn" class="form-label">Time In <span class="text-danger edit-required d-none">*</span></label>
+                                    <input type="time" class="form-control" id="viewTimeIn" name="overTimeIN" readonly>
+                                    <div class="invalid-feedback">Please select time in.</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="viewTimeOut" class="form-label">Time Out <span class="text-danger edit-required d-none">*</span></label>
+                                    <input type="time" class="form-control" id="viewTimeOut" name="overTimeOUT" readonly>
+                                    <div class="invalid-feedback">Please select time out.</div>
                                 </div>
                             </div>
 
@@ -623,17 +650,31 @@
                 return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
             }
 
-            // ── HELPER: Compute days from two dates ───────────────────────────────
+            // ── HELPER: Compute offset days from dates + time in/out ───────────────
             // Same rule as server: days = (dateOut - dateIn).Days + 1
-            // Same-day = 1 day, next-day = 2 days, etc.
-            function computeDaysFromDates(dateInStr, dateOutStr) {
-                if (!dateInStr || !dateOutStr) return null;
+            // hoursPerDay = timeOut - timeIn (minus 1hr lunch if span crosses 12:00 PM)
+            // offsetDays = (hoursPerDay * days) / 8
+            function computeDaysFromDates(dateInStr, dateOutStr, timeInStr, timeOutStr) {
+                if (!dateInStr || !dateOutStr || !timeInStr || !timeOutStr) return null;
                 const dateIn  = new Date(toISODate(dateInStr));
                 const dateOut = new Date(toISODate(dateOutStr));
                 if (isNaN(dateIn) || isNaN(dateOut)) return null;
+
                 const diffMs   = dateOut - dateIn;
                 const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
-                return diffDays < 0 ? null : diffDays + 1;
+                if (diffDays < 0) return null;
+                const numDays = diffDays + 1;
+
+                const [inH, inM]   = timeInStr.split(':').map(Number);
+                const [outH, outM] = timeOutStr.split(':').map(Number);
+                let hoursPerDay = (outH + outM / 60) - (inH + inM / 60);
+                if (hoursPerDay <= 0) return null;
+
+                const crossesNoon = (inH + inM / 60) < 12 && (outH + outM / 60) > 12;
+                if (crossesNoon) hoursPerDay -= 1;
+                if (hoursPerDay < 0) hoursPerDay = 0;
+
+                return (hoursPerDay * numDays) / 8;
             }
 
             // EVENT HANDLERS - ADD MODAL
@@ -652,6 +693,11 @@
                         loadCTOBalanceTracker(currentEmployeeData.employeeNo, '#addCTOBalanceTracker');
                     }
                 }
+
+                setTimeout(() => {
+                    $('#addTimeIn').val('08:00');
+                    $('#addTimeOut').val('17:00');
+                }, 100);
 
                 $('#addOffsetRequestModal').modal('show');
             });
@@ -675,13 +721,15 @@
 
             // SAVE NEW REQUEST
             $('#btnSaveNewOffsetRequest').click(() => {
-                if (!validateForm('#addOffsetRequestForm', ['addEmployeeName', 'addReason', 'addDateIn', 'addDateOut'])) return;
+                if (!validateForm('#addOffsetRequestForm', ['addEmployeeName', 'addReason', 'addDateIn', 'addDateOut', 'addTimeIn', 'addTimeOut'])) return;
                 if (!validateDates('#addDateIn', '#addDateOut')) return;
 
                 const formData = new FormData();
                 formData.append('employeeNo',      $('#addEmployeeName').val());
                 formData.append('overTimeDateIN',  toISODate($('#addDateIn').val()));
+                formData.append('overTimeIN',      $('#addTimeIn').val());
                 formData.append('overTimeDateOUT', toISODate($('#addDateOut').val()));
+                formData.append('overTimeOUT',     $('#addTimeOut').val());
                 formData.append('overTimeReason',  $('#addReason').val().trim());
                 formData.append('remarks',         $('#addRemarks').val().trim());
 
@@ -784,14 +832,16 @@
 
             // SAVE UPDATED REQUEST
             $('#btnSaveOffsetRequest').click(() => {
-                if (!validateForm('#viewOffsetRequestForm', ['viewEmployeeName', 'viewReason', 'viewDateIn', 'viewDateOut'])) return;
+                if (!validateForm('#viewOffsetRequestForm', ['viewEmployeeName', 'viewReason', 'viewDateIn', 'viewDateOut', 'viewTimeIn', 'viewTimeOut'])) return;
                 if (!validateDates('#viewDateIn', '#viewDateOut')) return;
 
                 const formData = new FormData();
                 formData.append('id',              $('#viewOffsetRequestId').val());
                 formData.append('employeeNo',      $('#viewEmployeeName').val());
                 formData.append('overTimeDateIN',  toISODate($('#viewDateIn').val()));
+                formData.append('overTimeIN',      $('#viewTimeIn').val());
                 formData.append('overTimeDateOUT', toISODate($('#viewDateOut').val()));
+                formData.append('overTimeOUT',     $('#viewTimeOut').val());
                 formData.append('overTimeReason',  $('#viewReason').val().trim());
                 formData.append('remarks',         $('#viewRemarks').val().trim());
 
@@ -823,12 +873,12 @@
                 if (empNo) loadCTOBalanceTracker(empNo, '#viewCTOBalanceTracker');
             });
 
-            // DATE CHANGE → Update Usage Indicator
-            $('#addDateIn, #addDateOut').on('change', function () {
+            // DATE/TIME CHANGE → Update Usage Indicator
+            $('#addDateIn, #addDateOut, #addTimeIn, #addTimeOut').on('change', function () {
                 updateCTOUsageIndicator('#addCTOBalanceTracker');
             });
 
-            $('#viewDateIn, #viewDateOut').on('change', function () {
+            $('#viewDateIn, #viewDateOut, #viewTimeIn, #viewTimeOut').on('change', function () {
                 if ($('#viewOffsetRequestModal .modal-body').hasClass('edit-mode')) {
                     updateCTOUsageIndicator('#viewCTOBalanceTracker');
                 }
@@ -854,8 +904,8 @@
             });
 
             // VALIDATION CLEAR ON INPUT
-            $('#addEmployeeName, #addReason, #addDateIn, #addDateOut, #addRemarks,' +
-              '#viewEmployeeName, #viewReason, #viewDateIn, #viewDateOut, #viewRemarks')
+            $('#addEmployeeName, #addReason, #addDateIn, #addDateOut, #addTimeIn, #addTimeOut, #addRemarks,' +
+              '#viewEmployeeName, #viewReason, #viewDateIn, #viewDateOut, #viewTimeIn, #viewTimeOut, #viewRemarks')
                 .on('input change', function () { $(this).removeClass('is-invalid'); });
 
             // PRINT PDF
@@ -1028,10 +1078,12 @@
                 const isAddModal = trackerSelector === '#addCTOBalanceTracker';
                 const dateIn     = isAddModal ? $('#addDateIn').val()  : $('#viewDateIn').val();
                 const dateOut    = isAddModal ? $('#addDateOut').val() : $('#viewDateOut').val();
+                const timeIn     = isAddModal ? $('#addTimeIn').val()  : $('#viewTimeIn').val();
+                const timeOut    = isAddModal ? $('#addTimeOut').val() : $('#viewTimeOut').val();
 
-                if (!dateIn || !dateOut) return;
+                if (!dateIn || !dateOut || !timeIn || !timeOut) return;
 
-                const totalDays = computeDaysFromDates(dateIn, dateOut);
+                const totalDays = computeDaysFromDates(dateIn, dateOut, timeIn, timeOut);
 
                 const warningDiv = $(trackerSelector).find('#ctoUsageWarning');
 
@@ -1050,7 +1102,11 @@
                 const availableMatch  = trackerText.match(/Available:\s*([\d.]+)\s*days/);
                 const availableBalance = availableMatch ? parseFloat(availableMatch[1]) : 0;
 
-                const newBalance = availableBalance + totalDays;
+                // In edit mode, availableBalance already includes this request's
+                // original earned days — subtract them first to avoid double-counting
+                const originalDays = isAddModal ? 0 : (parseFloat($('#viewOriginalOffsetDays').val()) || 0);
+
+                const newBalance = availableBalance - originalDays + totalDays;
 
                 warningDiv.html(`
                     <small class="text-success">
@@ -1068,8 +1124,15 @@
                 $('#viewEmployeeName').val(data.employeeNo).trigger('change');
                 $('#viewDateIn').val(data.displayDateIn);
                 $('#viewDateOut').val(data.displayDateOut);
+                $('#viewTimeIn').val(data.displayTimeIn);
+                $('#viewTimeOut').val(data.displayTimeOut);
                 $('#viewReason').val(data.overTimeReason);
                 $('#viewRemarks').val(data.remarks);
+
+                // Remember this request's currently-earned days so the live preview
+                // can subtract it before adding the newly computed days (avoids double count)
+                const originalDays = data.approvedRenderOT ? (Number(data.approvedRenderOT) / 8) : 0;
+                $('#viewOriginalOffsetDays').val(originalDays);
 
                 loadCTOBalanceTracker(data.employeeNo, '#viewCTOBalanceTracker');
                 renderApprovalProgress(data);
@@ -1189,7 +1252,7 @@
                 $('#viewOffsetRequestModal .modal-body').removeClass('edit-mode');
                 $('#viewEmployeeName').prop('disabled', true);
                 $('#viewDateIn, #viewDateOut').datepicker('destroy').prop('readonly', true);
-                $('#viewReason, #viewRemarks').prop('readonly', true);
+                $('#viewTimeIn, #viewTimeOut, #viewReason, #viewRemarks').prop('readonly', true);
                 $('.edit-required').addClass('d-none');
                 updateViewButtons(status);
                 $('#btnSaveOffsetRequest, #btnCancelEdit').addClass('d-none');
@@ -1208,7 +1271,7 @@
 
                 $('#viewDateIn, #viewDateOut').prop('readonly', false)
                     .datepicker({ format: 'mm/dd/yyyy', autoclose: true, todayHighlight: true, startDate: minOffsetDate });
-                $('#viewReason, #viewRemarks').prop('readonly', false);
+                $('#viewTimeIn, #viewTimeOut, #viewReason, #viewRemarks').prop('readonly', false);
                 $('.edit-required').removeClass('d-none');
                 $('#btnApproveOffsetRequest, #btnEditOffsetRequest').addClass('d-none');
                 $('#btnSaveOffsetRequest, #btnCancelEdit').removeClass('d-none');

@@ -48,7 +48,7 @@ namespace KEISAN_HRIS_v2.Controllers.LERelation
         // ─────────────────────────────────────────────────────────────────────
 
         [HttpGet]
-        public JsonResult GetDisciplinaryActionList(string status = "active")
+        public JsonResult GetDisciplinaryActionList(string status = "active", string employeeNo = "", string department = "")
         {
             try
             {
@@ -81,6 +81,19 @@ namespace KEISAN_HRIS_v2.Controllers.LERelation
 
                 ApplyDataScopeFilter(query, parameters);
                 ApplyHiddenEmployeesFilter(query, parameters);
+
+                if (!string.IsNullOrWhiteSpace(employeeNo))
+                {
+                    query.Append(" AND d.employeeNo = @empFilter");
+                    parameters.Add("@empFilter", employeeNo);
+                }
+
+                if (!string.IsNullOrWhiteSpace(department) &&
+                    !department.Equals("ALL", StringComparison.OrdinalIgnoreCase))
+                {
+                    query.Append(" AND e.departmentCode = @department");
+                    parameters.Add("@department", department);
+                }
 
                 query.Append(" ORDER BY d.dtAdded DESC");
 
@@ -385,6 +398,68 @@ namespace KEISAN_HRIS_v2.Controllers.LERelation
             {
                 Console.WriteLine($"Error in GetDisciplinaryAttachments: {ex.Message}");
                 return Json(new List<object>());
+            }
+        }
+
+        [HttpGet]
+        [Route("DisciplinaryActionTab/GetDisciplinaryActionTab")]
+        public IActionResult GetDisciplinaryActionTab(string employeeNo, string mode = "EDIT")
+        {
+            // Row-level security — deny if the logged-in user has no access to this employee
+            if (!string.IsNullOrWhiteSpace(employeeNo) && !CanViewEmployee(employeeNo))
+                return Content("<div class='alert alert-danger'>Access denied. You do not have permission to view this employee's disciplinary records.</div>");
+
+            var model = new DisciplinaryActionModel
+            {
+                employeeNo = employeeNo ?? string.Empty
+            };
+
+            return PartialView("~/Views/Users/Partials/_DisciplinaryAction.cshtml", model);
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
+        // EMPLOYEE DETAILS TAB — JSON data endpoint
+        // Returns active disciplinary records for a single employee.
+        // Reuses the same SELECT columns as GetDisciplinaryActionList.
+        // ─────────────────────────────────────────────────────────────────────
+
+        [HttpGet]
+        public JsonResult GetDisciplinaryActionByEmployee(string employeeNo)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(employeeNo))
+                    return Json(new { data = new List<DisciplinaryActionModel>() });
+
+                // Row-level security
+                if (!CanViewEmployee(employeeNo))
+                    return Json(new { data = new List<DisciplinaryActionModel>(), error = "Access denied." });
+
+                var sql = @"
+                    SELECT
+                        d.id,
+                        d.employeeNo,
+                        d.offense,
+                        d.complainant,
+                        d.section,
+                        d.disciplinaryReason,
+                        d.disciplinaryAction,
+                        d.penalty,
+                        DATE_FORMAT(d.dateIssued, '%m/%d/%Y') AS dateIssued,
+                        d.addedByUser,
+                        d.dtAdded
+                    FROM e_disciplinaryaction d
+                    WHERE d.employeeNo = @employeeNo
+                      AND d.isActive   = 1
+                    ORDER BY d.dateIssued DESC, d.dtAdded DESC";
+
+                var records = _db.Query<DisciplinaryActionModel>(sql, new { employeeNo }).AsList();
+                return Json(new { data = records });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetDisciplinaryActionByEmployee: {ex.Message}");
+                return Json(new { data = new List<DisciplinaryActionModel>(), error = ex.Message });
             }
         }
 

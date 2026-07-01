@@ -55,10 +55,6 @@ namespace KEISAN_HRIS_v2.Models.Timekeeping
         public double? totalRenderHour { get; set; }
         public double? totalBreaktimeMinute { get; set; }
 
-        // ===== ALLOWANCE INFORMATION =====
-        public double totalAllowanceAmount { get; set; }
-        public string allowanceTaxableFlags { get; set; }
-
         // ===== SPL HOLIDAY =====
         public double SPLHolidayHours { get; set; }
         public double SPLHolidayOTHours { get; set; }

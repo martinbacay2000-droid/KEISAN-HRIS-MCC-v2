@@ -51,7 +51,7 @@ namespace KEISAN_HRIS_v2.Services.EmployeeProfile
         // Footer contact details
         private const string FooterLine =
             "51 Timog Avenue, South Triangle, Quezon City 1103 Philippines" +
-            "     Tel: (63)(2) 8863-7777     www.luxenthotel.com";
+            "     Tel: (63)(2) 8000-7000     www.companyname.com";
 
         public byte[] Generate(PagIbigContributionReportData data)
         {
@@ -85,7 +85,7 @@ namespace KEISAN_HRIS_v2.Services.EmployeeProfile
                     {
                         // ── Logo ──────────────────────────────────────────────
                         col.Item().Width(100)
-                            .Image("wwwroot/Fillow/images/luxent_logo.png");
+                            .Image("wwwroot/Fillow/images/your_logo_1.png");
 
                         col.Item().PaddingTop(10).Text("");
 
@@ -207,7 +207,7 @@ namespace KEISAN_HRIS_v2.Services.EmployeeProfile
 
                         // ── Company name ──────────────────────────────────────
                         col.Item()
-                            .Text(data.CompanyName ?? "Luxent Hotel")
+                            .Text(data.CompanyName ?? "Company Name")
                             .Bold().FontFamily(FontName).FontSize(11);
 
                         col.Item().PaddingTop(25).Text("");
@@ -215,7 +215,7 @@ namespace KEISAN_HRIS_v2.Services.EmployeeProfile
                         // ── Signatory block ───────────────────────────────────
                         col.Item().Text(txt =>
                         {
-                            txt.Line(data.SignatoryName ?? "EDITHA M. CARREON")
+                            txt.Line(data.SignatoryName ?? "Vince S. Carlos")
                                .Bold().FontFamily(FontName).FontSize(11);
                             string signatoryTitle = ToTitleCaseSmart(
                                 (data.SignatoryTitle ?? "DIRECTOR OF HUMAN RESOURCES").ToLower());

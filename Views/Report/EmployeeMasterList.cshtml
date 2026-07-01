@@ -486,13 +486,13 @@
                 placeholder: "Select Employment Status",
                 allowClear : true,
                 ajax: {
-                    url          : '/Setup/GetEmploymentStatuses',   
+                    url          : '/Setup/GetEmploymentStatuses',
                     dataType     : 'json',
                     delay        : 250,
                     processResults: function (data) {
                         var results = $.map(data, function (item) {
-                            return { id: item.employmentStatusCode,   
-                                     text: item.employmentStatusName }; 
+                            return { id: item.employmentStatusCode,
+                                     text: item.employmentStatusName };
                         });
                         results.unshift({ id: 'ALL', text: 'All Employment Status' });
                         return { results: results };

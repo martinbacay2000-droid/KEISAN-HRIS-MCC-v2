@@ -185,7 +185,7 @@ namespace KEISAN_HRIS_v2.Controllers.Users
             //    IssuedCity = "Quezon City",
             //    WithCompensation = withCompensation,
             //    MonthlyIncentiveAmount = monthlyIncentive > 0 ? monthlyIncentive : (decimal?)null,
-            //    CompanyName = "BGISIS DEVELOPMENT CORPORATION (Luxent Hotel)",
+            //    CompanyName = "BGISIS DEVELOPMENT CORPORATION (Company Name)",
             //    SignatoryName = signatoryName,
             //    SignatoryTitle = signatoryTitle
             //};
@@ -209,9 +209,9 @@ namespace KEISAN_HRIS_v2.Controllers.Users
                 IssuedCity = "Quezon City",
                 WithCompensation = withCompensation,
                 MonthlyIncentiveAmount = monthlyIncentive > 0 ? monthlyIncentive : (decimal?)null,
-                CompanyName = "BGISIS DEVELOPMENT CORPORATION (Luxent Hotel)",
+                CompanyName = "COMPANY/CORPORATION NAME",
                 LastName = empLast,
-                SignatoryName = "EDITHA M. CARREON",
+                SignatoryName = "Vince S. Carlos",
                 SignatoryTitle = "DIRECTOR OF HUMAN RESOURCES"
             };
 
